@@ -1,4 +1,4 @@
-from backend import engine, imported
+from backend import imported
 
 
 def _payloads():
@@ -33,19 +33,12 @@ def test_import_roundtrip(tmp_path, monkeypatch):
     imported.merge_import("week", week)
     assert imported.status("1")["dates"] == ["2026-10-20"]
 
-    p = imported.ImportedProvider()
-    lg = p.league()
-    assert [c["key"] for c in lg["categories"]][0] == "FG%" and lg["categories"][0]["ratio"] == ["FGM", "FGA"]
-    assert next(c for c in lg["categories"] if c["key"] == "TO")["higher"] is False
-    assert lg["weeks"] == [{"week": 1, "start": "2026-10-20", "end": "2026-10-20"}]
-
-    wk = p.week(1, ["1", "2"])
-    res = engine.what_if(lg, wk, "1", "2", [{"team": "1", "out": "10", "in": "11"}])
-    assert res["actual"]["result"] == "L" and res["hypothetical"]["categories"][3]["a"] == 30
-
-    off = p.official(1)
-    assert engine.head_to_head(off["1"], off["2"], lg)["score"] == res["actual"]["score"]
-    assert p.player_week_stats("20", 1)["2026-10-20"]["PTS"] == 20
+    store = imported.load()
+    assert store["weeks"]["1"]["dates"] == ["2026-10-20"] and store["weeks"]["1"]["final"] is False
+    day = store["days"]["2026-10-20"]
+    assert [r["player"] for r in day["1"]] == ["10", "11"] and day["1"][1]["slot"] == "BN"
+    assert store["players"]["20"]["name"] == "P20" and "owner" not in store["players"]["20"]
+    assert store["last_import"]
 
 
 def test_new_league_resets(tmp_path, monkeypatch):
@@ -95,10 +88,9 @@ def test_team_logos_downloaded_once_from_allowed_hosts(tmp_path, monkeypatch):
     ]
     imported.merge_import("base", base)
     assert calls == ["https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/x.png"]
-    p = imported.ImportedProvider()
-    teams = {t["key"]: t for t in p.league()["teams"]}
-    assert teams["1"]["logo"].startswith("/api/logo/1?v=") and teams["2"]["logo"] is None
-    assert p.logo_file("1").read_bytes() == b"\x89PNG fake" and p.logo_file("2") is None
+    logos = imported.load()["logos"]
+    assert set(logos) == {"1"} and logos["1"]["file"] == "1_1.png"
+    assert (tmp_path / "logos" / "1_1.png").read_bytes() == b"\x89PNG fake"
 
     imported.merge_import("meta", {"league_id": "1", "teams": base["teams"]})
     assert len(calls) == 1                      # same URL, file exists: not downloaded again

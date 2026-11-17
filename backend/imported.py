@@ -1,4 +1,7 @@
-"""Provider backed by data the browser extension scraped from Yahoo pages.
+"""Storage for the data the browser extension reads from Yahoo pages.
+
+The web app loads this file directly and does all calculations in the browser;
+this module only merges incoming syncs into it.
 
 Storage: data/league.json
 {
@@ -22,11 +25,6 @@ import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = Path(os.environ.get("TAKAS_DATA_FILE") or ROOT / "data" / "league.json")
-
-RATIOS = {"FG%": ["FGM", "FGA"], "FT%": ["FTM", "FTA"], "3PT%": ["3PTM", "3PTA"]}
-LOWER_IS_BETTER = {"TO", "PF"}
-LABELS = {"ST": "STL"}
-
 
 LOGO_DIR = DATA_FILE.parent / "logos"
 LOGO_HOSTS = ("s.yimg.com", "yahoofantasysports-res.cloudinary.com")     # Yahoo's image CDNs only
@@ -197,117 +195,3 @@ def status(league_id: str | None = None) -> dict:
             "synced_at": base.get("synced_at"), "has_draft": bool(store.get("draft")),
             "tx_keys": sorted(store.get("transactions", {})), "tx_complete": bool(store.get("tx_complete")),
             "pool_at": store.get("pool_at")}
-
-
-class ImportedProvider:
-    is_demo = False
-
-    def __init__(self):
-        self.store = load()
-        if not self.store.get("base"):
-            raise RuntimeError("Henüz veri yok. Eklentiyle senkronize et.")
-        self.base = self.store["base"]
-        if "Points" in (self.base.get("scoring_type") or ""):
-            raise RuntimeError("Puan bazlı ligler eklenti modunda henüz desteklenmiyor.")
-
-    def league(self) -> dict:
-        cats = [{"key": c, "label": LABELS.get(c, c), "higher": c not in LOWER_IS_BETTER,
-                 **({"ratio": RATIOS[c]} if c in RATIOS else {})} for c in self.base["categories"]]
-        weeks = [{"week": int(w), "start": v["dates"][0], "end": v["dates"][-1]}
-                 for w, v in sorted(self.store["weeks"].items(), key=lambda x: int(x[0]))
-                 if v["dates"] and int(w) <= self.base["current_week"]]
-        return {"key": self.base["league_id"], "name": self.base["name"], "scoring": "categories",
-                "categories": cats, "modifiers": {}, "current_week": self.base["current_week"],
-                "my_team": self.base["my_team"],
-                "teams": [{"key": t["id"], "name": t["name"], "manager": "", "logo": self.logo_url(t["id"])}
-                          for t in self.base["teams"]],
-                "weeks": weeks, "demo": False,
-                "synced_at": self.store.get("last_import") or self.base.get("synced_at")}
-
-    def logo_url(self, team: str) -> str | None:
-        lg = self.store.get("logos", {}).get(team)
-        return f"/api/logo/{team}?v={lg['v']}" if lg and (LOGO_DIR / lg["file"]).exists() else None
-
-    def logo_file(self, team: str) -> Path | None:
-        lg = self.store.get("logos", {}).get(team)
-        path = LOGO_DIR / lg["file"] if lg else None
-        return path if path and path.exists() else None
-
-    def active_slots(self) -> int:
-        pos = self.base.get("roster_positions") or []
-        n = sum(1 for x in pos if x.upper() not in ("BN", "IL", "IL+", "IR", "NA"))
-        return n or 10
-
-    def roster_capacity(self) -> int:
-        """Regular roster spots (everything except IL slots)."""
-        pos = self.base.get("roster_positions") or []
-        n = sum(1 for x in pos if x.upper() not in ("IL", "IL+", "IR", "NA"))
-        return n or 13
-
-    def il_players(self) -> dict:
-        """team -> players currently parked in an IL slot (they don't use a regular spot)."""
-        now = self.store.get("lineup_now") or {}
-        return {t: [e["player"] for e in rows if e["slot"] in ("IL", "IL+", "IR", "NA")] for t, rows in now.items()}
-
-    def free_agents(self) -> list[str]:
-        owned = {p for ps in self.base["rosters"].values() for p in ps}
-        return [k for k in self.store.get("pool", {}) if k not in owned]
-
-    def rosters(self) -> dict:
-        return {t: list(ps) for t, ps in self.base["rosters"].items()}
-
-    def player_info(self, keys) -> dict:
-        owners = {p: t for t, ps in self.base["rosters"].items() for p in ps}
-        out = {}
-        for k in keys:
-            p = self.store["players"].get(k)
-            if p:
-                out[k] = {"key": k, "name": p.get("name", k), "nba_team": p.get("nba_team", ""),
-                          "positions": p.get("positions", []), "status": p.get("status", ""),
-                          "owner": owners.get(k)}
-        return out
-
-    def averages(self, keys, period: str = "season") -> dict:
-        src = self.base["averages"].get(period, {})
-        pool = self.store.get("pool", {}) if period == "season" else {}   # free agents: season only
-        return {k: dict(src.get(k) or pool.get(k) or {"GP": 0}) for k in keys}
-
-    def matchups(self, week: int) -> list[list[str]]:
-        return self.store["weeks"].get(str(week), {}).get("pairs", [])
-
-    def official(self, week: int) -> dict:
-        return self.store["weeks"].get(str(week), {}).get("official", {})
-
-    def week(self, week: int, teams: list[str]) -> dict:
-        info = self.store["weeks"].get(str(week))
-        if not info:
-            raise KeyError(f"{week}. hafta senkronize edilmemiş.")
-        days = []
-        for d in info["dates"]:
-            day = self.store["days"].get(d, {})
-            lineups, stats = {}, {}
-            for t in teams:
-                rows = day.get(t, [])
-                lineups[t] = [{"player": r["player"], "slot": r["slot"]} for r in rows]
-                for r in rows:
-                    stats[r["player"]] = r["line"]
-            days.append({"date": d, "lineups": lineups, "stats": stats})
-        return {"week": week, "start": info["dates"][0], "end": info["dates"][-1], "days": days}
-
-    def player_week_stats(self, key: str, week: int) -> dict:
-        """Only available for days the player was on some league roster."""
-        info = self.store["weeks"].get(str(week), {})
-        out = {}
-        for d in info.get("dates", []):
-            out[d] = None
-            for rows in self.store["days"].get(d, {}).values():
-                hit = next((r for r in rows if r["player"] == key), None)
-                if hit:
-                    out[d] = hit["line"]
-                    break
-        return out
-
-    def search(self, query: str, limit: int = 15) -> list[dict]:
-        q = query.lower().strip()
-        hits = [k for k, p in self.store["players"].items() if q in p.get("name", "").lower()]
-        return list(self.player_info(hits[:limit]).values())

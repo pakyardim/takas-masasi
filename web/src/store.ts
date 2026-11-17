@@ -1,6 +1,8 @@
 // League-wide data loaded once at startup, plus a registry of every player any
 // response has mentioned. Components read it while rendering; it is not reactive
 // (responses register their players before the state that renders them is set).
+import { LocalApi } from "./engine/api";
+import { LeagueData, type RawStore } from "./engine/data";
 import type { Category, League, Player, Players } from "./types";
 
 export const store = {
@@ -18,14 +20,33 @@ export function registerPlayers(more?: Players | Player[] | null) {
   }
 }
 
+let local: LocalApi | null = null;
+
+/** Load the league file and set up in-browser calculation. */
+export async function loadLeague(dataUrl = "./data"): Promise<void> {
+  const r = await fetch(`${dataUrl}/league.json`, { cache: "no-cache" });
+  if (r.status === 404) throw new Error("NO_DATA");
+  if (!r.ok) throw new Error(`Lig verisi yüklenemedi (${r.status}).`);
+  local = new LocalApi(new LeagueData((await r.json()) as RawStore, dataUrl));
+  const d = local.league();
+  // "my team" is the viewer's choice (remembered in this browser); default: the team that synced
+  const saved = localStorage.getItem(MY_TEAM_KEY);
+  if (saved && d.league.teams.some((t) => t.key === saved)) d.league.my_team = saved;
+  store.league = d.league; store.rosters = d.rosters; store.players = d.players;
+  store.teamName = Object.fromEntries(d.league.teams.map((t) => [t.key, t.name]));
+  store.teamLogo = Object.fromEntries(d.league.teams.map((t) => [t.key, t.logo]));
+}
+
+const MY_TEAM_KEY = "takas.myTeam";
+export function setMyTeam(team: string) {
+  localStorage.setItem(MY_TEAM_KEY, team);
+  location.reload();          // every tab picks its defaults from "my team" when it starts
+}
+
+/** Ask the in-browser engine. Same paths and answers as the former HTTP API. */
 export async function api<T>(path: string, body?: unknown): Promise<T> {
-  const r = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
-  if (!r.ok) {
-    let msg = r.statusText;
-    try { msg = (await r.json()).detail || msg; } catch { /* not JSON */ }
-    throw new Error(msg);
-  }
-  return r.json();
+  if (!local) throw new Error("Lig verisi yüklenmedi.");
+  return local.call(path, body) as T;
 }
 
 // ---------------------------------------------------------------- formatting

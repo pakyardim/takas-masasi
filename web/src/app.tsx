@@ -1,7 +1,6 @@
 import type { ComponentType } from "preact";
 import { useEffect, useState } from "preact/hooks";
-import { api, store } from "./store";
-import type { LeagueResponse } from "./types";
+import { loadLeague, setMyTeam, store } from "./store";
 import { Draft } from "./tabs/Draft";
 import { Moves } from "./tabs/Moves";
 import { Power } from "./tabs/Power";
@@ -27,12 +26,7 @@ export function App() {
   const [seen, setSeen] = useState<string[]>([fromHash()]);
 
   useEffect(() => {
-    api<LeagueResponse>("/api/league").then((d) => {
-      store.league = d.league; store.rosters = d.rosters; store.players = d.players;
-      store.teamName = Object.fromEntries(d.league.teams.map((t) => [t.key, t.name]));
-      store.teamLogo = Object.fromEntries(d.league.teams.map((t) => [t.key, t.logo]));
-      setReady(true);
-    }).catch((e) => setError(e.message));
+    loadLeague().then(() => setReady(true)).catch((e) => setError(e.message));
     const onHash = () => open(fromHash());
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
@@ -54,14 +48,20 @@ export function App() {
           {TABS.map((t) => <button key={t.id} class={`tab ${tab === t.id ? "active" : ""}`} onClick={() => open(t.id)}>{t.label}</button>)}
         </nav>
         <div id="league-name">
-          {!lg ? "Yükleniyor…" : <>
-            {lg.name}{lg.demo ? <span class="badge">DEMO VERİ</span> : ` (ID# ${lg.key})`}
-            {lg.synced_at ? ` · son senkron ${new Date(lg.synced_at).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })}` : ""}
+          {!lg ? (error ? "" : "Yükleniyor…") : <>
+            <span>{lg.name} (ID# {lg.key})
+              {lg.synced_at ? ` · veri: ${new Date(lg.synced_at).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })}` : ""}</span>
+            <label class="me-pick">Takımım
+              <select value={lg.my_team} onChange={(e) => setMyTeam(e.currentTarget.value)}>
+                {lg.teams.map((t) => <option value={t.key} key={t.key}>{t.name}</option>)}
+              </select>
+            </label>
           </>}
         </div>
       </header>
       <main>
-        {error ? <div class="error">Başlatılamadı: {error}</div>
+        {error === "NO_DATA" ? <div class="card empty"><b>Henüz lig verisi yok.</b><br />Eklentiyle senkronize et, sonra bu sayfayı yenile.</div>
+          : error ? <div class="error">Başlatılamadı: {error}</div>
           : ready && TABS.filter((t) => seen.includes(t.id)).map((t) => (
             <div key={t.id} class={tab === t.id ? "" : "hidden"}><t.view /></div>
           ))}

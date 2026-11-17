@@ -1,0 +1,6132 @@
+{
+ "today": "2026-11-17",
+ "store": {
+  "base": {
+   "league_id": "1",
+   "name": "T",
+   "scoring_type": "Head-to-Head - Categories",
+   "categories": [
+    "FG%",
+    "FT%",
+    "3PTM",
+    "PTS",
+    "REB",
+    "AST",
+    "ST",
+    "BLK",
+    "TO"
+   ],
+   "teams": [
+    {
+     "id": "1",
+     "name": "A"
+    },
+    {
+     "id": "2",
+     "name": "B"
+    },
+    {
+     "id": "3",
+     "name": "C"
+    }
+   ],
+   "my_team": "1",
+   "current_week": 2,
+   "rosters": {
+    "1": [
+     "a1",
+     "a2"
+    ],
+    "2": [
+     "b1",
+     "b2"
+    ],
+    "3": [
+     "c1",
+     "c2"
+    ]
+   },
+   "players": {
+    "a1": {
+     "id": "a1",
+     "name": "Pa1",
+     "nba_team": "X",
+     "positions": [
+      "PG"
+     ],
+     "status": "",
+     "owner": "1"
+    },
+    "a2": {
+     "id": "a2",
+     "name": "Pa2",
+     "nba_team": "X",
+     "positions": [
+      "PG"
+     ],
+     "status": "",
+     "owner": "1"
+    },
+    "b1": {
+     "id": "b1",
+     "name": "Pb1",
+     "nba_team": "X",
+     "positions": [
+      "PG"
+     ],
+     "status": "",
+     "owner": "2"
+    },
+    "b2": {
+     "id": "b2",
+     "name": "Pb2",
+     "nba_team": "X",
+     "positions": [
+      "PG"
+     ],
+     "status": "",
+     "owner": "2"
+    }
+   },
+   "averages": {
+    "season": {
+     "a1": {
+      "GP": 10,
+      "PTS": 30,
+      "FGM": 14.16,
+      "FGA": 25.0,
+      "FTM": 1.5,
+      "FTA": 2.5,
+      "3PTM": 1.4,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "a2": {
+      "GP": 10,
+      "PTS": 8,
+      "FGM": 2.624,
+      "FGA": 6.666666666666667,
+      "FTM": 1.6,
+      "FTA": 2.5,
+      "3PTM": 1.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "b1": {
+      "GP": 10,
+      "PTS": 20,
+      "FGM": 6.56,
+      "FGA": 16.666666666666668,
+      "FTM": 1.6,
+      "FTA": 2.5,
+      "3PTM": 1.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "b2": {
+      "GP": 0
+     },
+     "c1": {
+      "GP": 9,
+      "PTS": 24,
+      "FGM": 8.448,
+      "FGA": 20.0,
+      "FTM": 1.7,
+      "FTA": 2.5,
+      "3PTM": 0.4,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "c2": {
+      "GP": 10,
+      "PTS": 11,
+      "FGM": 4.136,
+      "FGA": 9.166666666666668,
+      "FTM": 1.8,
+      "FTA": 2.5,
+      "3PTM": 0.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     }
+    },
+    "last30": {
+     "a1": {
+      "GP": 10,
+      "PTS": 30,
+      "FGM": 14.16,
+      "FGA": 25.0,
+      "FTM": 1.5,
+      "FTA": 2.5,
+      "3PTM": 1.4,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "a2": {
+      "GP": 10,
+      "PTS": 8,
+      "FGM": 2.624,
+      "FGA": 6.666666666666667,
+      "FTM": 1.6,
+      "FTA": 2.5,
+      "3PTM": 1.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "b1": {
+      "GP": 10,
+      "PTS": 20,
+      "FGM": 6.56,
+      "FGA": 16.666666666666668,
+      "FTM": 1.6,
+      "FTA": 2.5,
+      "3PTM": 1.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "b2": {
+      "GP": 0
+     },
+     "c1": {
+      "GP": 9,
+      "PTS": 24,
+      "FGM": 8.448,
+      "FGA": 20.0,
+      "FTM": 1.7,
+      "FTA": 2.5,
+      "3PTM": 0.4,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "c2": {
+      "GP": 10,
+      "PTS": 11,
+      "FGM": 4.136,
+      "FGA": 9.166666666666668,
+      "FTM": 1.8,
+      "FTA": 2.5,
+      "3PTM": 0.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     }
+    },
+    "last14": {
+     "a1": {
+      "GP": 10,
+      "PTS": 30,
+      "FGM": 14.16,
+      "FGA": 25.0,
+      "FTM": 1.5,
+      "FTA": 2.5,
+      "3PTM": 1.4,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "a2": {
+      "GP": 10,
+      "PTS": 8,
+      "FGM": 2.624,
+      "FGA": 6.666666666666667,
+      "FTM": 1.6,
+      "FTA": 2.5,
+      "3PTM": 1.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "b1": {
+      "GP": 10,
+      "PTS": 20,
+      "FGM": 6.56,
+      "FGA": 16.666666666666668,
+      "FTM": 1.6,
+      "FTA": 2.5,
+      "3PTM": 1.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "b2": {
+      "GP": 0
+     },
+     "c1": {
+      "GP": 9,
+      "PTS": 24,
+      "FGM": 8.448,
+      "FGA": 20.0,
+      "FTM": 1.7,
+      "FTA": 2.5,
+      "3PTM": 0.4,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "c2": {
+      "GP": 10,
+      "PTS": 11,
+      "FGM": 4.136,
+      "FGA": 9.166666666666668,
+      "FTM": 1.8,
+      "FTA": 2.5,
+      "3PTM": 0.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     }
+    },
+    "last7": {
+     "a1": {
+      "GP": 10,
+      "PTS": 30,
+      "FGM": 14.16,
+      "FGA": 25.0,
+      "FTM": 1.5,
+      "FTA": 2.5,
+      "3PTM": 1.4,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "a2": {
+      "GP": 10,
+      "PTS": 8,
+      "FGM": 2.624,
+      "FGA": 6.666666666666667,
+      "FTM": 1.6,
+      "FTA": 2.5,
+      "3PTM": 1.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "b1": {
+      "GP": 10,
+      "PTS": 20,
+      "FGM": 6.56,
+      "FGA": 16.666666666666668,
+      "FTM": 1.6,
+      "FTA": 2.5,
+      "3PTM": 1.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "b2": {
+      "GP": 0
+     },
+     "c1": {
+      "GP": 9,
+      "PTS": 24,
+      "FGM": 8.448,
+      "FGA": 20.0,
+      "FTM": 1.7,
+      "FTA": 2.5,
+      "3PTM": 0.4,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     },
+     "c2": {
+      "GP": 10,
+      "PTS": 11,
+      "FGM": 4.136,
+      "FGA": 9.166666666666668,
+      "FTM": 1.8,
+      "FTA": 2.5,
+      "3PTM": 0.9,
+      "REB": 5,
+      "AST": 3,
+      "ST": 1,
+      "BLK": 0.5,
+      "TO": 2
+     }
+    }
+   },
+   "roster_positions": [
+    "PG",
+    "SG",
+    "BN",
+    "IL"
+   ]
+  },
+  "weeks": {
+   "1": {
+    "pairs": [
+     [
+      "1",
+      "2"
+     ]
+    ],
+    "dates": [
+     "2026-10-20",
+     "2026-10-21",
+     "2026-10-22",
+     "2026-10-23"
+    ],
+    "official": {},
+    "final": false
+   },
+   "2": {
+    "pairs": [
+     [
+      "1",
+      "3"
+     ]
+    ],
+    "dates": [
+     "2026-10-27",
+     "2026-10-28",
+     "2026-10-29"
+    ],
+    "official": {},
+    "final": false
+   }
+  },
+  "days": {
+   "2026-10-20": {
+    "1": [
+     {
+      "player": "a2",
+      "slot": "PG",
+      "line": {
+       "PTS": 8,
+       "FGM": 2.624,
+       "FGA": 6.666666666666667,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     }
+    ],
+    "2": [
+     {
+      "player": "b1",
+      "slot": "PG",
+      "line": {
+       "PTS": 20,
+       "FGM": 6.56,
+       "FGA": 16.666666666666668,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     }
+    ]
+   },
+   "2026-10-21": {
+    "1": [
+     {
+      "player": "a1",
+      "slot": "BN",
+      "line": {
+       "PTS": 40,
+       "FGM": 18.88,
+       "FGA": 33.333333333333336,
+       "FTM": 1.5,
+       "FTA": 2.5,
+       "3PTM": 1.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     },
+     {
+      "player": "a2",
+      "slot": "PG",
+      "line": null
+     }
+    ],
+    "2": []
+   },
+   "2026-10-22": {
+    "1": [
+     {
+      "player": "a1",
+      "slot": "PG",
+      "line": {
+       "PTS": 30,
+       "FGM": 14.16,
+       "FGA": 25.0,
+       "FTM": 1.5,
+       "FTA": 2.5,
+       "3PTM": 1.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     }
+    ],
+    "2": []
+   },
+   "2026-10-23": {
+    "1": [
+     {
+      "player": "a1",
+      "slot": "PG",
+      "line": {
+       "PTS": 30,
+       "FGM": 14.16,
+       "FGA": 25.0,
+       "FTM": 1.5,
+       "FTA": 2.5,
+       "3PTM": 1.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     }
+    ],
+    "2": []
+   },
+   "2026-10-27": {
+    "1": [
+     {
+      "player": "a1",
+      "slot": "PG",
+      "line": {
+       "PTS": 33,
+       "FGM": 15.576,
+       "FGA": 27.5,
+       "FTM": 1.5,
+       "FTA": 2.5,
+       "3PTM": 1.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     },
+     {
+      "player": "a2",
+      "slot": "SG",
+      "line": {
+       "PTS": 9,
+       "FGM": 2.952,
+       "FGA": 7.5,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     }
+    ],
+    "2": [
+     {
+      "player": "b1",
+      "slot": "PG",
+      "line": {
+       "PTS": 18,
+       "FGM": 5.904,
+       "FGA": 15.0,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     },
+     {
+      "player": "b2",
+      "slot": "BN",
+      "line": null
+     }
+    ],
+    "3": [
+     {
+      "player": "c1",
+      "slot": "PG",
+      "line": {
+       "PTS": 26,
+       "FGM": 9.152,
+       "FGA": 21.666666666666668,
+       "FTM": 1.7,
+       "FTA": 2.5,
+       "3PTM": 0.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     },
+     {
+      "player": "c2",
+      "slot": "BN",
+      "line": {
+       "PTS": 15,
+       "FGM": 5.64,
+       "FGA": 12.5,
+       "FTM": 1.8,
+       "FTA": 2.5,
+       "3PTM": 0.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     }
+    ]
+   },
+   "2026-10-28": {
+    "1": [
+     {
+      "player": "a1",
+      "slot": "PG",
+      "line": {
+       "PTS": 21,
+       "FGM": 9.912,
+       "FGA": 17.5,
+       "FTM": 1.5,
+       "FTA": 2.5,
+       "3PTM": 1.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 5
+      }
+     },
+     {
+      "player": "a2",
+      "slot": "SG",
+      "line": null
+     }
+    ],
+    "2": [
+     {
+      "player": "b1",
+      "slot": "PG",
+      "line": {
+       "PTS": 31,
+       "FGM": 10.168,
+       "FGA": 25.833333333333336,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 11,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     },
+     {
+      "player": "b2",
+      "slot": "BN",
+      "line": null
+     }
+    ],
+    "3": [
+     {
+      "player": "c1",
+      "slot": "PG",
+      "line": {
+       "PTS": 19,
+       "FGM": 6.688,
+       "FGA": 15.833333333333334,
+       "FTM": 1.7,
+       "FTA": 2.5,
+       "3PTM": 0.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     },
+     {
+      "player": "c2",
+      "slot": "BN",
+      "line": null
+     }
+    ]
+   },
+   "2026-10-29": {
+    "1": [
+     {
+      "player": "a1",
+      "slot": "PG",
+      "line": null
+     },
+     {
+      "player": "a2",
+      "slot": "SG",
+      "line": {
+       "PTS": 14,
+       "FGM": 4.592,
+       "FGA": 11.666666666666668,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5,
+       "AST": 9,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     }
+    ],
+    "2": [
+     {
+      "player": "b1",
+      "slot": "PG",
+      "line": {
+       "PTS": 22,
+       "FGM": 7.216,
+       "FGA": 18.333333333333336,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     },
+     {
+      "player": "b2",
+      "slot": "BN",
+      "line": null
+     }
+    ],
+    "3": [
+     {
+      "player": "c1",
+      "slot": "PG",
+      "line": {
+       "PTS": 28,
+       "FGM": 9.856,
+       "FGA": 23.333333333333336,
+       "FTM": 1.7,
+       "FTA": 2.5,
+       "3PTM": 0.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 3,
+       "TO": 2
+      }
+     },
+     {
+      "player": "c2",
+      "slot": "BN",
+      "line": {
+       "PTS": 8,
+       "FGM": 3.008,
+       "FGA": 6.666666666666667,
+       "FTM": 1.8,
+       "FTA": 2.5,
+       "3PTM": 0.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      }
+     }
+    ]
+   }
+  },
+  "players": {
+   "a1": {
+    "id": "a1",
+    "name": "Pa1",
+    "nba_team": "AAA",
+    "positions": [
+     "PG"
+    ],
+    "status": ""
+   },
+   "a2": {
+    "id": "a2",
+    "name": "Pa2",
+    "nba_team": "BBB",
+    "positions": [
+     "PG"
+    ],
+    "status": ""
+   },
+   "b1": {
+    "id": "b1",
+    "name": "Pb1",
+    "nba_team": "CCC",
+    "positions": [
+     "PG"
+    ],
+    "status": ""
+   },
+   "b2": {
+    "id": "b2",
+    "name": "Pb2",
+    "nba_team": "DDD",
+    "positions": [
+     "PG"
+    ],
+    "status": "O"
+   },
+   "fa1": {
+    "id": "fa1",
+    "name": "Pfa1",
+    "nba_team": "X",
+    "positions": [
+     "PG"
+    ],
+    "status": ""
+   },
+   "fa2": {
+    "id": "fa2",
+    "name": "Pfa2",
+    "nba_team": "X",
+    "positions": [
+     "PG"
+    ],
+    "status": ""
+   },
+   "c1": {
+    "id": "c1",
+    "name": "Pc1",
+    "nba_team": "X",
+    "positions": [
+     "PG"
+    ]
+   },
+   "c2": {
+    "id": "c2",
+    "name": "Pc2",
+    "nba_team": "X",
+    "positions": [
+     "PG"
+    ]
+   }
+  },
+  "logos": {},
+  "last_import": "2026-11-17T10:33:23.867155+00:00",
+  "pool": {
+   "fa1": {
+    "GP": 10,
+    "PTS": 14,
+    "FGM": 5.6,
+    "FGA": 11.666666666666668,
+    "FTM": 1.7,
+    "FTA": 2.5,
+    "3PTM": 0.4,
+    "REB": 5,
+    "AST": 3,
+    "ST": 1,
+    "BLK": 0.5,
+    "TO": 2
+   },
+   "fa2": {
+    "GP": 10,
+    "PTS": 4,
+    "FGM": 1.696,
+    "FGA": 3.3333333333333335,
+    "FTM": 1.8,
+    "FTA": 2.5,
+    "3PTM": 0.9,
+    "REB": 5,
+    "AST": 3,
+    "ST": 1,
+    "BLK": 0.5,
+    "TO": 2
+   }
+  },
+  "pool_at": null,
+  "draft": [
+   {
+    "round": 1,
+    "pick": 1,
+    "overall": 1,
+    "player": "b1",
+    "team": "2",
+    "team_name": "B"
+   },
+   {
+    "round": 1,
+    "pick": 2,
+    "overall": 2,
+    "player": "a2",
+    "team": "1",
+    "team_name": "A"
+   },
+   {
+    "round": 2,
+    "pick": 1,
+    "overall": 3,
+    "player": "fa2",
+    "team": "1",
+    "team_name": "A"
+   },
+   {
+    "round": 2,
+    "pick": 2,
+    "overall": 4,
+    "player": "b2",
+    "team": "2",
+    "team_name": "B"
+   }
+  ],
+  "transactions": {
+   "Oct 21, 9:00 am|1|a1,fa2": {
+    "key": "Oct 21, 9:00 am|1|a1,fa2",
+    "ts": "Oct 21, 9:00 am",
+    "date": "2026-10-21",
+    "team": "1",
+    "moves": [
+     {
+      "player": "a1",
+      "action": "add",
+      "source": "Free Agent"
+     },
+     {
+      "player": "fa2",
+      "action": "drop",
+      "source": "To Free Agent"
+     }
+    ]
+   },
+   "Oct 21, 9:00 am|1|a1": {
+    "key": "Oct 21, 9:00 am|1|a1",
+    "ts": "Oct 21, 9:00 am",
+    "date": "2026-10-21",
+    "team": "1",
+    "moves": [
+     {
+      "player": "a1",
+      "action": "add",
+      "source": "Free Agent"
+     }
+    ]
+   },
+   "Oct 27, 1:00 am|3|c2": {
+    "key": "Oct 27, 1:00 am|3|c2",
+    "ts": "Oct 27, 1:00 am",
+    "date": "2026-10-27",
+    "team": "3",
+    "moves": [
+     {
+      "player": "c2",
+      "action": "add",
+      "source": "Free Agent"
+     }
+    ]
+   },
+   "Oct 28, 2:30 pm|1|b1": {
+    "key": "Oct 28, 2:30 pm|1|b1",
+    "ts": "Oct 28, 2:30 pm",
+    "date": "2026-10-28",
+    "team": "1",
+    "moves": [
+     {
+      "player": "b1",
+      "action": "trade",
+      "source": ""
+     }
+    ]
+   },
+   "Oct 28, 2:30 pm|2|a2": {
+    "key": "Oct 28, 2:30 pm|2|a2",
+    "ts": "Oct 28, 2:30 pm",
+    "date": "2026-10-28",
+    "team": "2",
+    "moves": [
+     {
+      "player": "a2",
+      "action": "trade",
+      "source": ""
+     }
+    ]
+   }
+  },
+  "tx_complete": true,
+  "schedule": {
+   "AAA": [
+    "2026-11-17",
+    "2026-11-18",
+    "2026-11-19",
+    "2026-11-20",
+    "2026-11-21",
+    "2026-11-22",
+    "2026-11-23",
+    "2026-11-24",
+    "2026-11-25",
+    "2026-11-26",
+    "2026-11-27",
+    "2026-11-28",
+    "2026-11-29",
+    "2026-11-30"
+   ],
+   "BBB": [
+    "2026-11-17",
+    "2026-11-18",
+    "2026-11-19",
+    "2026-11-20",
+    "2026-11-21",
+    "2026-11-22",
+    "2026-11-23",
+    "2026-11-24",
+    "2026-11-25",
+    "2026-11-26",
+    "2026-11-27",
+    "2026-11-28",
+    "2026-11-29",
+    "2026-11-30"
+   ],
+   "CCC": [
+    "2026-11-17",
+    "2026-11-18",
+    "2026-11-19",
+    "2026-11-20",
+    "2026-11-21",
+    "2026-11-22",
+    "2026-11-23",
+    "2026-11-24",
+    "2026-11-25",
+    "2026-11-26",
+    "2026-11-27",
+    "2026-11-28",
+    "2026-11-29",
+    "2026-11-30"
+   ],
+   "DDD": []
+  },
+  "lineup_now": {
+   "1": [
+    {
+     "player": "a1",
+     "slot": "PG"
+    },
+    {
+     "player": "a2",
+     "slot": "IL"
+    }
+   ],
+   "2": [
+    {
+     "player": "b1",
+     "slot": "PG"
+    },
+    {
+     "player": "b2",
+     "slot": "BN"
+    }
+   ]
+  },
+  "schedule_range": [
+   "2026-11-17",
+   "2026-11-30"
+  ],
+  "schedule_at": null
+ },
+ "cases": [
+  {
+   "path": "/api/league",
+   "body": null,
+   "out": {
+    "league": {
+     "key": "1",
+     "name": "T",
+     "scoring": "categories",
+     "categories": [
+      {
+       "key": "FG%",
+       "label": "FG%",
+       "higher": true,
+       "ratio": [
+        "FGM",
+        "FGA"
+       ]
+      },
+      {
+       "key": "FT%",
+       "label": "FT%",
+       "higher": true,
+       "ratio": [
+        "FTM",
+        "FTA"
+       ]
+      },
+      {
+       "key": "3PTM",
+       "label": "3PTM",
+       "higher": true
+      },
+      {
+       "key": "PTS",
+       "label": "PTS",
+       "higher": true
+      },
+      {
+       "key": "REB",
+       "label": "REB",
+       "higher": true
+      },
+      {
+       "key": "AST",
+       "label": "AST",
+       "higher": true
+      },
+      {
+       "key": "ST",
+       "label": "STL",
+       "higher": true
+      },
+      {
+       "key": "BLK",
+       "label": "BLK",
+       "higher": true
+      },
+      {
+       "key": "TO",
+       "label": "TO",
+       "higher": false
+      }
+     ],
+     "modifiers": {},
+     "current_week": 2,
+     "my_team": "1",
+     "teams": [
+      {
+       "key": "1",
+       "name": "A",
+       "manager": "",
+       "logo": null
+      },
+      {
+       "key": "2",
+       "name": "B",
+       "manager": "",
+       "logo": null
+      },
+      {
+       "key": "3",
+       "name": "C",
+       "manager": "",
+       "logo": null
+      }
+     ],
+     "weeks": [
+      {
+       "week": 1,
+       "start": "2026-10-20",
+       "end": "2026-10-23"
+      },
+      {
+       "week": 2,
+       "start": "2026-10-27",
+       "end": "2026-10-29"
+      }
+     ],
+     "demo": false,
+     "synced_at": "2026-11-17T10:33:23.867155+00:00"
+    },
+    "rosters": {
+     "1": [
+      "a1",
+      "a2"
+     ],
+     "2": [
+      "b1",
+      "b2"
+     ],
+     "3": [
+      "c1",
+      "c2"
+     ]
+    },
+    "players": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "a2": {
+      "key": "a2",
+      "name": "Pa2",
+      "nba_team": "BBB",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "b1": {
+      "key": "b1",
+      "name": "Pb1",
+      "nba_team": "CCC",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "2"
+     },
+     "b2": {
+      "key": "b2",
+      "name": "Pb2",
+      "nba_team": "DDD",
+      "positions": [
+       "PG"
+      ],
+      "status": "O",
+      "owner": "2"
+     },
+     "c1": {
+      "key": "c1",
+      "name": "Pc1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "c2": {
+      "key": "c2",
+      "name": "Pc2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     }
+    }
+   }
+  },
+  {
+   "path": "/api/search?q=pa",
+   "body": null,
+   "out": [
+    {
+     "key": "a1",
+     "name": "Pa1",
+     "nba_team": "AAA",
+     "positions": [
+      "PG"
+     ],
+     "status": "",
+     "owner": "1"
+    },
+    {
+     "key": "a2",
+     "name": "Pa2",
+     "nba_team": "BBB",
+     "positions": [
+      "PG"
+     ],
+     "status": "",
+     "owner": "1"
+    }
+   ]
+  },
+  {
+   "path": "/api/search?q=Pc1",
+   "body": null,
+   "out": [
+    {
+     "key": "c1",
+     "name": "Pc1",
+     "nba_team": "X",
+     "positions": [
+      "PG"
+     ],
+     "status": "",
+     "owner": "3"
+    }
+   ]
+  },
+  {
+   "path": "/api/search?q=x",
+   "body": null,
+   "out": []
+  },
+  {
+   "path": "/api/trade",
+   "body": {
+    "team_a": "1",
+    "give_a": [
+     "a1"
+    ],
+    "team_b": "2",
+    "give_b": [
+     "b1"
+    ]
+   },
+   "out": {
+    "scoring": "categories",
+    "value_metric": "z-score",
+    "categories": [
+     {
+      "key": "FG%",
+      "label": "FG%",
+      "higher": true,
+      "a_gives": 0.5664,
+      "b_gives": 0.39359999999999995,
+      "a_net": -0.136421052631579,
+      "b_net": 0.17280000000000006,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "FT%",
+      "label": "FT%",
+      "higher": true,
+      "a_gives": 0.6,
+      "b_gives": 0.64,
+      "a_net": 0.020000000000000018,
+      "b_net": -0.040000000000000036,
+      "better_for_a": "W",
+      "better_for_b": "L"
+     },
+     {
+      "key": "3PTM",
+      "label": "3PTM",
+      "higher": true,
+      "a_gives": 1.4,
+      "b_gives": 1.9,
+      "a_net": 0.5,
+      "b_net": -0.5,
+      "better_for_a": "W",
+      "better_for_b": "L"
+     },
+     {
+      "key": "PTS",
+      "label": "PTS",
+      "higher": true,
+      "a_gives": 30.0,
+      "b_gives": 20.0,
+      "a_net": -10.0,
+      "b_net": 10.0,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "REB",
+      "label": "REB",
+      "higher": true,
+      "a_gives": 5.0,
+      "b_gives": 5.0,
+      "a_net": 0.0,
+      "b_net": 0.0,
+      "better_for_a": "T",
+      "better_for_b": "T"
+     },
+     {
+      "key": "AST",
+      "label": "AST",
+      "higher": true,
+      "a_gives": 3.0,
+      "b_gives": 3.0,
+      "a_net": 0.0,
+      "b_net": 0.0,
+      "better_for_a": "T",
+      "better_for_b": "T"
+     },
+     {
+      "key": "ST",
+      "label": "STL",
+      "higher": true,
+      "a_gives": 1.0,
+      "b_gives": 1.0,
+      "a_net": 0.0,
+      "b_net": 0.0,
+      "better_for_a": "T",
+      "better_for_b": "T"
+     },
+     {
+      "key": "BLK",
+      "label": "BLK",
+      "higher": true,
+      "a_gives": 0.5,
+      "b_gives": 0.5,
+      "a_net": 0.0,
+      "b_net": 0.0,
+      "better_for_a": "T",
+      "better_for_b": "T"
+     },
+     {
+      "key": "TO",
+      "label": "TO",
+      "higher": false,
+      "a_gives": 2.0,
+      "b_gives": 2.0,
+      "a_net": 0.0,
+      "b_net": 0.0,
+      "better_for_a": "T",
+      "better_for_b": "T"
+     }
+    ],
+    "players": {
+     "a1": {
+      "avg": {
+       "GP": 10,
+       "PTS": 30,
+       "FGM": 14.16,
+       "FGA": 25.0,
+       "FTM": 1.5,
+       "FTA": 2.5,
+       "3PTM": 1.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": 1.9291074865708642,
+       "FT%": -1.3728129459672886,
+       "3PTM": 0.17149858514250862,
+       "PTS": 1.4006985834715227,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": 2.1284917092176068
+      }
+     },
+     "b1": {
+      "avg": {
+       "GP": 10,
+       "PTS": 20,
+       "FGM": 6.56,
+       "FGA": 16.666666666666668,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": -0.8754584176004329,
+       "FT%": -0.39223227027636753,
+       "3PTM": 1.028991510855053,
+       "PTS": 0.17201561551404648,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": -0.066683561507701
+      }
+     }
+    },
+    "a_gives_value": 2.1284917092176068,
+    "b_gives_value": -0.066683561507701,
+    "a_net_value": -2.195175270725308,
+    "b_net_value": 2.195175270725308,
+    "roster_spots": {
+     "a_net": 0,
+     "b_net": 0
+    },
+    "moves": {
+     "drops_a": [],
+     "drops_b": [],
+     "adds_a": [],
+     "adds_b": []
+    },
+    "team_impact": {
+     "1": [
+      {
+       "key": "FG%",
+       "label": "FG%",
+       "before": 0.530021052631579,
+       "after": 0.39359999999999995,
+       "rank_before": 1,
+       "rank_after": 3
+      },
+      {
+       "key": "FT%",
+       "label": "FT%",
+       "before": 0.62,
+       "after": 0.64,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "3PTM",
+       "label": "3PTM",
+       "before": 3.3,
+       "after": 3.8,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "PTS",
+       "label": "PTS",
+       "before": 38.0,
+       "after": 28.0,
+       "rank_before": 1,
+       "rank_after": 3
+      },
+      {
+       "key": "REB",
+       "label": "REB",
+       "before": 10.0,
+       "after": 10.0,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "AST",
+       "label": "AST",
+       "before": 6.0,
+       "after": 6.0,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "ST",
+       "label": "STL",
+       "before": 2.0,
+       "after": 2.0,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "BLK",
+       "label": "BLK",
+       "before": 1.0,
+       "after": 1.0,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "TO",
+       "label": "TO",
+       "before": 4.0,
+       "after": 4.0,
+       "rank_before": 2,
+       "rank_after": 2
+      }
+     ],
+     "2": [
+      {
+       "key": "FG%",
+       "label": "FG%",
+       "before": 0.39359999999999995,
+       "after": 0.5664,
+       "rank_before": 3,
+       "rank_after": 1
+      },
+      {
+       "key": "FT%",
+       "label": "FT%",
+       "before": 0.64,
+       "after": 0.6,
+       "rank_before": 2,
+       "rank_after": 3
+      },
+      {
+       "key": "3PTM",
+       "label": "3PTM",
+       "before": 1.9,
+       "after": 1.4,
+       "rank_before": 2,
+       "rank_after": 2
+      },
+      {
+       "key": "PTS",
+       "label": "PTS",
+       "before": 20.0,
+       "after": 30.0,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "REB",
+       "label": "REB",
+       "before": 5.0,
+       "after": 5.0,
+       "rank_before": 3,
+       "rank_after": 3
+      },
+      {
+       "key": "AST",
+       "label": "AST",
+       "before": 3.0,
+       "after": 3.0,
+       "rank_before": 3,
+       "rank_after": 3
+      },
+      {
+       "key": "ST",
+       "label": "STL",
+       "before": 1.0,
+       "after": 1.0,
+       "rank_before": 3,
+       "rank_after": 3
+      },
+      {
+       "key": "BLK",
+       "label": "BLK",
+       "before": 0.5,
+       "after": 0.5,
+       "rank_before": 3,
+       "rank_after": 3
+      },
+      {
+       "key": "TO",
+       "label": "TO",
+       "before": 2.0,
+       "after": 2.0,
+       "rank_before": 1,
+       "rank_after": 1
+      }
+     ]
+    },
+    "teams": {
+     "a": "1",
+     "b": "2"
+    },
+    "league_size": 3,
+    "balance": {
+     "a": {
+      "team": "1",
+      "need_drop": 0,
+      "room": 0,
+      "drops": [],
+      "adds": [],
+      "drop_options": [
+       {
+        "key": "b1",
+        "value": -0.066683561507701
+       }
+      ],
+      "add_options": [
+       {
+        "key": "fa2",
+        "value": -0.7978300661606528
+       },
+       {
+        "key": "fa1",
+        "value": -1.3766183920887514
+       }
+      ],
+      "il": [
+       "a2"
+      ]
+     },
+     "b": {
+      "team": "2",
+      "need_drop": 0,
+      "room": 0,
+      "drops": [],
+      "adds": [],
+      "drop_options": [
+       {
+        "key": "a1",
+        "value": 2.1284917092176068
+       },
+       {
+        "key": "b2",
+        "value": null
+       }
+      ],
+      "add_options": [
+       {
+        "key": "fa2",
+        "value": -0.7978300661606528
+       },
+       {
+        "key": "fa1",
+        "value": -1.3766183920887514
+       }
+      ],
+      "il": []
+     },
+     "capacity": 3,
+     "has_free_agents": true
+    },
+    "info": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "b1": {
+      "key": "b1",
+      "name": "Pb1",
+      "nba_team": "CCC",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "2"
+     },
+     "b2": {
+      "key": "b2",
+      "name": "Pb2",
+      "nba_team": "DDD",
+      "positions": [
+       "PG"
+      ],
+      "status": "O",
+      "owner": "2"
+     },
+     "fa1": {
+      "key": "fa1",
+      "name": "Pfa1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": null
+     },
+     "fa2": {
+      "key": "fa2",
+      "name": "Pfa2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": null
+     }
+    }
+   }
+  },
+  {
+   "path": "/api/trade",
+   "body": {
+    "team_a": "1",
+    "give_a": [
+     "a1"
+    ],
+    "team_b": "3",
+    "give_b": [
+     "c1",
+     "c2"
+    ],
+    "period": "last14"
+   },
+   "out": {
+    "scoring": "categories",
+    "value_metric": "z-score",
+    "categories": [
+     {
+      "key": "FG%",
+      "label": "FG%",
+      "higher": true,
+      "a_gives": 0.5664,
+      "b_gives": 0.43145142857142854,
+      "a_net": -0.10561175030599751,
+      "b_net": 0.1281721008403362,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "FT%",
+      "label": "FT%",
+      "higher": true,
+      "a_gives": 0.6,
+      "b_gives": 0.7,
+      "a_net": 0.05999999999999994,
+      "b_net": -0.040000000000000036,
+      "better_for_a": "W",
+      "better_for_b": "L"
+     },
+     {
+      "key": "3PTM",
+      "label": "3PTM",
+      "higher": true,
+      "a_gives": 1.4,
+      "b_gives": 1.3,
+      "a_net": -0.10000000000000009,
+      "b_net": 0.9999999999999998,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "PTS",
+      "label": "PTS",
+      "higher": true,
+      "a_gives": 30.0,
+      "b_gives": 35.0,
+      "a_net": 5.0,
+      "b_net": -1.0,
+      "better_for_a": "W",
+      "better_for_b": "L"
+     },
+     {
+      "key": "REB",
+      "label": "REB",
+      "higher": true,
+      "a_gives": 5.0,
+      "b_gives": 10.0,
+      "a_net": 5.0,
+      "b_net": 0.0,
+      "better_for_a": "W",
+      "better_for_b": "T"
+     },
+     {
+      "key": "AST",
+      "label": "AST",
+      "higher": true,
+      "a_gives": 3.0,
+      "b_gives": 6.0,
+      "a_net": 3.0,
+      "b_net": 0.0,
+      "better_for_a": "W",
+      "better_for_b": "T"
+     },
+     {
+      "key": "ST",
+      "label": "STL",
+      "higher": true,
+      "a_gives": 1.0,
+      "b_gives": 2.0,
+      "a_net": 1.0,
+      "b_net": 0.0,
+      "better_for_a": "W",
+      "better_for_b": "T"
+     },
+     {
+      "key": "BLK",
+      "label": "BLK",
+      "higher": true,
+      "a_gives": 0.5,
+      "b_gives": 1.0,
+      "a_net": 0.5,
+      "b_net": 0.0,
+      "better_for_a": "W",
+      "better_for_b": "T"
+     },
+     {
+      "key": "TO",
+      "label": "TO",
+      "higher": false,
+      "a_gives": 2.0,
+      "b_gives": 4.0,
+      "a_net": 2.0,
+      "b_net": 0.0,
+      "better_for_a": "L",
+      "better_for_b": "T"
+     }
+    ],
+    "players": {
+     "a1": {
+      "avg": {
+       "GP": 10,
+       "PTS": 30,
+       "FGM": 14.16,
+       "FGA": 25.0,
+       "FTM": 1.5,
+       "FTA": 2.5,
+       "3PTM": 1.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": 1.9291074865708642,
+       "FT%": -1.3728129459672886,
+       "3PTM": 0.17149858514250862,
+       "PTS": 1.4006985834715227,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": 2.1284917092176068
+      }
+     },
+     "c1": {
+      "avg": {
+       "GP": 9,
+       "PTS": 24,
+       "FGM": 8.448,
+       "FGA": 20.0,
+       "FTM": 1.7,
+       "FTA": 2.5,
+       "3PTM": 0.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": -0.6182440860576498,
+       "FT%": 0.5883484054145514,
+       "3PTM": -1.5434872662825798,
+       "PTS": 0.6634888026970369,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": -0.9098941442286413
+      }
+     },
+     "c2": {
+      "avg": {
+       "GP": 10,
+       "PTS": 11,
+       "FGM": 4.136,
+       "FGA": 9.166666666666668,
+       "FTM": 1.8,
+       "FTA": 2.5,
+       "3PTM": 0.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": -0.0852216158726084,
+       "FT%": 1.5689290811054724,
+       "3PTM": -0.6859943405700355,
+       "PTS": -0.9337990556476821,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": -0.1360859309848536
+      }
+     },
+     "fa2": {
+      "avg": {
+       "GP": 10,
+       "PTS": 4,
+       "FGM": 1.696,
+       "FGA": 3.3333333333333335,
+       "FTM": 1.8,
+       "FTA": 2.5,
+       "3PTM": 0.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": 0.11311232652182562,
+       "FT%": 1.5689290811054724,
+       "3PTM": -0.6859943405700355,
+       "PTS": -1.7938771332179153,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": -0.7978300661606528
+      }
+     }
+    },
+    "a_gives_value": 2.1284917092176068,
+    "b_gives_value": -1.045980075213495,
+    "a_net_value": -3.174471784431102,
+    "b_net_value": 2.3766417182704487,
+    "roster_spots": {
+     "a_net": -1,
+     "b_net": 1
+    },
+    "moves": {
+     "drops_a": [],
+     "drops_b": [],
+     "adds_a": [],
+     "adds_b": [
+      "fa2"
+     ]
+    },
+    "team_impact": {
+     "1": [
+      {
+       "key": "FG%",
+       "label": "FG%",
+       "before": 0.530021052631579,
+       "after": 0.42440930232558144,
+       "rank_before": 1,
+       "rank_after": 2
+      },
+      {
+       "key": "FT%",
+       "label": "FT%",
+       "before": 0.62,
+       "after": 0.6799999999999999,
+       "rank_before": 3,
+       "rank_after": 1
+      },
+      {
+       "key": "3PTM",
+       "label": "3PTM",
+       "before": 3.3,
+       "after": 3.1999999999999997,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "PTS",
+       "label": "PTS",
+       "before": 38.0,
+       "after": 43.0,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "REB",
+       "label": "REB",
+       "before": 10.0,
+       "after": 15.0,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "AST",
+       "label": "AST",
+       "before": 6.0,
+       "after": 9.0,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "ST",
+       "label": "STL",
+       "before": 2.0,
+       "after": 3.0,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "BLK",
+       "label": "BLK",
+       "before": 1.0,
+       "after": 1.5,
+       "rank_before": 1,
+       "rank_after": 1
+      },
+      {
+       "key": "TO",
+       "label": "TO",
+       "before": 4.0,
+       "after": 6.0,
+       "rank_before": 2,
+       "rank_after": 3
+      }
+     ],
+     "3": [
+      {
+       "key": "FG%",
+       "label": "FG%",
+       "before": 0.43145142857142854,
+       "after": 0.5596235294117647,
+       "rank_before": 2,
+       "rank_after": 1
+      },
+      {
+       "key": "FT%",
+       "label": "FT%",
+       "before": 0.7,
+       "after": 0.6599999999999999,
+       "rank_before": 1,
+       "rank_after": 2
+      },
+      {
+       "key": "3PTM",
+       "label": "3PTM",
+       "before": 1.3,
+       "after": 2.3,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "PTS",
+       "label": "PTS",
+       "before": 35.0,
+       "after": 34.0,
+       "rank_before": 2,
+       "rank_after": 2
+      },
+      {
+       "key": "REB",
+       "label": "REB",
+       "before": 10.0,
+       "after": 10.0,
+       "rank_before": 2,
+       "rank_after": 2
+      },
+      {
+       "key": "AST",
+       "label": "AST",
+       "before": 6.0,
+       "after": 6.0,
+       "rank_before": 2,
+       "rank_after": 2
+      },
+      {
+       "key": "ST",
+       "label": "STL",
+       "before": 2.0,
+       "after": 2.0,
+       "rank_before": 2,
+       "rank_after": 2
+      },
+      {
+       "key": "BLK",
+       "label": "BLK",
+       "before": 1.0,
+       "after": 1.0,
+       "rank_before": 2,
+       "rank_after": 2
+      },
+      {
+       "key": "TO",
+       "label": "TO",
+       "before": 4.0,
+       "after": 4.0,
+       "rank_before": 3,
+       "rank_after": 2
+      }
+     ]
+    },
+    "teams": {
+     "a": "1",
+     "b": "3"
+    },
+    "league_size": 3,
+    "balance": {
+     "a": {
+      "team": "1",
+      "need_drop": 0,
+      "room": 0,
+      "drops": [],
+      "adds": [],
+      "drop_options": [
+       {
+        "key": "c1",
+        "value": -0.9098941442286413
+       },
+       {
+        "key": "c2",
+        "value": -0.1360859309848536
+       }
+      ],
+      "add_options": [
+       {
+        "key": "fa2",
+        "value": -0.7978300661606528
+       },
+       {
+        "key": "fa1",
+        "value": -1.3766183920887514
+       }
+      ],
+      "il": [
+       "a2"
+      ]
+     },
+     "b": {
+      "team": "3",
+      "need_drop": 0,
+      "room": 1,
+      "drops": [],
+      "adds": [
+       "fa2"
+      ],
+      "drop_options": [
+       {
+        "key": "a1",
+        "value": 2.1284917092176068
+       }
+      ],
+      "add_options": [
+       {
+        "key": "fa2",
+        "value": -0.7978300661606528
+       },
+       {
+        "key": "fa1",
+        "value": -1.3766183920887514
+       }
+      ],
+      "il": []
+     },
+     "capacity": 3,
+     "has_free_agents": true
+    },
+    "info": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "c1": {
+      "key": "c1",
+      "name": "Pc1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "c2": {
+      "key": "c2",
+      "name": "Pc2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "fa1": {
+      "key": "fa1",
+      "name": "Pfa1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": null
+     },
+     "fa2": {
+      "key": "fa2",
+      "name": "Pfa2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": null
+     }
+    }
+   }
+  },
+  {
+   "path": "/api/trade",
+   "body": {
+    "team_a": "3",
+    "give_a": [
+     "c1",
+     "c2"
+    ],
+    "team_b": "2",
+    "give_b": [
+     "b1"
+    ],
+    "adds_a": []
+   },
+   "out": {
+    "scoring": "categories",
+    "value_metric": "z-score",
+    "categories": [
+     {
+      "key": "FG%",
+      "label": "FG%",
+      "higher": true,
+      "a_gives": 0.43145142857142854,
+      "b_gives": 0.39359999999999995,
+      "a_net": -0.03785142857142859,
+      "b_net": 0.03785142857142859,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "FT%",
+      "label": "FT%",
+      "higher": true,
+      "a_gives": 0.7,
+      "b_gives": 0.64,
+      "a_net": -0.05999999999999994,
+      "b_net": 0.05999999999999994,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "3PTM",
+      "label": "3PTM",
+      "higher": true,
+      "a_gives": 1.3,
+      "b_gives": 1.9,
+      "a_net": 0.5999999999999999,
+      "b_net": -0.5999999999999999,
+      "better_for_a": "W",
+      "better_for_b": "L"
+     },
+     {
+      "key": "PTS",
+      "label": "PTS",
+      "higher": true,
+      "a_gives": 35.0,
+      "b_gives": 20.0,
+      "a_net": -15.0,
+      "b_net": 15.0,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "REB",
+      "label": "REB",
+      "higher": true,
+      "a_gives": 10.0,
+      "b_gives": 5.0,
+      "a_net": -5.0,
+      "b_net": 5.0,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "AST",
+      "label": "AST",
+      "higher": true,
+      "a_gives": 6.0,
+      "b_gives": 3.0,
+      "a_net": -3.0,
+      "b_net": 3.0,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "ST",
+      "label": "STL",
+      "higher": true,
+      "a_gives": 2.0,
+      "b_gives": 1.0,
+      "a_net": -1.0,
+      "b_net": 1.0,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "BLK",
+      "label": "BLK",
+      "higher": true,
+      "a_gives": 1.0,
+      "b_gives": 0.5,
+      "a_net": -0.5,
+      "b_net": 0.5,
+      "better_for_a": "L",
+      "better_for_b": "W"
+     },
+     {
+      "key": "TO",
+      "label": "TO",
+      "higher": false,
+      "a_gives": 4.0,
+      "b_gives": 2.0,
+      "a_net": -2.0,
+      "b_net": 2.0,
+      "better_for_a": "W",
+      "better_for_b": "L"
+     }
+    ],
+    "players": {
+     "c1": {
+      "avg": {
+       "GP": 9,
+       "PTS": 24,
+       "FGM": 8.448,
+       "FGA": 20.0,
+       "FTM": 1.7,
+       "FTA": 2.5,
+       "3PTM": 0.4,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": -0.6182440860576498,
+       "FT%": 0.5883484054145514,
+       "3PTM": -1.5434872662825798,
+       "PTS": 0.6634888026970369,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": -0.9098941442286413
+      }
+     },
+     "c2": {
+      "avg": {
+       "GP": 10,
+       "PTS": 11,
+       "FGM": 4.136,
+       "FGA": 9.166666666666668,
+       "FTM": 1.8,
+       "FTA": 2.5,
+       "3PTM": 0.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": -0.0852216158726084,
+       "FT%": 1.5689290811054724,
+       "3PTM": -0.6859943405700355,
+       "PTS": -0.9337990556476821,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": -0.1360859309848536
+      }
+     },
+     "b1": {
+      "avg": {
+       "GP": 10,
+       "PTS": 20,
+       "FGM": 6.56,
+       "FGA": 16.666666666666668,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5,
+       "AST": 3,
+       "ST": 1,
+       "BLK": 0.5,
+       "TO": 2
+      },
+      "z": {
+       "FG%": -0.8754584176004329,
+       "FT%": -0.39223227027636753,
+       "3PTM": 1.028991510855053,
+       "PTS": 0.17201561551404648,
+       "REB": 0.0,
+       "AST": 0.0,
+       "ST": 0.0,
+       "BLK": 0.0,
+       "TO": -0.0,
+       "TOTAL": -0.066683561507701
+      }
+     }
+    },
+    "a_gives_value": -1.045980075213495,
+    "b_gives_value": -0.066683561507701,
+    "a_net_value": 0.9792965137057938,
+    "b_net_value": -0.9792965137057938,
+    "roster_spots": {
+     "a_net": 1,
+     "b_net": -1
+    },
+    "moves": {
+     "drops_a": [],
+     "drops_b": [],
+     "adds_a": [],
+     "adds_b": []
+    },
+    "team_impact": {
+     "3": [
+      {
+       "key": "FG%",
+       "label": "FG%",
+       "before": 0.43145142857142854,
+       "after": 0.39359999999999995,
+       "rank_before": 2,
+       "rank_after": 3
+      },
+      {
+       "key": "FT%",
+       "label": "FT%",
+       "before": 0.7,
+       "after": 0.64,
+       "rank_before": 1,
+       "rank_after": 2
+      },
+      {
+       "key": "3PTM",
+       "label": "3PTM",
+       "before": 1.3,
+       "after": 1.9,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "PTS",
+       "label": "PTS",
+       "before": 35.0,
+       "after": 20.0,
+       "rank_before": 2,
+       "rank_after": 3
+      },
+      {
+       "key": "REB",
+       "label": "REB",
+       "before": 10.0,
+       "after": 5.0,
+       "rank_before": 2,
+       "rank_after": 3
+      },
+      {
+       "key": "AST",
+       "label": "AST",
+       "before": 6.0,
+       "after": 3.0,
+       "rank_before": 2,
+       "rank_after": 3
+      },
+      {
+       "key": "ST",
+       "label": "STL",
+       "before": 2.0,
+       "after": 1.0,
+       "rank_before": 2,
+       "rank_after": 3
+      },
+      {
+       "key": "BLK",
+       "label": "BLK",
+       "before": 1.0,
+       "after": 0.5,
+       "rank_before": 2,
+       "rank_after": 3
+      },
+      {
+       "key": "TO",
+       "label": "TO",
+       "before": 4.0,
+       "after": 2.0,
+       "rank_before": 3,
+       "rank_after": 1
+      }
+     ],
+     "2": [
+      {
+       "key": "FG%",
+       "label": "FG%",
+       "before": 0.39359999999999995,
+       "after": 0.43145142857142854,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "FT%",
+       "label": "FT%",
+       "before": 0.64,
+       "after": 0.7,
+       "rank_before": 2,
+       "rank_after": 1
+      },
+      {
+       "key": "3PTM",
+       "label": "3PTM",
+       "before": 1.9,
+       "after": 1.3,
+       "rank_before": 2,
+       "rank_after": 3
+      },
+      {
+       "key": "PTS",
+       "label": "PTS",
+       "before": 20.0,
+       "after": 35.0,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "REB",
+       "label": "REB",
+       "before": 5.0,
+       "after": 10.0,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "AST",
+       "label": "AST",
+       "before": 3.0,
+       "after": 6.0,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "ST",
+       "label": "STL",
+       "before": 1.0,
+       "after": 2.0,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "BLK",
+       "label": "BLK",
+       "before": 0.5,
+       "after": 1.0,
+       "rank_before": 3,
+       "rank_after": 2
+      },
+      {
+       "key": "TO",
+       "label": "TO",
+       "before": 2.0,
+       "after": 4.0,
+       "rank_before": 1,
+       "rank_after": 3
+      }
+     ]
+    },
+    "teams": {
+     "a": "3",
+     "b": "2"
+    },
+    "league_size": 3,
+    "balance": {
+     "a": {
+      "team": "3",
+      "need_drop": 0,
+      "room": 1,
+      "drops": [],
+      "adds": [],
+      "drop_options": [
+       {
+        "key": "b1",
+        "value": -0.066683561507701
+       }
+      ],
+      "add_options": [
+       {
+        "key": "fa2",
+        "value": -0.7978300661606528
+       },
+       {
+        "key": "fa1",
+        "value": -1.3766183920887514
+       }
+      ],
+      "il": []
+     },
+     "b": {
+      "team": "2",
+      "need_drop": 0,
+      "room": 0,
+      "drops": [],
+      "adds": [],
+      "drop_options": [
+       {
+        "key": "c1",
+        "value": -0.9098941442286413
+       },
+       {
+        "key": "c2",
+        "value": -0.1360859309848536
+       },
+       {
+        "key": "b2",
+        "value": null
+       }
+      ],
+      "add_options": [
+       {
+        "key": "fa2",
+        "value": -0.7978300661606528
+       },
+       {
+        "key": "fa1",
+        "value": -1.3766183920887514
+       }
+      ],
+      "il": []
+     },
+     "capacity": 3,
+     "has_free_agents": true
+    },
+    "info": {
+     "b1": {
+      "key": "b1",
+      "name": "Pb1",
+      "nba_team": "CCC",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "2"
+     },
+     "b2": {
+      "key": "b2",
+      "name": "Pb2",
+      "nba_team": "DDD",
+      "positions": [
+       "PG"
+      ],
+      "status": "O",
+      "owner": "2"
+     },
+     "c1": {
+      "key": "c1",
+      "name": "Pc1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "c2": {
+      "key": "c2",
+      "name": "Pc2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "fa1": {
+      "key": "fa1",
+      "name": "Pfa1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": null
+     },
+     "fa2": {
+      "key": "fa2",
+      "name": "Pfa2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": null
+     }
+    }
+   }
+  },
+  {
+   "path": "/api/week/1?team=1",
+   "body": null,
+   "out": {
+    "week": 1,
+    "start": "2026-10-20",
+    "end": "2026-10-23",
+    "dates": [
+     "2026-10-20",
+     "2026-10-21",
+     "2026-10-22",
+     "2026-10-23"
+    ],
+    "team": "1",
+    "opponent": "2",
+    "real_opponent": "2",
+    "result": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.5460705882352941,
+       "b": 0.39359999999999995,
+       "result": "W"
+      },
+      {
+       "key": "FT%",
+       "a": 0.6133333333333333,
+       "b": 0.64,
+       "result": "L"
+      },
+      {
+       "key": "3PTM",
+       "a": 4.699999999999999,
+       "b": 1.9,
+       "result": "W"
+      },
+      {
+       "key": "PTS",
+       "a": 68.0,
+       "b": 20.0,
+       "result": "W"
+      },
+      {
+       "key": "REB",
+       "a": 15.0,
+       "b": 5.0,
+       "result": "W"
+      },
+      {
+       "key": "AST",
+       "a": 9.0,
+       "b": 3.0,
+       "result": "W"
+      },
+      {
+       "key": "ST",
+       "a": 3.0,
+       "b": 1.0,
+       "result": "W"
+      },
+      {
+       "key": "BLK",
+       "a": 1.5,
+       "b": 0.5,
+       "result": "W"
+      },
+      {
+       "key": "TO",
+       "a": 6.0,
+       "b": 2.0,
+       "result": "L"
+      }
+     ],
+     "score": {
+      "W": 7,
+      "L": 2,
+      "T": 0
+     },
+     "result": "W"
+    },
+    "official": null,
+    "players": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "a2": {
+      "key": "a2",
+      "name": "Pa2",
+      "nba_team": "BBB",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "b1": {
+      "key": "b1",
+      "name": "Pb1",
+      "nba_team": "CCC",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "2"
+     }
+    },
+    "usage": {
+     "a2": {
+      "team": "1",
+      "active_games": 1,
+      "bench_games": 0
+     },
+     "a1": {
+      "team": "1",
+      "active_games": 2,
+      "bench_games": 1
+     },
+     "b1": {
+      "team": "2",
+      "active_games": 1,
+      "bench_games": 0
+     }
+    },
+    "grid": {
+     "1": {
+      "a2": {
+       "2026-10-20": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 8
+       },
+       "2026-10-21": {
+        "slot": "PG",
+        "active": true,
+        "played": false,
+        "pts": null
+       }
+      },
+      "a1": {
+       "2026-10-21": {
+        "slot": "BN",
+        "active": false,
+        "played": true,
+        "pts": 40
+       },
+       "2026-10-22": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 30
+       },
+       "2026-10-23": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 30
+       }
+      }
+     },
+     "2": {
+      "b1": {
+       "2026-10-20": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 20
+       }
+      }
+     }
+    },
+    "versus": [
+     {
+      "team": "2",
+      "actual": {
+       "score": {
+        "W": 7,
+        "L": 2,
+        "T": 0
+       },
+       "result": "W"
+      }
+     },
+     {
+      "team": "3",
+      "actual": {
+       "score": {
+        "W": 8,
+        "L": 1,
+        "T": 0
+       },
+       "result": "W"
+      }
+     }
+    ],
+    "active_slots": 2
+   }
+  },
+  {
+   "path": "/api/week/2?team=1",
+   "body": null,
+   "out": {
+    "week": 2,
+    "start": "2026-10-27",
+    "end": "2026-10-29",
+    "dates": [
+     "2026-10-27",
+     "2026-10-28",
+     "2026-10-29"
+    ],
+    "team": "1",
+    "opponent": "3",
+    "real_opponent": "3",
+    "result": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.5147844155844155,
+       "b": 0.42239999999999994,
+       "result": "W"
+      },
+      {
+       "key": "FT%",
+       "a": 0.6199999999999999,
+       "b": 0.6799999999999999,
+       "result": "L"
+      },
+      {
+       "key": "3PTM",
+       "a": 6.6,
+       "b": 1.2000000000000002,
+       "result": "W"
+      },
+      {
+       "key": "PTS",
+       "a": 77.0,
+       "b": 73.0,
+       "result": "W"
+      },
+      {
+       "key": "REB",
+       "a": 20.0,
+       "b": 15.0,
+       "result": "W"
+      },
+      {
+       "key": "AST",
+       "a": 18.0,
+       "b": 9.0,
+       "result": "W"
+      },
+      {
+       "key": "ST",
+       "a": 4.0,
+       "b": 3.0,
+       "result": "W"
+      },
+      {
+       "key": "BLK",
+       "a": 2.0,
+       "b": 4.0,
+       "result": "L"
+      },
+      {
+       "key": "TO",
+       "a": 11.0,
+       "b": 6.0,
+       "result": "L"
+      }
+     ],
+     "score": {
+      "W": 6,
+      "L": 3,
+      "T": 0
+     },
+     "result": "W"
+    },
+    "official": null,
+    "players": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "a2": {
+      "key": "a2",
+      "name": "Pa2",
+      "nba_team": "BBB",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "c1": {
+      "key": "c1",
+      "name": "Pc1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "c2": {
+      "key": "c2",
+      "name": "Pc2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     }
+    },
+    "usage": {
+     "a1": {
+      "team": "1",
+      "active_games": 2,
+      "bench_games": 0
+     },
+     "a2": {
+      "team": "1",
+      "active_games": 2,
+      "bench_games": 0
+     },
+     "c1": {
+      "team": "3",
+      "active_games": 3,
+      "bench_games": 0
+     },
+     "c2": {
+      "team": "3",
+      "active_games": 0,
+      "bench_games": 2
+     }
+    },
+    "grid": {
+     "1": {
+      "a1": {
+       "2026-10-27": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 33
+       },
+       "2026-10-28": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 21
+       },
+       "2026-10-29": {
+        "slot": "PG",
+        "active": true,
+        "played": false,
+        "pts": null
+       }
+      },
+      "a2": {
+       "2026-10-27": {
+        "slot": "SG",
+        "active": true,
+        "played": true,
+        "pts": 9
+       },
+       "2026-10-28": {
+        "slot": "SG",
+        "active": true,
+        "played": false,
+        "pts": null
+       },
+       "2026-10-29": {
+        "slot": "SG",
+        "active": true,
+        "played": true,
+        "pts": 14
+       }
+      }
+     },
+     "3": {
+      "c1": {
+       "2026-10-27": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 26
+       },
+       "2026-10-28": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 19
+       },
+       "2026-10-29": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 28
+       }
+      },
+      "c2": {
+       "2026-10-27": {
+        "slot": "BN",
+        "active": false,
+        "played": true,
+        "pts": 15
+       },
+       "2026-10-28": {
+        "slot": "BN",
+        "active": false,
+        "played": false,
+        "pts": null
+       },
+       "2026-10-29": {
+        "slot": "BN",
+        "active": false,
+        "played": true,
+        "pts": 8
+       }
+      }
+     }
+    },
+    "versus": [
+     {
+      "team": "2",
+      "actual": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      }
+     },
+     {
+      "team": "3",
+      "actual": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      }
+     }
+    ],
+    "active_slots": 2
+   }
+  },
+  {
+   "path": "/api/week/2?team=1&opponent=2",
+   "body": null,
+   "out": {
+    "week": 2,
+    "start": "2026-10-27",
+    "end": "2026-10-29",
+    "dates": [
+     "2026-10-27",
+     "2026-10-28",
+     "2026-10-29"
+    ],
+    "team": "1",
+    "opponent": "2",
+    "real_opponent": "3",
+    "result": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.5147844155844155,
+       "b": 0.39359999999999995,
+       "result": "W"
+      },
+      {
+       "key": "FT%",
+       "a": 0.6199999999999999,
+       "b": 0.6400000000000001,
+       "result": "L"
+      },
+      {
+       "key": "3PTM",
+       "a": 6.6,
+       "b": 5.699999999999999,
+       "result": "W"
+      },
+      {
+       "key": "PTS",
+       "a": 77.0,
+       "b": 71.0,
+       "result": "W"
+      },
+      {
+       "key": "REB",
+       "a": 20.0,
+       "b": 21.0,
+       "result": "L"
+      },
+      {
+       "key": "AST",
+       "a": 18.0,
+       "b": 9.0,
+       "result": "W"
+      },
+      {
+       "key": "ST",
+       "a": 4.0,
+       "b": 3.0,
+       "result": "W"
+      },
+      {
+       "key": "BLK",
+       "a": 2.0,
+       "b": 1.5,
+       "result": "W"
+      },
+      {
+       "key": "TO",
+       "a": 11.0,
+       "b": 6.0,
+       "result": "L"
+      }
+     ],
+     "score": {
+      "W": 6,
+      "L": 3,
+      "T": 0
+     },
+     "result": "W"
+    },
+    "official": null,
+    "players": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "a2": {
+      "key": "a2",
+      "name": "Pa2",
+      "nba_team": "BBB",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "b1": {
+      "key": "b1",
+      "name": "Pb1",
+      "nba_team": "CCC",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "2"
+     },
+     "b2": {
+      "key": "b2",
+      "name": "Pb2",
+      "nba_team": "DDD",
+      "positions": [
+       "PG"
+      ],
+      "status": "O",
+      "owner": "2"
+     }
+    },
+    "usage": {
+     "a1": {
+      "team": "1",
+      "active_games": 2,
+      "bench_games": 0
+     },
+     "a2": {
+      "team": "1",
+      "active_games": 2,
+      "bench_games": 0
+     },
+     "b1": {
+      "team": "2",
+      "active_games": 3,
+      "bench_games": 0
+     },
+     "b2": {
+      "team": "2",
+      "active_games": 0,
+      "bench_games": 0
+     }
+    },
+    "grid": {
+     "1": {
+      "a1": {
+       "2026-10-27": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 33
+       },
+       "2026-10-28": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 21
+       },
+       "2026-10-29": {
+        "slot": "PG",
+        "active": true,
+        "played": false,
+        "pts": null
+       }
+      },
+      "a2": {
+       "2026-10-27": {
+        "slot": "SG",
+        "active": true,
+        "played": true,
+        "pts": 9
+       },
+       "2026-10-28": {
+        "slot": "SG",
+        "active": true,
+        "played": false,
+        "pts": null
+       },
+       "2026-10-29": {
+        "slot": "SG",
+        "active": true,
+        "played": true,
+        "pts": 14
+       }
+      }
+     },
+     "2": {
+      "b1": {
+       "2026-10-27": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 18
+       },
+       "2026-10-28": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 31
+       },
+       "2026-10-29": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 22
+       }
+      },
+      "b2": {
+       "2026-10-27": {
+        "slot": "BN",
+        "active": false,
+        "played": false,
+        "pts": null
+       },
+       "2026-10-28": {
+        "slot": "BN",
+        "active": false,
+        "played": false,
+        "pts": null
+       },
+       "2026-10-29": {
+        "slot": "BN",
+        "active": false,
+        "played": false,
+        "pts": null
+       }
+      }
+     }
+    },
+    "versus": [
+     {
+      "team": "2",
+      "actual": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      }
+     },
+     {
+      "team": "3",
+      "actual": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      }
+     }
+    ],
+    "active_slots": 2
+   }
+  },
+  {
+   "path": "/api/week/2?team=3",
+   "body": null,
+   "out": {
+    "week": 2,
+    "start": "2026-10-27",
+    "end": "2026-10-29",
+    "dates": [
+     "2026-10-27",
+     "2026-10-28",
+     "2026-10-29"
+    ],
+    "team": "3",
+    "opponent": "1",
+    "real_opponent": "1",
+    "result": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.42239999999999994,
+       "b": 0.5147844155844155,
+       "result": "L"
+      },
+      {
+       "key": "FT%",
+       "a": 0.6799999999999999,
+       "b": 0.6199999999999999,
+       "result": "W"
+      },
+      {
+       "key": "3PTM",
+       "a": 1.2000000000000002,
+       "b": 6.6,
+       "result": "L"
+      },
+      {
+       "key": "PTS",
+       "a": 73.0,
+       "b": 77.0,
+       "result": "L"
+      },
+      {
+       "key": "REB",
+       "a": 15.0,
+       "b": 20.0,
+       "result": "L"
+      },
+      {
+       "key": "AST",
+       "a": 9.0,
+       "b": 18.0,
+       "result": "L"
+      },
+      {
+       "key": "ST",
+       "a": 3.0,
+       "b": 4.0,
+       "result": "L"
+      },
+      {
+       "key": "BLK",
+       "a": 4.0,
+       "b": 2.0,
+       "result": "W"
+      },
+      {
+       "key": "TO",
+       "a": 6.0,
+       "b": 11.0,
+       "result": "W"
+      }
+     ],
+     "score": {
+      "W": 3,
+      "L": 6,
+      "T": 0
+     },
+     "result": "L"
+    },
+    "official": null,
+    "players": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "a2": {
+      "key": "a2",
+      "name": "Pa2",
+      "nba_team": "BBB",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "c1": {
+      "key": "c1",
+      "name": "Pc1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "c2": {
+      "key": "c2",
+      "name": "Pc2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     }
+    },
+    "usage": {
+     "c1": {
+      "team": "3",
+      "active_games": 3,
+      "bench_games": 0
+     },
+     "c2": {
+      "team": "3",
+      "active_games": 0,
+      "bench_games": 2
+     },
+     "a1": {
+      "team": "1",
+      "active_games": 2,
+      "bench_games": 0
+     },
+     "a2": {
+      "team": "1",
+      "active_games": 2,
+      "bench_games": 0
+     }
+    },
+    "grid": {
+     "3": {
+      "c1": {
+       "2026-10-27": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 26
+       },
+       "2026-10-28": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 19
+       },
+       "2026-10-29": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 28
+       }
+      },
+      "c2": {
+       "2026-10-27": {
+        "slot": "BN",
+        "active": false,
+        "played": true,
+        "pts": 15
+       },
+       "2026-10-28": {
+        "slot": "BN",
+        "active": false,
+        "played": false,
+        "pts": null
+       },
+       "2026-10-29": {
+        "slot": "BN",
+        "active": false,
+        "played": true,
+        "pts": 8
+       }
+      }
+     },
+     "1": {
+      "a1": {
+       "2026-10-27": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 33
+       },
+       "2026-10-28": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 21
+       },
+       "2026-10-29": {
+        "slot": "PG",
+        "active": true,
+        "played": false,
+        "pts": null
+       }
+      },
+      "a2": {
+       "2026-10-27": {
+        "slot": "SG",
+        "active": true,
+        "played": true,
+        "pts": 9
+       },
+       "2026-10-28": {
+        "slot": "SG",
+        "active": true,
+        "played": false,
+        "pts": null
+       },
+       "2026-10-29": {
+        "slot": "SG",
+        "active": true,
+        "played": true,
+        "pts": 14
+       }
+      }
+     }
+    },
+    "versus": [
+     {
+      "team": "1",
+      "actual": {
+       "score": {
+        "W": 3,
+        "L": 6,
+        "T": 0
+       },
+       "result": "L"
+      }
+     },
+     {
+      "team": "2",
+      "actual": {
+       "score": {
+        "W": 4,
+        "L": 2,
+        "T": 3
+       },
+       "result": "W"
+      }
+     }
+    ],
+    "active_slots": 2
+   }
+  },
+  {
+   "path": "/api/week/1?team=2",
+   "body": null,
+   "out": {
+    "week": 1,
+    "start": "2026-10-20",
+    "end": "2026-10-23",
+    "dates": [
+     "2026-10-20",
+     "2026-10-21",
+     "2026-10-22",
+     "2026-10-23"
+    ],
+    "team": "2",
+    "opponent": "1",
+    "real_opponent": "1",
+    "result": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.39359999999999995,
+       "b": 0.5460705882352941,
+       "result": "L"
+      },
+      {
+       "key": "FT%",
+       "a": 0.64,
+       "b": 0.6133333333333333,
+       "result": "W"
+      },
+      {
+       "key": "3PTM",
+       "a": 1.9,
+       "b": 4.699999999999999,
+       "result": "L"
+      },
+      {
+       "key": "PTS",
+       "a": 20.0,
+       "b": 68.0,
+       "result": "L"
+      },
+      {
+       "key": "REB",
+       "a": 5.0,
+       "b": 15.0,
+       "result": "L"
+      },
+      {
+       "key": "AST",
+       "a": 3.0,
+       "b": 9.0,
+       "result": "L"
+      },
+      {
+       "key": "ST",
+       "a": 1.0,
+       "b": 3.0,
+       "result": "L"
+      },
+      {
+       "key": "BLK",
+       "a": 0.5,
+       "b": 1.5,
+       "result": "L"
+      },
+      {
+       "key": "TO",
+       "a": 2.0,
+       "b": 6.0,
+       "result": "W"
+      }
+     ],
+     "score": {
+      "W": 2,
+      "L": 7,
+      "T": 0
+     },
+     "result": "L"
+    },
+    "official": null,
+    "players": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "a2": {
+      "key": "a2",
+      "name": "Pa2",
+      "nba_team": "BBB",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "b1": {
+      "key": "b1",
+      "name": "Pb1",
+      "nba_team": "CCC",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "2"
+     }
+    },
+    "usage": {
+     "b1": {
+      "team": "2",
+      "active_games": 1,
+      "bench_games": 0
+     },
+     "a2": {
+      "team": "1",
+      "active_games": 1,
+      "bench_games": 0
+     },
+     "a1": {
+      "team": "1",
+      "active_games": 2,
+      "bench_games": 1
+     }
+    },
+    "grid": {
+     "2": {
+      "b1": {
+       "2026-10-20": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 20
+       }
+      }
+     },
+     "1": {
+      "a2": {
+       "2026-10-20": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 8
+       },
+       "2026-10-21": {
+        "slot": "PG",
+        "active": true,
+        "played": false,
+        "pts": null
+       }
+      },
+      "a1": {
+       "2026-10-21": {
+        "slot": "BN",
+        "active": false,
+        "played": true,
+        "pts": 40
+       },
+       "2026-10-22": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 30
+       },
+       "2026-10-23": {
+        "slot": "PG",
+        "active": true,
+        "played": true,
+        "pts": 30
+       }
+      }
+     }
+    },
+    "versus": [
+     {
+      "team": "1",
+      "actual": {
+       "score": {
+        "W": 2,
+        "L": 7,
+        "T": 0
+       },
+       "result": "L"
+      }
+     },
+     {
+      "team": "3",
+      "actual": {
+       "score": {
+        "W": 8,
+        "L": 1,
+        "T": 0
+       },
+       "result": "W"
+      }
+     }
+    ],
+    "active_slots": 2
+   }
+  },
+  {
+   "path": "/api/whatif",
+   "body": {
+    "week": 2,
+    "team": "1",
+    "opponent": "3",
+    "edits": [
+     {
+      "team": "1",
+      "type": "swap",
+      "out": "a1",
+      "into": "c1"
+     },
+     {
+      "team": "3",
+      "type": "swap",
+      "out": "c1",
+      "into": "a1"
+     }
+    ]
+   },
+   "out": {
+    "scoring": "categories",
+    "actual": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.5147844155844155,
+       "b": 0.42239999999999994,
+       "result": "W"
+      },
+      {
+       "key": "FT%",
+       "a": 0.6199999999999999,
+       "b": 0.6799999999999999,
+       "result": "L"
+      },
+      {
+       "key": "3PTM",
+       "a": 6.6,
+       "b": 1.2000000000000002,
+       "result": "W"
+      },
+      {
+       "key": "PTS",
+       "a": 77.0,
+       "b": 73.0,
+       "result": "W"
+      },
+      {
+       "key": "REB",
+       "a": 20.0,
+       "b": 15.0,
+       "result": "W"
+      },
+      {
+       "key": "AST",
+       "a": 18.0,
+       "b": 9.0,
+       "result": "W"
+      },
+      {
+       "key": "ST",
+       "a": 4.0,
+       "b": 3.0,
+       "result": "W"
+      },
+      {
+       "key": "BLK",
+       "a": 2.0,
+       "b": 4.0,
+       "result": "L"
+      },
+      {
+       "key": "TO",
+       "a": 11.0,
+       "b": 6.0,
+       "result": "L"
+      }
+     ],
+     "score": {
+      "W": 6,
+      "L": 3,
+      "T": 0
+     },
+     "result": "W"
+    },
+    "hypothetical": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.41549999999999987,
+       "b": 0.5664,
+       "result": "L",
+       "changed": true
+      },
+      {
+       "key": "FT%",
+       "a": 0.664,
+       "b": 0.6,
+       "result": "W",
+       "changed": true
+      },
+      {
+       "key": "3PTM",
+       "a": 5.0,
+       "b": 2.8,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "PTS",
+       "a": 96.0,
+       "b": 54.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "REB",
+       "a": 25.0,
+       "b": 10.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "AST",
+       "a": 21.0,
+       "b": 6.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "ST",
+       "a": 5.0,
+       "b": 2.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "BLK",
+       "a": 5.0,
+       "b": 1.0,
+       "result": "W",
+       "changed": true
+      },
+      {
+       "key": "TO",
+       "a": 10.0,
+       "b": 7.0,
+       "result": "L",
+       "changed": false
+      }
+     ],
+     "score": {
+      "W": 7,
+      "L": 2,
+      "T": 0
+     },
+     "result": "W"
+    },
+    "flipped": false,
+    "players": {
+     "a1": {
+      "actual": {
+       "PTS": 54.0,
+       "FGM": 25.488,
+       "FGA": 45.0,
+       "FTM": 3.0,
+       "FTA": 5.0,
+       "3PTM": 2.8,
+       "REB": 10.0,
+       "AST": 6.0,
+       "ST": 2.0,
+       "BLK": 1.0,
+       "TO": 7.0,
+       "GP": 2.0
+      },
+      "hypothetical": {
+       "PTS": 54.0,
+       "FGM": 25.488,
+       "FGA": 45.0,
+       "FTM": 3.0,
+       "FTA": 5.0,
+       "3PTM": 2.8,
+       "REB": 10.0,
+       "AST": 6.0,
+       "ST": 2.0,
+       "BLK": 1.0,
+       "TO": 7.0,
+       "GP": 2.0
+      }
+     },
+     "c1": {
+      "actual": {
+       "PTS": 73.0,
+       "FGM": 25.695999999999998,
+       "FGA": 60.833333333333336,
+       "FTM": 5.1,
+       "FTA": 7.5,
+       "3PTM": 1.2000000000000002,
+       "REB": 15.0,
+       "AST": 9.0,
+       "ST": 3.0,
+       "BLK": 4.0,
+       "TO": 6.0,
+       "GP": 3.0
+      },
+      "hypothetical": {
+       "PTS": 73.0,
+       "FGM": 25.695999999999998,
+       "FGA": 60.833333333333336,
+       "FTM": 5.1,
+       "FTA": 7.5,
+       "3PTM": 1.2000000000000002,
+       "REB": 15.0,
+       "AST": 9.0,
+       "ST": 3.0,
+       "BLK": 4.0,
+       "TO": 6.0,
+       "GP": 3.0
+      }
+     }
+    },
+    "warnings": [],
+    "info": {
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "c1": {
+      "key": "c1",
+      "name": "Pc1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     }
+    },
+    "versus": [
+     {
+      "team": "2",
+      "actual": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      },
+      "hypothetical": {
+       "score": {
+        "W": 7,
+        "L": 2,
+        "T": 0
+       },
+       "result": "W"
+      }
+     },
+     {
+      "team": "3",
+      "actual": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      },
+      "hypothetical": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "path": "/api/whatif",
+   "body": {
+    "week": 2,
+    "team": "1",
+    "opponent": "3",
+    "edits": [
+     {
+      "team": "3",
+      "type": "start",
+      "player": "c2",
+      "dates": [
+       "2026-10-27"
+      ]
+     },
+     {
+      "team": "1",
+      "type": "bench",
+      "player": "a1",
+      "dates": [
+       "2026-10-28"
+      ]
+     }
+    ]
+   },
+   "out": {
+    "scoring": "categories",
+    "actual": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.5147844155844155,
+       "b": 0.42239999999999994,
+       "result": "W"
+      },
+      {
+       "key": "FT%",
+       "a": 0.6199999999999999,
+       "b": 0.6799999999999999,
+       "result": "L"
+      },
+      {
+       "key": "3PTM",
+       "a": 6.6,
+       "b": 1.2000000000000002,
+       "result": "W"
+      },
+      {
+       "key": "PTS",
+       "a": 77.0,
+       "b": 73.0,
+       "result": "W"
+      },
+      {
+       "key": "REB",
+       "a": 20.0,
+       "b": 15.0,
+       "result": "W"
+      },
+      {
+       "key": "AST",
+       "a": 18.0,
+       "b": 9.0,
+       "result": "W"
+      },
+      {
+       "key": "ST",
+       "a": 4.0,
+       "b": 3.0,
+       "result": "W"
+      },
+      {
+       "key": "BLK",
+       "a": 2.0,
+       "b": 4.0,
+       "result": "L"
+      },
+      {
+       "key": "TO",
+       "a": 11.0,
+       "b": 6.0,
+       "result": "L"
+      }
+     ],
+     "score": {
+      "W": 6,
+      "L": 3,
+      "T": 0
+     },
+     "result": "W"
+    },
+    "hypothetical": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.49542857142857133,
+       "b": 0.42730909090909086,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "FT%",
+       "a": 0.6266666666666667,
+       "b": 0.6900000000000001,
+       "result": "L",
+       "changed": false
+      },
+      {
+       "key": "3PTM",
+       "a": 5.199999999999999,
+       "b": 2.1,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "PTS",
+       "a": 56.0,
+       "b": 88.0,
+       "result": "L",
+       "changed": true
+      },
+      {
+       "key": "REB",
+       "a": 15.0,
+       "b": 20.0,
+       "result": "L",
+       "changed": true
+      },
+      {
+       "key": "AST",
+       "a": 15.0,
+       "b": 12.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "ST",
+       "a": 3.0,
+       "b": 4.0,
+       "result": "L",
+       "changed": true
+      },
+      {
+       "key": "BLK",
+       "a": 1.5,
+       "b": 4.5,
+       "result": "L",
+       "changed": false
+      },
+      {
+       "key": "TO",
+       "a": 6.0,
+       "b": 8.0,
+       "result": "W",
+       "changed": true
+      }
+     ],
+     "score": {
+      "W": 4,
+      "L": 5,
+      "T": 0
+     },
+     "result": "L"
+    },
+    "flipped": true,
+    "players": {
+     "c2": {
+      "actual": {},
+      "hypothetical": {
+       "PTS": 15.0,
+       "FGM": 5.64,
+       "FGA": 12.5,
+       "FTM": 1.8,
+       "FTA": 2.5,
+       "3PTM": 0.9,
+       "REB": 5.0,
+       "AST": 3.0,
+       "ST": 1.0,
+       "BLK": 0.5,
+       "TO": 2.0,
+       "GP": 1.0
+      }
+     },
+     "a1": {
+      "actual": {
+       "PTS": 54.0,
+       "FGM": 25.488,
+       "FGA": 45.0,
+       "FTM": 3.0,
+       "FTA": 5.0,
+       "3PTM": 2.8,
+       "REB": 10.0,
+       "AST": 6.0,
+       "ST": 2.0,
+       "BLK": 1.0,
+       "TO": 7.0,
+       "GP": 2.0
+      },
+      "hypothetical": {
+       "PTS": 33.0,
+       "FGM": 15.576,
+       "FGA": 27.5,
+       "FTM": 1.5,
+       "FTA": 2.5,
+       "3PTM": 1.4,
+       "REB": 5.0,
+       "AST": 3.0,
+       "ST": 1.0,
+       "BLK": 0.5,
+       "TO": 2.0,
+       "GP": 1.0
+      }
+     }
+    },
+    "warnings": [],
+    "info": {
+     "c2": {
+      "key": "c2",
+      "name": "Pc2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "a1": {
+      "key": "a1",
+      "name": "Pa1",
+      "nba_team": "AAA",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     }
+    },
+    "versus": [
+     {
+      "team": "2",
+      "actual": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      },
+      "hypothetical": {
+       "score": {
+        "W": 2,
+        "L": 4,
+        "T": 3
+       },
+       "result": "L"
+      }
+     },
+     {
+      "team": "3",
+      "actual": {
+       "score": {
+        "W": 6,
+        "L": 3,
+        "T": 0
+       },
+       "result": "W"
+      },
+      "hypothetical": {
+       "score": {
+        "W": 3,
+        "L": 3,
+        "T": 3
+       },
+       "result": "T"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "path": "/api/whatif",
+   "body": {
+    "week": 2,
+    "team": "3",
+    "opponent": "2",
+    "edits": [
+     {
+      "team": "3",
+      "type": "swap",
+      "out": "c1",
+      "into": "c2"
+     }
+    ]
+   },
+   "out": {
+    "scoring": "categories",
+    "actual": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.42239999999999994,
+       "b": 0.39359999999999995,
+       "result": "W"
+      },
+      {
+       "key": "FT%",
+       "a": 0.6799999999999999,
+       "b": 0.6400000000000001,
+       "result": "W"
+      },
+      {
+       "key": "3PTM",
+       "a": 1.2000000000000002,
+       "b": 5.699999999999999,
+       "result": "L"
+      },
+      {
+       "key": "PTS",
+       "a": 73.0,
+       "b": 71.0,
+       "result": "W"
+      },
+      {
+       "key": "REB",
+       "a": 15.0,
+       "b": 21.0,
+       "result": "L"
+      },
+      {
+       "key": "AST",
+       "a": 9.0,
+       "b": 9.0,
+       "result": "T"
+      },
+      {
+       "key": "ST",
+       "a": 3.0,
+       "b": 3.0,
+       "result": "T"
+      },
+      {
+       "key": "BLK",
+       "a": 4.0,
+       "b": 1.5,
+       "result": "W"
+      },
+      {
+       "key": "TO",
+       "a": 6.0,
+       "b": 6.0,
+       "result": "T"
+      }
+     ],
+     "score": {
+      "W": 4,
+      "L": 2,
+      "T": 3
+     },
+     "result": "W"
+    },
+    "hypothetical": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.45119999999999993,
+       "b": 0.39359999999999995,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "FT%",
+       "a": 0.72,
+       "b": 0.6400000000000001,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "3PTM",
+       "a": 1.8,
+       "b": 5.699999999999999,
+       "result": "L",
+       "changed": false
+      },
+      {
+       "key": "PTS",
+       "a": 23.0,
+       "b": 71.0,
+       "result": "L",
+       "changed": true
+      },
+      {
+       "key": "REB",
+       "a": 10.0,
+       "b": 21.0,
+       "result": "L",
+       "changed": false
+      },
+      {
+       "key": "AST",
+       "a": 6.0,
+       "b": 9.0,
+       "result": "L",
+       "changed": true
+      },
+      {
+       "key": "ST",
+       "a": 2.0,
+       "b": 3.0,
+       "result": "L",
+       "changed": true
+      },
+      {
+       "key": "BLK",
+       "a": 1.0,
+       "b": 1.5,
+       "result": "L",
+       "changed": true
+      },
+      {
+       "key": "TO",
+       "a": 4.0,
+       "b": 6.0,
+       "result": "W",
+       "changed": true
+      }
+     ],
+     "score": {
+      "W": 3,
+      "L": 6,
+      "T": 0
+     },
+     "result": "L"
+    },
+    "flipped": true,
+    "players": {
+     "c2": {
+      "actual": {},
+      "hypothetical": {
+       "PTS": 23.0,
+       "FGM": 8.648,
+       "FGA": 19.166666666666668,
+       "FTM": 3.6,
+       "FTA": 5.0,
+       "3PTM": 1.8,
+       "REB": 10.0,
+       "AST": 6.0,
+       "ST": 2.0,
+       "BLK": 1.0,
+       "TO": 4.0,
+       "GP": 2.0
+      }
+     },
+     "c1": {
+      "actual": {
+       "PTS": 73.0,
+       "FGM": 25.695999999999998,
+       "FGA": 60.833333333333336,
+       "FTM": 5.1,
+       "FTA": 7.5,
+       "3PTM": 1.2000000000000002,
+       "REB": 15.0,
+       "AST": 9.0,
+       "ST": 3.0,
+       "BLK": 4.0,
+       "TO": 6.0,
+       "GP": 3.0
+      },
+      "hypothetical": {}
+     }
+    },
+    "warnings": [],
+    "info": {
+     "c2": {
+      "key": "c2",
+      "name": "Pc2",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     },
+     "c1": {
+      "key": "c1",
+      "name": "Pc1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     }
+    },
+    "versus": [
+     {
+      "team": "1",
+      "actual": {
+       "score": {
+        "W": 3,
+        "L": 6,
+        "T": 0
+       },
+       "result": "L"
+      },
+      "hypothetical": {
+       "score": {
+        "W": 2,
+        "L": 7,
+        "T": 0
+       },
+       "result": "L"
+      }
+     },
+     {
+      "team": "2",
+      "actual": {
+       "score": {
+        "W": 4,
+        "L": 2,
+        "T": 3
+       },
+       "result": "W"
+      },
+      "hypothetical": {
+       "score": {
+        "W": 3,
+        "L": 6,
+        "T": 0
+       },
+       "result": "L"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "path": "/api/whatif",
+   "body": {
+    "week": 1,
+    "team": "1",
+    "opponent": "2",
+    "edits": [
+     {
+      "team": "1",
+      "type": "swap",
+      "out": "a2",
+      "into": "c1"
+     }
+    ]
+   },
+   "out": {
+    "scoring": "categories",
+    "actual": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.5460705882352941,
+       "b": 0.39359999999999995,
+       "result": "W"
+      },
+      {
+       "key": "FT%",
+       "a": 0.6133333333333333,
+       "b": 0.64,
+       "result": "L"
+      },
+      {
+       "key": "3PTM",
+       "a": 4.699999999999999,
+       "b": 1.9,
+       "result": "W"
+      },
+      {
+       "key": "PTS",
+       "a": 68.0,
+       "b": 20.0,
+       "result": "W"
+      },
+      {
+       "key": "REB",
+       "a": 15.0,
+       "b": 5.0,
+       "result": "W"
+      },
+      {
+       "key": "AST",
+       "a": 9.0,
+       "b": 3.0,
+       "result": "W"
+      },
+      {
+       "key": "ST",
+       "a": 3.0,
+       "b": 1.0,
+       "result": "W"
+      },
+      {
+       "key": "BLK",
+       "a": 1.5,
+       "b": 0.5,
+       "result": "W"
+      },
+      {
+       "key": "TO",
+       "a": 6.0,
+       "b": 2.0,
+       "result": "L"
+      }
+     ],
+     "score": {
+      "W": 7,
+      "L": 2,
+      "T": 0
+     },
+     "result": "W"
+    },
+    "hypothetical": {
+     "categories": [
+      {
+       "key": "FG%",
+       "a": 0.5664,
+       "b": 0.39359999999999995,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "FT%",
+       "a": 0.6,
+       "b": 0.64,
+       "result": "L",
+       "changed": false
+      },
+      {
+       "key": "3PTM",
+       "a": 2.8,
+       "b": 1.9,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "PTS",
+       "a": 60.0,
+       "b": 20.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "REB",
+       "a": 10.0,
+       "b": 5.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "AST",
+       "a": 6.0,
+       "b": 3.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "ST",
+       "a": 2.0,
+       "b": 1.0,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "BLK",
+       "a": 1.0,
+       "b": 0.5,
+       "result": "W",
+       "changed": false
+      },
+      {
+       "key": "TO",
+       "a": 4.0,
+       "b": 2.0,
+       "result": "L",
+       "changed": false
+      }
+     ],
+     "score": {
+      "W": 7,
+      "L": 2,
+      "T": 0
+     },
+     "result": "W"
+    },
+    "flipped": false,
+    "players": {
+     "a2": {
+      "actual": {
+       "PTS": 8.0,
+       "FGM": 2.624,
+       "FGA": 6.666666666666667,
+       "FTM": 1.6,
+       "FTA": 2.5,
+       "3PTM": 1.9,
+       "REB": 5.0,
+       "AST": 3.0,
+       "ST": 1.0,
+       "BLK": 0.5,
+       "TO": 2.0,
+       "GP": 1.0
+      },
+      "hypothetical": {}
+     },
+     "c1": {
+      "actual": {},
+      "hypothetical": {}
+     }
+    },
+    "warnings": [],
+    "info": {
+     "a2": {
+      "key": "a2",
+      "name": "Pa2",
+      "nba_team": "BBB",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "1"
+     },
+     "c1": {
+      "key": "c1",
+      "name": "Pc1",
+      "nba_team": "X",
+      "positions": [
+       "PG"
+      ],
+      "status": "",
+      "owner": "3"
+     }
+    },
+    "versus": [
+     {
+      "team": "2",
+      "actual": {
+       "score": {
+        "W": 7,
+        "L": 2,
+        "T": 0
+       },
+       "result": "W"
+      },
+      "hypothetical": {
+       "score": {
+        "W": 7,
+        "L": 2,
+        "T": 0
+       },
+       "result": "W"
+      }
+     },
+     {
+      "team": "3",
+      "actual": {
+       "score": {
+        "W": 8,
+        "L": 1,
+        "T": 0
+       },
+       "result": "W"
+      },
+      "hypothetical": {
+       "score": {
+        "W": 8,
+        "L": 1,
+        "T": 0
+       },
+       "result": "W"
+      }
+     }
+    ]
+   }
+  },
+  {
+   "path": "/api/allplay?team=1",
+   "body": null,
+   "out": {
+    "team": "1",
+    "league": "T",
+    "scoring": "categories",
+    "teams": [
+     {
+      "key": "2",
+      "name": "B",
+      "manager": "",
+      "logo": null
+     },
+     {
+      "key": "3",
+      "name": "C",
+      "manager": "",
+      "logo": null
+     }
+    ],
+    "weeks": [
+     {
+      "week": 1,
+      "start": "2026-10-20",
+      "end": "2026-10-23",
+      "complete": true,
+      "real_opponent": "2",
+      "rows": [
+       {
+        "team": "2",
+        "actual": {
+         "score": {
+          "W": 7,
+          "L": 2,
+          "T": 0
+         },
+         "result": "W"
+        }
+       },
+       {
+        "team": "3",
+        "actual": {
+         "score": {
+          "W": 8,
+          "L": 1,
+          "T": 0
+         },
+         "result": "W"
+        }
+       }
+      ]
+     },
+     {
+      "week": 2,
+      "start": "2026-10-27",
+      "end": "2026-10-29",
+      "complete": true,
+      "real_opponent": "3",
+      "rows": [
+       {
+        "team": "2",
+        "actual": {
+         "score": {
+          "W": 6,
+          "L": 3,
+          "T": 0
+         },
+         "result": "W"
+        }
+       },
+       {
+        "team": "3",
+        "actual": {
+         "score": {
+          "W": 6,
+          "L": 3,
+          "T": 0
+         },
+         "result": "W"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "path": "/api/allplay?team=2",
+   "body": null,
+   "out": {
+    "team": "2",
+    "league": "T",
+    "scoring": "categories",
+    "teams": [
+     {
+      "key": "1",
+      "name": "A",
+      "manager": "",
+      "logo": null
+     },
+     {
+      "key": "3",
+      "name": "C",
+      "manager": "",
+      "logo": null
+     }
+    ],
+    "weeks": [
+     {
+      "week": 1,
+      "start": "2026-10-20",
+      "end": "2026-10-23",
+      "complete": true,
+      "real_opponent": "1",
+      "rows": [
+       {
+        "team": "1",
+        "actual": {
+         "score": {
+          "W": 2,
+          "L": 7,
+          "T": 0
+         },
+         "result": "L"
+        }
+       },
+       {
+        "team": "3",
+        "actual": {
+         "score": {
+          "W": 8,
+          "L": 1,
+          "T": 0
+         },
+         "result": "W"
+        }
+       }
+      ]
+     },
+     {
+      "week": 2,
+      "start": "2026-10-27",
+      "end": "2026-10-29",
+      "complete": true,
+      "real_opponent": null,
+      "rows": [
+       {
+        "team": "1",
+        "actual": {
+         "score": {
+          "W": 3,
+          "L": 6,
+          "T": 0
+         },
+         "result": "L"
+        }
+       },
+       {
+        "team": "3",
+        "actual": {
+         "score": {
+          "W": 2,
+          "L": 4,
+          "T": 3
+         },
+         "result": "L"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "path": "/api/allplay?team=3",
+   "body": null,
+   "out": {
+    "team": "3",
+    "league": "T",
+    "scoring": "categories",
+    "teams": [
+     {
+      "key": "1",
+      "name": "A",
+      "manager": "",
+      "logo": null
+     },
+     {
+      "key": "2",
+      "name": "B",
+      "manager": "",
+      "logo": null
+     }
+    ],
+    "weeks": [
+     {
+      "week": 2,
+      "start": "2026-10-27",
+      "end": "2026-10-29",
+      "complete": true,
+      "real_opponent": "1",
+      "rows": [
+       {
+        "team": "1",
+        "actual": {
+         "score": {
+          "W": 3,
+          "L": 6,
+          "T": 0
+         },
+         "result": "L"
+        }
+       },
+       {
+        "team": "2",
+        "actual": {
+         "score": {
+          "W": 4,
+          "L": 2,
+          "T": 3
+         },
+         "result": "W"
+        }
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "path": "/api/draft",
+   "body": null,
+   "out": {
+    "available": true,
+    "has_pool": true,
+    "teams": [
+     {
+      "team": "2",
+      "name": "B",
+      "total": 10.20540667617001,
+      "surplus": 3.298751740123311,
+      "picks": 2,
+      "kept": 2,
+      "best": {
+       "round": 1,
+       "pick": 1,
+       "overall": 1,
+       "team": "2",
+       "team_name": "B",
+       "player": {
+        "key": "b1",
+        "name": "Pb1",
+        "nba_team": "CCC",
+        "positions": [
+         "PG"
+        ],
+        "status": "",
+        "owner": "2"
+       },
+       "known": true,
+       "gp": 10,
+       "z": -0.066683561507701,
+       "value": 10.20540667617001,
+       "rank": 2,
+       "expected": 3.45332746802335,
+       "surplus": 6.752079208146661,
+       "kept": true
+      },
+      "worst": {
+       "round": 2,
+       "pick": 2,
+       "overall": 4,
+       "team": "2",
+       "team_name": "B",
+       "player": {
+        "key": "b2",
+        "name": "Pb2",
+        "nba_team": "DDD",
+        "positions": [
+         "PG"
+        ],
+        "status": "O",
+        "owner": "2"
+       },
+       "known": true,
+       "gp": 0,
+       "z": null,
+       "value": 0.0,
+       "rank": null,
+       "expected": 3.45332746802335,
+       "surplus": -3.45332746802335,
+       "kept": true
+      }
+     },
+     {
+      "team": "1",
+      "name": "A",
+      "total": 3.60790319592339,
+      "surplus": -3.2987517401233104,
+      "picks": 2,
+      "kept": 1,
+      "best": {
+       "round": 2,
+       "pick": 1,
+       "overall": 3,
+       "team": "1",
+       "team_name": "A",
+       "player": {
+        "key": "fa2",
+        "name": "Pfa2",
+        "nba_team": "X",
+        "positions": [
+         "PG"
+        ],
+        "status": "",
+        "owner": null
+       },
+       "known": true,
+       "gp": 10,
+       "z": -0.7978300661606528,
+       "value": 2.893941629640493,
+       "rank": 4,
+       "expected": 3.45332746802335,
+       "surplus": -0.5593858383828572,
+       "kept": false
+      },
+      "worst": {
+       "round": 1,
+       "pick": 2,
+       "overall": 2,
+       "team": "1",
+       "team_name": "A",
+       "player": {
+        "key": "a2",
+        "name": "Pa2",
+        "nba_team": "BBB",
+        "positions": [
+         "PG"
+        ],
+        "status": "",
+        "owner": "1"
+       },
+       "known": true,
+       "gp": 10,
+       "z": -1.0158280724964124,
+       "value": 0.7139615662828969,
+       "rank": 6,
+       "expected": 3.45332746802335,
+       "surplus": -2.7393659017404532,
+       "kept": true
+      }
+     }
+    ],
+    "picks": [
+     {
+      "round": 1,
+      "pick": 1,
+      "overall": 1,
+      "team": "2",
+      "team_name": "B",
+      "player": {
+       "key": "b1",
+       "name": "Pb1",
+       "nba_team": "CCC",
+       "positions": [
+        "PG"
+       ],
+       "status": "",
+       "owner": "2"
+      },
+      "known": true,
+      "gp": 10,
+      "z": -0.066683561507701,
+      "value": 10.20540667617001,
+      "rank": 2,
+      "expected": 3.45332746802335,
+      "surplus": 6.752079208146661,
+      "kept": true
+     },
+     {
+      "round": 1,
+      "pick": 2,
+      "overall": 2,
+      "team": "1",
+      "team_name": "A",
+      "player": {
+       "key": "a2",
+       "name": "Pa2",
+       "nba_team": "BBB",
+       "positions": [
+        "PG"
+       ],
+       "status": "",
+       "owner": "1"
+      },
+      "known": true,
+      "gp": 10,
+      "z": -1.0158280724964124,
+      "value": 0.7139615662828969,
+      "rank": 6,
+      "expected": 3.45332746802335,
+      "surplus": -2.7393659017404532,
+      "kept": true
+     },
+     {
+      "round": 2,
+      "pick": 1,
+      "overall": 3,
+      "team": "1",
+      "team_name": "A",
+      "player": {
+       "key": "fa2",
+       "name": "Pfa2",
+       "nba_team": "X",
+       "positions": [
+        "PG"
+       ],
+       "status": "",
+       "owner": null
+      },
+      "known": true,
+      "gp": 10,
+      "z": -0.7978300661606528,
+      "value": 2.893941629640493,
+      "rank": 4,
+      "expected": 3.45332746802335,
+      "surplus": -0.5593858383828572,
+      "kept": false
+     },
+     {
+      "round": 2,
+      "pick": 2,
+      "overall": 4,
+      "team": "2",
+      "team_name": "B",
+      "player": {
+       "key": "b2",
+       "name": "Pb2",
+       "nba_team": "DDD",
+       "positions": [
+        "PG"
+       ],
+       "status": "O",
+       "owner": "2"
+      },
+      "known": true,
+      "gp": 0,
+      "z": null,
+      "value": 0.0,
+      "rank": null,
+      "expected": 3.45332746802335,
+      "surplus": -3.45332746802335,
+      "kept": true
+     }
+    ],
+    "unknown": 0
+   }
+  },
+  {
+   "path": "/api/moves",
+   "body": null,
+   "out": {
+    "available": true,
+    "has_pool": true,
+    "count": 5,
+    "first": "2026-10-21",
+    "last": "2026-10-28",
+    "pickups": [
+     {
+      "date": "2026-10-21",
+      "ts": "Oct 21, 9:00 am",
+      "team": "1",
+      "team_name": "A",
+      "player": {
+       "key": "a1",
+       "name": "Pa1",
+       "nba_team": "AAA",
+       "positions": [
+        "PG"
+       ],
+       "status": "",
+       "owner": "1"
+      },
+      "source": "Free Agent",
+      "days": 6,
+      "games": 5,
+      "active_games": 4,
+      "value": 8.73983247528058,
+      "value_all": 13.82726721043732,
+      "first": "2026-10-21",
+      "last": "2026-10-29",
+      "ongoing": true,
+      "per_game": 2.184958118820145
+     },
+     {
+      "date": "2026-10-21",
+      "ts": "Oct 21, 9:00 am",
+      "team": "1",
+      "team_name": "A",
+      "player": {
+       "key": "a1",
+       "name": "Pa1",
+       "nba_team": "AAA",
+       "positions": [
+        "PG"
+       ],
+       "status": "",
+       "owner": "1"
+      },
+      "source": "Free Agent",
+      "days": 0,
+      "games": 0,
+      "active_games": 0,
+      "value": 0.0,
+      "value_all": 0.0,
+      "first": null,
+      "last": null,
+      "ongoing": false,
+      "per_game": null
+     },
+     {
+      "date": "2026-10-27",
+      "ts": "Oct 27, 1:00 am",
+      "team": "3",
+      "team_name": "C",
+      "player": {
+       "key": "c2",
+       "name": "Pc2",
+       "nba_team": "X",
+       "positions": [
+        "PG"
+       ],
+       "status": "",
+       "owner": "3"
+      },
+      "source": "Free Agent",
+      "days": 3,
+      "games": 2,
+      "active_games": 0,
+      "value": 0.0,
+      "value_all": 2.0173974734506617,
+      "first": "2026-10-27",
+      "last": "2026-10-29",
+      "ongoing": true,
+      "per_game": null
+     }
+    ],
+    "teams": [
+     {
+      "team": "1",
+      "name": "A",
+      "adds": 2,
+      "value": 8.73983247528058,
+      "best": {
+       "date": "2026-10-21",
+       "ts": "Oct 21, 9:00 am",
+       "team": "1",
+       "team_name": "A",
+       "player": {
+        "key": "a1",
+        "name": "Pa1",
+        "nba_team": "AAA",
+        "positions": [
+         "PG"
+        ],
+        "status": "",
+        "owner": "1"
+       },
+       "source": "Free Agent",
+       "days": 6,
+       "games": 5,
+       "active_games": 4,
+       "value": 8.73983247528058,
+       "value_all": 13.82726721043732,
+       "first": "2026-10-21",
+       "last": "2026-10-29",
+       "ongoing": true,
+       "per_game": 2.184958118820145
+      }
+     },
+     {
+      "team": "3",
+      "name": "C",
+      "adds": 1,
+      "value": 0.0,
+      "best": {
+       "date": "2026-10-27",
+       "ts": "Oct 27, 1:00 am",
+       "team": "3",
+       "team_name": "C",
+       "player": {
+        "key": "c2",
+        "name": "Pc2",
+        "nba_team": "X",
+        "positions": [
+         "PG"
+        ],
+        "status": "",
+        "owner": "3"
+       },
+       "source": "Free Agent",
+       "days": 3,
+       "games": 2,
+       "active_games": 0,
+       "value": 0.0,
+       "value_all": 2.0173974734506617,
+       "first": "2026-10-27",
+       "last": "2026-10-29",
+       "ongoing": true,
+       "per_game": null
+      }
+     },
+     {
+      "team": "2",
+      "name": "B",
+      "adds": 0,
+      "value": 0.0,
+      "best": null
+     }
+    ],
+    "trades": [
+     {
+      "date": "2026-10-28",
+      "ts": "Oct 28, 2:30 pm",
+      "sides": [
+       {
+        "team": "1",
+        "name": "A",
+        "players": [
+         {
+          "player": {
+           "key": "b1",
+           "name": "Pb1",
+           "nba_team": "CCC",
+           "positions": [
+            "PG"
+           ],
+           "status": "",
+           "owner": "2"
+          },
+          "days": 0,
+          "games": 0,
+          "active_games": 0,
+          "value": 0.0,
+          "value_all": 0.0,
+          "first": null,
+          "last": null,
+          "ongoing": false
+         }
+        ],
+        "value": 0.0
+       },
+       {
+        "team": "2",
+        "name": "B",
+        "players": [
+         {
+          "player": {
+           "key": "a2",
+           "name": "Pa2",
+           "nba_team": "BBB",
+           "positions": [
+            "PG"
+           ],
+           "status": "",
+           "owner": "1"
+          },
+          "days": 0,
+          "games": 0,
+          "active_games": 0,
+          "value": 0.0,
+          "value_all": 0.0,
+          "first": null,
+          "last": null,
+          "ongoing": false
+         }
+        ],
+        "value": 0.0
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "path": "/api/power",
+   "body": null,
+   "out": {
+    "available": true,
+    "weeks": [
+     1,
+     2
+    ],
+    "teams": [
+     {
+      "team": "1",
+      "name": "A",
+      "power": 82.5,
+      "allplay": [
+       27,
+       9,
+       0
+      ],
+      "allplay_pct": 0.75,
+      "form_pct": 0.75,
+      "record": [
+       13,
+       5,
+       0
+      ],
+      "record_pct": 0.7222222222222222,
+      "luck": -0.02777777777777779,
+      "beat": 4,
+      "beat_of": 4,
+      "roster": 2.1284917092176068,
+      "roster_norm": 1.0,
+      "rank": 1,
+      "standing": 1,
+      "prev_rank": 1,
+      "weekly": [
+       {
+        "week": 1,
+        "allplay_pct": 0.8333333333333334,
+        "beat": 2
+       },
+       {
+        "week": 2,
+        "allplay_pct": 0.6666666666666666,
+        "beat": 2
+       }
+      ]
+     },
+     {
+      "team": "2",
+      "name": "B",
+      "power": 32.08333333333333,
+      "allplay": [
+       15,
+       18,
+       3
+      ],
+      "allplay_pct": 0.4583333333333333,
+      "form_pct": 0.4583333333333333,
+      "record": [
+       2,
+       7,
+       0
+      ],
+      "record_pct": 0.2222222222222222,
+      "luck": -0.2361111111111111,
+      "beat": 1,
+      "beat_of": 4,
+      "roster": -0.066683561507701,
+      "roster_norm": 0.0,
+      "rank": 2,
+      "standing": 3,
+      "prev_rank": 2,
+      "weekly": [
+       {
+        "week": 1,
+        "allplay_pct": 0.5555555555555556,
+        "beat": 1
+       },
+       {
+        "week": 2,
+        "allplay_pct": 0.3611111111111111,
+        "beat": 0
+       }
+      ]
+     },
+     {
+      "team": "3",
+      "name": "C",
+      "power": 21.327986537981563,
+      "allplay": [
+       9,
+       24,
+       3
+      ],
+      "allplay_pct": 0.2916666666666667,
+      "form_pct": 0.2916666666666667,
+      "record": [
+       3,
+       6,
+       0
+      ],
+      "record_pct": 0.3333333333333333,
+      "luck": 0.04166666666666663,
+      "beat": 1,
+      "beat_of": 4,
+      "roster": 0.0,
+      "roster_norm": 0.030377329043829872,
+      "rank": 3,
+      "standing": 2,
+      "prev_rank": 3,
+      "weekly": [
+       {
+        "week": 1,
+        "allplay_pct": 0.1111111111111111,
+        "beat": 0
+       },
+       {
+        "week": 2,
+        "allplay_pct": 0.4722222222222222,
+        "beat": 1
+       }
+      ]
+     }
+    ],
+    "weights": {
+     "allplay": 0.45,
+     "form": 0.25,
+     "roster": 0.3
+    }
+   }
+  },
+  {
+   "path": "/api/standings",
+   "body": null,
+   "out": {
+    "available": true,
+    "teams": [
+     {
+      "team": "1",
+      "name": "A",
+      "h2h": {
+       "record": [
+        13,
+        5,
+        0
+       ],
+       "pct": 0.7222222222222222,
+       "rank": 1
+      },
+      "one_win": {
+       "record": [
+        2,
+        0,
+        0
+       ],
+       "pct": 1.0,
+       "rank": 1
+      },
+      "roto": {
+       "points": 22.0,
+       "rank": 1,
+       "cats": {
+        "FG%": {
+         "value": 0.5294565517241379,
+         "points": 3.0,
+         "rank": 1
+        },
+        "FT%": {
+         "value": 0.6171428571428571,
+         "points": 1.0,
+         "rank": 3
+        },
+        "3PTM": {
+         "value": 11.299999999999999,
+         "points": 3.0,
+         "rank": 1
+        },
+        "PTS": {
+         "value": 145.0,
+         "points": 3.0,
+         "rank": 1
+        },
+        "REB": {
+         "value": 35.0,
+         "points": 3.0,
+         "rank": 1
+        },
+        "AST": {
+         "value": 27.0,
+         "points": 3.0,
+         "rank": 1
+        },
+        "ST": {
+         "value": 7.0,
+         "points": 3.0,
+         "rank": 1
+        },
+        "BLK": {
+         "value": 3.5,
+         "points": 2.0,
+         "rank": 2
+        },
+        "TO": {
+         "value": 17.0,
+         "points": 1.0,
+         "rank": 3
+        }
+       }
+      },
+      "points": {
+       "total": 242.0,
+       "rank": 1,
+       "record": [
+        2,
+        0,
+        0
+       ],
+       "record_rank": 1
+      }
+     },
+     {
+      "team": "3",
+      "name": "C",
+      "h2h": {
+       "record": [
+        3,
+        6,
+        0
+       ],
+       "pct": 0.3333333333333333,
+       "rank": 2
+      },
+      "one_win": {
+       "record": [
+        0,
+        1,
+        0
+       ],
+       "pct": 0.0,
+       "rank": 2
+      },
+      "roto": {
+       "points": 16.0,
+       "rank": 2,
+       "cats": {
+        "FG%": {
+         "value": 0.42239999999999994,
+         "points": 2.0,
+         "rank": 2
+        },
+        "FT%": {
+         "value": 0.6799999999999999,
+         "points": 3.0,
+         "rank": 1
+        },
+        "3PTM": {
+         "value": 1.2000000000000002,
+         "points": 1.0,
+         "rank": 3
+        },
+        "PTS": {
+         "value": 73.0,
+         "points": 1.0,
+         "rank": 3
+        },
+        "REB": {
+         "value": 15.0,
+         "points": 1.0,
+         "rank": 3
+        },
+        "AST": {
+         "value": 9.0,
+         "points": 1.0,
+         "rank": 3
+        },
+        "ST": {
+         "value": 3.0,
+         "points": 1.0,
+         "rank": 3
+        },
+        "BLK": {
+         "value": 4.0,
+         "points": 3.0,
+         "rank": 1
+        },
+        "TO": {
+         "value": 6.0,
+         "points": 3.0,
+         "rank": 1
+        }
+       }
+      },
+      "points": {
+       "total": 119.5,
+       "rank": 3,
+       "record": [
+        0,
+        1,
+        0
+       ],
+       "record_rank": 2
+      }
+     },
+     {
+      "team": "2",
+      "name": "B",
+      "h2h": {
+       "record": [
+        2,
+        7,
+        0
+       ],
+       "pct": 0.2222222222222222,
+       "rank": 3
+      },
+      "one_win": {
+       "record": [
+        0,
+        1,
+        0
+       ],
+       "pct": 0.0,
+       "rank": 2
+      },
+      "roto": {
+       "points": 16.0,
+       "rank": 2,
+       "cats": {
+        "FG%": {
+         "value": 0.39359999999999995,
+         "points": 1.0,
+         "rank": 3
+        },
+        "FT%": {
+         "value": 0.64,
+         "points": 2.0,
+         "rank": 2
+        },
+        "3PTM": {
+         "value": 7.6,
+         "points": 2.0,
+         "rank": 2
+        },
+        "PTS": {
+         "value": 91.0,
+         "points": 2.0,
+         "rank": 2
+        },
+        "REB": {
+         "value": 26.0,
+         "points": 2.0,
+         "rank": 2
+        },
+        "AST": {
+         "value": 12.0,
+         "points": 2.0,
+         "rank": 2
+        },
+        "ST": {
+         "value": 4.0,
+         "points": 2.0,
+         "rank": 2
+        },
+        "BLK": {
+         "value": 2.0,
+         "points": 1.0,
+         "rank": 3
+        },
+        "TO": {
+         "value": 8.0,
+         "points": 2.0,
+         "rank": 2
+        }
+       }
+      },
+      "points": {
+       "total": 150.2,
+       "rank": 2,
+       "record": [
+        0,
+        1,
+        0
+       ],
+       "record_rank": 2
+      }
+     }
+    ],
+    "n": 3,
+    "weeks_done": [
+     1,
+     2
+    ],
+    "weeks_total": [
+     1,
+     2
+    ],
+    "last_day": "2026-10-29",
+    "point_values": {
+     "PTS": 1.0,
+     "REB": 1.2,
+     "AST": 1.5,
+     "ST": 3.0,
+     "BLK": 3.0,
+     "TO": -1.0
+    }
+   }
+  }
+ ]
+}
