@@ -5,8 +5,8 @@ let tab = null;
 
 function show(state) {
   if (!state) return;
-  const stale = state.running && Date.now() - (state.at || 0) > 60_000;
-  $("#status").textContent = stale ? "Senkron yanıt vermiyor gibi; tekrar başlatabilirsin." : state.msg || "";
+  const stale = state.running && Date.now() - (state.at || 0) > 180_000;
+  $("#status").textContent = stale ? "Senkron 3 dakikadır ilerlemiyor; tekrar başlatabilirsin (okunan günler korunur)." : state.msg || "";
   $("#status").className = state.cls || "";
   $("#sync").disabled = !!state.running && !stale || !onYahoo();
   $("#sync").textContent = state.running && !stale ? "Senkronize ediliyor…" : "Senkronize et";

@@ -5,26 +5,28 @@
   // No "already injected" guard: re-injecting after an extension update must
   // replace the old functions in this tab.
 
-  const DELAY_MS = 450; // be gentle with Yahoo
-  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  let last = 0;
-
+  // Pacing between pages is done by background.js (timers in a hidden tab get
+  // throttled by Chrome, the worker's don't). Here we only guard each request
+  // with a timeout and a couple of retries so one hung request can't stall the sync.
   async function get(path) {
-    const wait = last + DELAY_MS - Date.now();
-    if (wait > 0) await sleep(wait);
-    last = Date.now();
-    const r = await fetch(path, { credentials: "include" });
-    if (!r.ok) throw new Error(`${path} -> HTTP ${r.status}`);
-    const html = await r.text();
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    if (doc.querySelector('form[action*="login.yahoo.com"]') || r.url.includes("login.yahoo.com")) {
-      throw new Error("Yahoo oturumu kapalı. Yahoo'ya giriş yapıp tekrar dene.");
+    let lastErr;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const r = await fetch(path, { credentials: "include", signal: AbortSignal.timeout(20000) });
+        if (r.url.includes("login.yahoo.com")) throw new Error("LOGIN");
+        if (!r.ok) throw new Error(`${path} -> HTTP ${r.status}`);
+        const doc = new DOMParser().parseFromString(await r.text(), "text/html");
+        if (doc.querySelector('form[action*="login.yahoo.com"]')) throw new Error("LOGIN");
+        return doc;
+      } catch (e) {
+        if (e.message === "LOGIN") throw new Error("Yahoo oturumu kapalı. Yahoo'ya giriş yapıp tekrar dene.");
+        lastErr = e;
+      }
     }
-    return doc;
+    throw new Error(`${path} okunamadı: ${lastErr?.message || lastErr}`);
   }
 
   const clean = (s) => (s || "").replace(/\s+/g, " ").trim();
-  const progress = (msg) => { try { chrome.runtime.sendMessage({ type: "progress", msg }); } catch {} };
 
   // ------------------------------------------------------------ table parsing
   const STAT_COLS = {
@@ -188,11 +190,10 @@
     return null;
   }
 
-  const AVG_VIEWS = { season: null, last30: "AL30", last14: "AL14", last7: "AL7" };
-
   // ------------------------------------------------------------ public tasks
-  async function base(lid) {
-    progress("Lig ayarları okunuyor…");
+  // Each task reads at most a few pages; background.js calls them one by one.
+
+  async function leagueInfo(lid) {
     const s = await settings(lid);
     const t = await teams(lid);
     const home = await get(`/nba/${lid}`);
@@ -200,51 +201,35 @@
       .map((a) => +(a.getAttribute("href").match(/week=(\d+)/) || [])[1] || 0));
     const seasonView = [...home.querySelectorAll("a, option")]
       .map((a) => (a.getAttribute("href") || a.value || "").match(/stat2=AS_(\d{4})/)).find(Boolean);
-    const seasonCode = seasonView ? `AS_${seasonView[1]}` : `AS_${new Date().getMonth() >= 8 ? new Date().getFullYear() : new Date().getFullYear() - 1}`;
-    AVG_VIEWS.season = seasonCode;
-
-    const rosters = {}, players = {}, averages = { season: {}, last30: {}, last14: {}, last7: {} };
-    for (const [i, team] of t.teams.entries()) {
-      for (const [period, view] of Object.entries(AVG_VIEWS)) {
-        progress(`Kadro ve ortalamalar: ${team.name} (${i + 1}/${t.teams.length}) · ${period}`);
-        const doc = await get(`/nba/${lid}/${team.id}?stat1=AS&stat2=${view}`);
-        const rows = parseRosterTable(doc);
-        if (period === "season") rosters[team.id] = rows.map((r) => r.player.id);
-        for (const r of rows) {
-          players[r.player.id] = { ...r.player, owner: team.id };
-          averages[period][r.player.id] = r.line || { GP: 0 };
-        }
-      }
-    }
-    return { league_id: lid, ...s, ...t, current_week: cur, rosters, players, averages, synced_at: new Date().toISOString() };
+    const now = new Date();
+    const season_view = seasonView ? `AS_${seasonView[1]}` : `AS_${now.getMonth() >= 8 ? now.getFullYear() : now.getFullYear() - 1}`;
+    return { league_id: lid, ...s, ...t, current_week: cur, season_view };
   }
 
-  /** Week metadata: pairings, dates and Yahoo's official weekly totals. */
+  /** One team's roster with per-game averages for a stat view (AS_2026, AL30, AL14, AL7). */
+  async function teamAverages(lid, tid, view) {
+    const doc = await get(`/nba/${lid}/${tid}?stat1=AS&stat2=${view}`);
+    return parseRosterTable(doc).map((r) => ({ player: r.player, line: r.line }));
+  }
+
   async function weekMeta(lid, w, myTeam) {
-    progress(`${w}. hafta: eşleşmeler okunuyor…`);
-    const info = await weekInfo(lid, w, myTeam);
-    const official = {};
-    for (const [a, b] of info.pairs) Object.assign(official, (await officialTotals(lid, w, a, b)) || {});
-    // Yahoo game dates are US Eastern
-    const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
-    return { week: w, pairs: info.pairs, dates: info.dates, official, today };
+    return weekInfo(lid, w, myTeam);
   }
 
-  /** Every team's lineup + box scores for one date (one page per team). */
-  async function day(lid, d, teamIds, label = "") {
-    const teams = {}, players = {};
-    for (const [i, tid] of teamIds.entries()) {
-      progress(`${label}${d} · takım ${i + 1}/${teamIds.length}`);
-      const doc = await get(`/nba/${lid}/${tid}?date=${d}`);
-      teams[tid] = parseRosterTable(doc).map((r) => {
-        players[r.player.id] = { ...players[r.player.id], ...r.player };
-        // 0 minutes = did not play
-        const line = r.line && r.line.MIN === 0 ? null : r.line;
-        return { player: r.player.id, slot: r.slot, line };
-      });
-    }
-    return { date: d, teams, players };
+  async function matchupTotals(lid, w, a, b) {
+    return (await officialTotals(lid, w, a, b)) || {};
   }
 
-  window.__takas = { base, weekMeta, day, parseRosterTable, get };
+  /** One team's lineup + box scores for one date. */
+  async function teamDay(lid, d, tid) {
+    const doc = await get(`/nba/${lid}/${tid}?date=${d}`);
+    return parseRosterTable(doc).map((r) => ({
+      player: r.player,
+      slot: r.slot,
+      // 0 minutes = did not play
+      line: r.line && r.line.MIN === 0 ? null : r.line,
+    }));
+  }
+
+  window.__takas = { leagueInfo, teamAverages, weekMeta, matchupTotals, teamDay, parseRosterTable, get };
 })();

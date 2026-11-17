@@ -1,29 +1,62 @@
 // Background service worker: runs the sync so it keeps going after the popup closes.
-// State lives in chrome.storage.local "sync" = {running, msg, cls, started}; the popup just displays it.
+//
+// Robustness:
+// - Pages are read one at a time and paced from here (timers in a hidden Yahoo tab
+//   get throttled by Chrome; the worker's don't).
+// - Each finished day is posted to the app right away, so nothing read is lost.
+// - The job is kept in chrome.storage. If Chrome stops this worker mid-sync, a
+//   watchdog alarm wakes it up within a minute and the job resumes; days the app
+//   already has are skipped.
+//
+// chrome.storage.local:
+//   sync = {running, msg, cls, at}     shown by the popup
+//   job  = {tabId, lid, server, info}  the sync in progress (info = league basics once read)
 
+const PAGE_DELAY_MS = 400;
+const WATCHDOG = "takas-watchdog";
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const setState = (s) => chrome.storage.local.set({ sync: { ...s, at: Date.now() } });
 let running = false;
 
-chrome.runtime.onMessage.addListener((m, sender, reply) => {
-  if (m.type === "progress" && running) setState({ running: true, msg: m.msg });
+chrome.runtime.onMessage.addListener((m, _sender, reply) => {
   if (m.type === "start-sync") {
     if (running) { reply({ ok: false, error: "Senkron zaten çalışıyor." }); return; }
-    sync(m.tabId, m.lid, m.server);
+    chrome.storage.local.set({ job: { tabId: m.tabId, lid: m.lid, server: m.server, info: null } })
+      .then(() => run());
     reply({ ok: true });
   }
 });
 
-async function inTab(tabId, args) {
-  // Chrome serializes this function's source only (no closures): everything comes in via args.
-  const [res] = await chrome.scripting.executeScript({
-    target: { tabId },
-    func: async (task, ...a) => {
-      try { return await window.__takas[task](...a); } catch (e) { return { __error: String(e.message || e) }; }
-    },
-    args,
-  });
-  if (res?.result?.__error) throw new Error(res.result.__error);
-  return res?.result;
+chrome.alarms.onAlarm.addListener(async (a) => {
+  if (a.name !== WATCHDOG || running) return;
+  const { job } = await chrome.storage.local.get("job");
+  if (job) run(true);
+  else chrome.alarms.clear(WATCHDOG);
+});
+
+// ------------------------------------------------------------------ helpers
+
+async function inTab(tabId, task, ...args) {
+  const exec = async () => {
+    const [res] = await chrome.scripting.executeScript({
+      target: { tabId },
+      // Serialized without closures: everything comes in via args.
+      func: async (t, ...a) => {
+        if (!window.__takas) return { __error: "NOT_INJECTED" };
+        try { return await window.__takas[t](...a); } catch (e) { return { __error: String(e.message || e) }; }
+      },
+      args: [task, ...args],
+    });
+    return res?.result;
+  };
+  let out = await exec();
+  if (out?.__error === "NOT_INJECTED") {        // tab was reloaded/navigated since injection
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["scraper.js"] });
+    out = await exec();
+  }
+  if (out?.__error) throw new Error(out.__error);
+  await sleep(PAGE_DELAY_MS);
+  return out;
 }
 
 async function post(server, body) {
@@ -33,11 +66,23 @@ async function post(server, body) {
   if (!r.ok) throw new Error(`Uygulama hatası (${r.status}): ${(await r.text()).slice(0, 200)}`);
 }
 
-async function sync(tabId, lid, server) {
+// Yahoo game dates are US Eastern
+const etDate = (offsetDays = 0) =>
+  new Date(Date.now() + offsetDays * 864e5).toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+
+// ------------------------------------------------------------------ the sync
+
+async function run(resumed = false) {
+  if (running) return;
   running = true;
-  const started = Date.now();
-  await setState({ running: true, msg: "Başlıyor…", started });
+  const keepAlive = setInterval(() => chrome.runtime.getPlatformInfo(() => {}), 20_000);
+  chrome.alarms.create(WATCHDOG, { periodInMinutes: 1 });
+  const { job } = await chrome.storage.local.get("job");
+  const { tabId, lid, server } = job;
+  const say = (msg) => setState({ running: true, msg: (resumed ? "(kaldığı yerden) " : "") + msg });
+
   try {
+    try { await chrome.tabs.get(tabId); } catch { throw new Error("Yahoo sekmesi kapanmış. Ligini açıp tekrar başlat."); }
     let have;
     try {
       have = await (await fetch(`${server}/api/import/status?league_id=${lid}`)).json();
@@ -46,32 +91,70 @@ async function sync(tabId, lid, server) {
     }
     await chrome.scripting.executeScript({ target: { tabId }, files: ["scraper.js"] });
 
-    const base = await inTab(tabId, ["base", lid]);
-    await post(server, { kind: "base", data: base });
+    // 1) league basics, rosters and averages (skipped when resuming after it was done)
+    let info = job.info;
+    if (!info) {
+      say("Lig ayarları okunuyor…");
+      const li = await inTab(tabId, "leagueInfo", lid);
+      const views = { season: li.season_view, last30: "AL30", last14: "AL14", last7: "AL7" };
+      const rosters = {}, players = {}, averages = { season: {}, last30: {}, last14: {}, last7: {} };
+      for (const [i, team] of li.teams.entries()) {
+        for (const [period, view] of Object.entries(views)) {
+          say(`Kadro ve ortalamalar: ${team.name} (${i + 1}/${li.teams.length}) · ${period}`);
+          const rows = await inTab(tabId, "teamAverages", lid, team.id, view);
+          if (period === "season") rosters[team.id] = rows.map((r) => r.player.id);
+          for (const r of rows) {
+            players[r.player.id] = { ...r.player, owner: team.id };
+            averages[period][r.player.id] = r.line || { GP: 0 };
+          }
+        }
+      }
+      const { season_view, ...rest } = li;
+      await post(server, { kind: "base",
+        data: { ...rest, rosters, players, averages, synced_at: new Date().toISOString() } });
+      info = { teams: li.teams.map((t) => t.id), my_team: li.my_team, current_week: li.current_week };
+      await chrome.storage.local.set({ job: { ...job, info } });
+    }
 
-    // Re-read the last 2 days every time (Yahoo stat corrections); skip older days we already have.
-    const cutoff = new Date(Date.now() - 2 * 864e5).toISOString().slice(0, 10);
+    // 2) every week, day by day
+    const today = etDate(0), cutoff = etDate(-2);
+    // re-read the last 2 days every time (Yahoo stat corrections)
     const skip = new Set((have.dates || []).filter((d) => d < cutoff));
-    const teamIds = base.teams.map((t) => t.id);
     let pages = 0;
-
-    for (let w = 1; w <= base.current_week; w++) {
-      const meta = await inTab(tabId, ["weekMeta", lid, w, base.my_team]);
-      const { today, ...weekInfo } = meta;
+    for (let w = 1; w <= info.current_week; w++) {
+      say(`${w}/${info.current_week}. hafta: eşleşmeler okunuyor…`);
+      const meta = await inTab(tabId, "weekMeta", lid, w, info.my_team);
+      const official = {};
+      for (const [a, b] of meta.pairs) Object.assign(official, await inTab(tabId, "matchupTotals", lid, w, a, b));
+      const weekInfo = { week: w, pairs: meta.pairs, dates: meta.dates, official };
       await post(server, { kind: "week", data: { ...weekInfo, days: {}, players: {} } });
+
       const todo = meta.dates.filter((d) => d < today && !skip.has(d));
       for (const [i, d] of todo.entries()) {
-        const day = await inTab(tabId, ["day", lid, d, teamIds, `${w}/${base.current_week}. hafta · gün ${i + 1}/${todo.length} · `]);
-        await post(server, { kind: "week", data: { ...weekInfo, days: { [d]: day.teams }, players: day.players } });
-        pages += teamIds.length;
+        const teams = {}, players = {};
+        for (const [j, tid] of info.teams.entries()) {
+          say(`${w}/${info.current_week}. hafta · gün ${i + 1}/${todo.length} (${d}) · takım ${j + 1}/${info.teams.length}`);
+          const rows = await inTab(tabId, "teamDay", lid, d, tid);
+          teams[tid] = rows.map((r) => {
+            players[r.player.id] = { ...players[r.player.id], ...r.player };
+            return { player: r.player.id, slot: r.slot, line: r.line };
+          });
+          pages++;
+        }
+        await post(server, { kind: "week", data: { ...weekInfo, days: { [d]: teams }, players } });
       }
     }
-    const secs = Math.round((Date.now() - started) / 1000);
+
+    await chrome.storage.local.remove("job");
+    await chrome.alarms.clear(WATCHDOG);
     await setState({ running: false, cls: "ok",
-      msg: `Tamam: ${base.teams.length} takım, ${base.current_week} hafta (${pages} gün-sayfası, ${secs} sn).\nUygulamayı yenile.` });
+      msg: `Tamam: ${info.teams.length} takım, ${info.current_week} hafta, ${pages} yeni gün-sayfası okundu.\nUygulamayı yenile.` });
   } catch (e) {
+    await chrome.storage.local.remove("job");
+    await chrome.alarms.clear(WATCHDOG);
     await setState({ running: false, cls: "err", msg: "Hata: " + e.message });
   } finally {
+    clearInterval(keepAlive);
     running = false;
   }
 }
