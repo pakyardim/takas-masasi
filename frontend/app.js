@@ -45,6 +45,8 @@ document.querySelectorAll(".tab").forEach((b) =>
   b.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === b));
     document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("hidden", p.id !== "tab-" + b.dataset.tab));
+    if (b.dataset.tab === "forecast") loadForecast();
+    if (b.dataset.tab === "power") loadPower();
     if (b.dataset.tab === "draft") loadDraft();
     if (b.dataset.tab === "moves") loadMoves();
   })
@@ -509,6 +511,94 @@ async function loadMoves(force) {
     <div class="card"><h3>Takaslar</h3>
       ${trades ? `<div class="table-wrap"><table><thead><tr><th>Tarih</th><th style="text-align:left">Taraf 1</th><th>Değer</th><th style="text-align:left">Taraf 2</th><th>Değer</th><th style="text-align:left">Şimdiye kadar önde</th></tr></thead><tbody>${trades}</tbody></table></div>
       <p class="muted small note">Takastan sonra her oyuncunun yeni takımında aktif kadroda ürettiği değer.</p>` : `<p class="muted">Bu sezon henüz takas yok.</p>`}</div>`;
+}
+
+// ================================================================ FORECAST + POWER RANKINGS
+const pct = (x) => `%${Math.round(x * 100)}`;
+const syncMsg = (what, ver) => `<div class="card empty">${what} için gereken veri henüz yok. Eklentiyi (sürüm ${ver}+) yeniden yükleyip <b>Senkronize et</b>'e bas.</div>`;
+
+async function loadForecast() {
+  if (S.loaded.forecast) return;
+  const el = $("#forecast-body");
+  el.innerHTML = `<div class="card empty">Simülasyon çalışıyor…</div>`;
+  let r;
+  try { r = await api("/api/forecast"); } catch (e) { el.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  if (!r.available) { el.innerHTML = syncMsg("Tahmin", "0.6.0"); return; }
+  S.loaded.forecast = true;
+  const me = S.league.my_team;
+
+  const card = (m) => {
+    const fa = m.favorite === "a";
+    const sc = m.score;
+    const catRows = m.categories.map((c) => {
+      const meta = catByKey(c.key);
+      return `<tr><td><b>${esc(meta.label)}</b></td>
+        <td class="${c.result === "W" ? "win" : ""}">${fmt(c.key, c.a, "total")}</td>
+        <td class="${c.result === "L" ? "win" : ""}">${fmt(c.key, c.b, "total")}</td>
+        <td style="text-align:left"><span class="pbar"><i style="width:${Math.round(c.p_a * 100)}%"></i></span>${pct(c.p_a)}</td></tr>`;
+    }).join("");
+    const plist = (side) => m.players[side].map((p) => `${esc(p.name)} <b>${p.games}</b>${p.few_games ? "*" : ""}`).join(" · ") || "–";
+    const outs = (side) => m.out[side].length ? m.out[side].map((p) => `${esc(p.name)} <span class="inj">${esc(p.status)}</span>`).join(" · ") : "yok";
+    return `<div class="fc-card ${m.a === me || m.b === me ? "mine" : ""}">
+      <div class="sb-row"><div class="sb-team ${fa ? "fav" : ""}">${esc(m.a_name)}</div><div class="sb-score">${sc.W}</div><div class="sb-vs">vs</div><div class="sb-score">${sc.L}</div><div class="sb-team ${fa ? "" : "fav"}">${esc(m.b_name)}</div></div>
+      <div class="prob"><span class="pa" style="width:${m.p_a * 100}%"></span><span class="pt" style="width:${m.p_tie * 100}%"></span><span class="pb" style="width:${m.p_b * 100}%"></span></div>
+      <div class="prob-labels"><span style="color:var(--a)">${pct(m.p_a)}</span><span class="muted">${m.p_tie >= 0.005 ? "berabere " + pct(m.p_tie) : ""}</span><span style="color:var(--b)">${pct(m.p_b)}</span></div>
+      <details><summary>Kategoriler ve kadro</summary>
+        <div class="table-wrap"><table><thead><tr><th>Kategori</th><th>${esc(m.a_name)}</th><th>${esc(m.b_name)}</th><th style="text-align:left">${esc(m.a_name)} kazanır</th></tr></thead><tbody>${catRows}</tbody></table></div>
+        <p class="muted small note"><b>${esc(m.a_name)}</b> kalan maçlar: ${plist("a")}<br>Oynamıyor sayılan: ${outs("a")}</p>
+        <p class="muted small note"><b>${esc(m.b_name)}</b> kalan maçlar: ${plist("b")}<br>Oynamıyor sayılan: ${outs("b")}</p>
+      </details>
+      <div class="fc-foot"><span>${m.now ? `Şu an: <b>${m.now.score.W}-${m.now.score.L}${m.now.score.T ? "-" + m.now.score.T : ""}</b>` : "Henüz başlamadı"}</span>
+        <span>Ortalama: ${m.exp_a.toFixed(1)} – ${m.exp_b.toFixed(1)} kategori</span><span>Kalan maç: ${m.games_left.a} – ${m.games_left.b}</span></div></div>`;
+  };
+
+  el.innerHTML = r.weeks.map((w) => {
+    const ms = [...w.matchups].sort((x, y) => (y.a === me || y.b === me) - (x.a === me || x.b === me));
+    const state = w.days_played ? `devam ediyor · ${w.days_played} gün oynandı, ${w.days_left} gün kaldı` : "henüz başlamadı";
+    const warn = w.uncovered_dates.length ? `<div class="warn">Bu haftanın ${w.uncovered_dates.length} günü için fikstür verisi yok; o günlerin maçları tahmine katılmadı. Yeniden senkronize et.</div>` : "";
+    return `<div class="week-head"><h3>${w.week}. hafta</h3><span class="muted">${dayLong(w.start)} – ${dayLong(w.end)} · ${state}</span></div>${warn}
+      <div class="fc-grid" style="margin-bottom:22px">${ms.map(card).join("")}</div>`;
+  }).join("") + `<div class="card"><h3>Nasıl hesaplanıyor?</h3>
+    <p class="muted small" style="margin:0">Haftanın oynanmış günleri gerçek istatistiklerle sayılır. Kalan her gün için takımın o gün maçı olan en iyi ${r.active_slots} oyuncusu oynatılır (IL'deki ve “O” durumundaki oyuncular hariç; pozisyon uygunluğuna bakılmaz).
+    Her maç için oyuncunun son 15 maçından rastgele bir gerçek kutu skoru çekilir ve hafta ${r.sims.toLocaleString("tr-TR")} kez simüle edilir. Büyük skor: favorinin kazandığı simülasyonlardaki en sık sonuç. Yüzdeler: eşleşmeyi kazanma olasılığı.
+    * işaretli oyuncuların 3'ten az maçı var, sezon ortalamaları kullanılır. Kadro değişiklikleri, yeni sakatlıklar ve dinlendirmeler öngörülemez.</p></div>`;
+}
+
+async function loadPower() {
+  if (S.loaded.power) return;
+  const el = $("#power-body");
+  el.innerHTML = `<div class="card empty">Yükleniyor…</div>`;
+  let r;
+  try { r = await api("/api/power"); } catch (e) { el.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  if (!r.available) { el.innerHTML = syncMsg("Güç sıralaması", "0.6.0"); return; }
+  S.loaded.power = true;
+  const rec = (x) => `${x[0]}-${x[1]}${x[2] ? "-" + x[2] : ""}`;
+  const trend = (t) => {
+    if (t.prev_rank == null || t.prev_rank === t.rank) return `<span class="muted">·</span>`;
+    const d = t.prev_rank - t.rank;
+    return d > 0 ? `<span class="arrow-up">▲${d}</span>` : `<span class="arrow-down">▼${-d}</span>`;
+  };
+  const rows = r.teams.map((t) => `<tr class="${t.team === S.league.my_team ? "me" : ""}">
+    <td><span class="rank-pill">${t.rank}</span> ${trend(t)}</td>
+    <td class="l"><span class="pl-name">${esc(t.name)}</span></td>
+    <td><span class="power-score">${t.power.toFixed(1)}</span><span class="power-bar" style="width:${Math.max(4, t.power)}%"></span></td>
+    <td>${rec(t.allplay)} <span class="muted small">${pct(t.allplay_pct)}</span></td>
+    <td>${pct(t.form_pct)}</td>
+    <td>${signed(t.roster, 1)}</td>
+    <td>${rec(t.record)} <span class="muted small">${t.standing}.</span></td>
+    <td><b class="${t.luck > 0.03 ? "pos" : t.luck < -0.03 ? "neg" : ""}">${t.luck > 0 ? "+" : ""}${Math.round(t.luck * 100)}</b></td>
+    <td>${t.beat}/${t.beat_of}</td></tr>`).join("");
+  const w = r.weights;
+  el.innerHTML = `<div class="card">
+    <div class="table-wrap"><table><thead><tr><th>#</th><th class="l">Takım</th><th>Güç</th><th>Herkese karşı</th><th>Form</th><th>Kadro gücü</th><th>Gerçek rekor</th><th>Şans</th><th>Yeneceği rakip</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="muted small note">${r.weeks.length} tamamlanmış hafta üzerinden (${r.weeks[0]}–${r.weeks[r.weeks.length - 1]}. hafta); devam eden hafta dahil değil. ▲▼: bir önceki haftaya göre değişim.</p></div>
+    <div class="card"><h3>Sütunlar</h3><p class="muted small" style="margin:0">
+    <b>Güç (0–100)</b> = %${w.allplay * 100} herkese karşı + %${w.form * 100} form + %${w.roster * 100} kadro gücü.<br>
+    <b>Herkese karşı:</b> her hafta ligdeki diğer 9 takımın hepsiyle oynasaydın kazanacağın kategori oranı; fikstür şansını siler.<br>
+    <b>Form:</b> aynı oran, yalnızca son 2 tamamlanmış hafta.<br>
+    <b>Kadro gücü:</b> bugün oynayabilecek en iyi 10 oyuncunun sezon z-skoru toplamı (IL ve “O” hariç).<br>
+    <b>Şans:</b> gerçek kategori kazanma oranı eksi herkese karşı oran (yüzde puan). Artı: fikstür sana yaradı; eksi: güçlü haftalarında güçlü rakibe denk geldin.<br>
+    <b>Yeneceği rakip:</b> tüm haftalarda, herkese karşı oynansa kazanılacak eşleşme sayısı.</p></div>`;
 }
 
 init().catch((e) => {

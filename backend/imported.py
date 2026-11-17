@@ -75,6 +75,22 @@ def merge_import(kind: str, data: dict) -> dict:
         store["pool_at"] = data.get("synced_at")
         for pid, pl in data["players"].items():
             store["players"][pid] = {**store["players"].get(pid, {}), **pl}
+    elif kind == "schedule":
+        # data: {dates: ["11/16", ...], teams: {tid: [{player, slot, games: [bool]}]}}
+        dates = [_near_date(d) for d in data["dates"]]
+        sched = store.setdefault("schedule", {})          # nba team -> sorted game dates
+        lineup = {}
+        for tid, rows in data["teams"].items():
+            lineup[tid] = [{"player": r["player"]["id"], "slot": r["slot"]} for r in rows]
+            for r in rows:
+                pid, nba = r["player"]["id"], r["player"].get("nba_team")
+                store["players"][pid] = {**store["players"].get(pid, {}), **r["player"]}
+                if nba:
+                    keep = [d for d in sched.get(nba, []) if d < dates[0] or d > dates[-1]]
+                    sched[nba] = sorted(set(keep) | {d for d, g in zip(dates, r["games"]) if g})
+        store["lineup_now"] = lineup
+        store["schedule_range"] = [dates[0], dates[-1]]
+        store["schedule_at"] = data.get("synced_at")
     elif kind == "week":
         w = str(data["week"])
         # final = Yahoo's official totals were read after the week (and its stat corrections) was over
@@ -110,6 +126,14 @@ def _tx_date(ts: str, today: date | None = None) -> str:
     return d.isoformat()
 
 
+def _near_date(md: str, today: date | None = None) -> str:
+    """'11/16' -> ISO date in the year that puts it closest to today."""
+    today = today or date.today()
+    m, d = (int(x) for x in md.split("/"))
+    cands = [date(y, m, d) for y in (today.year - 1, today.year, today.year + 1)]
+    return min(cands, key=lambda c: abs((c - today).days)).isoformat()
+
+
 def status(league_id: str | None = None) -> dict:
     store = load()
     base = store.get("base")
@@ -141,7 +165,8 @@ class ImportedProvider:
         cats = [{"key": c, "label": LABELS.get(c, c), "higher": c not in LOWER_IS_BETTER,
                  **({"ratio": RATIOS[c]} if c in RATIOS else {})} for c in self.base["categories"]]
         weeks = [{"week": int(w), "start": v["dates"][0], "end": v["dates"][-1]}
-                 for w, v in sorted(self.store["weeks"].items(), key=lambda x: int(x[0])) if v["dates"]]
+                 for w, v in sorted(self.store["weeks"].items(), key=lambda x: int(x[0]))
+                 if v["dates"] and int(w) <= self.base["current_week"]]
         return {"key": self.base["league_id"], "name": self.base["name"], "scoring": "categories",
                 "categories": cats, "modifiers": {}, "current_week": self.base["current_week"],
                 "my_team": self.base["my_team"],

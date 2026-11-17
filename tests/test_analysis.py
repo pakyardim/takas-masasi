@@ -94,3 +94,49 @@ def test_readd_same_player_is_not_double_counted(tmp_path, monkeypatch):
     r = analysis.moves_report(p)
     a1 = [x for x in r["pickups"] if x["player"]["key"] == "a1"]
     assert sorted(x["games"] for x in a1) == [0, 3]
+
+
+def _with_schedule(tmp_path, monkeypatch):
+    from datetime import date, timedelta
+    _store(tmp_path, monkeypatch)
+    today = date.today()
+    days = [today + timedelta(days=i) for i in range(14)]
+    md = [f"{d.month}/{d.day}" for d in days]
+    pl = lambda k, nba, st="": {"id": k, "nba_team": nba, "status": st}
+    row = lambda k, nba, slot, games, st="": {"player": pl(k, nba, st), "slot": slot, "games": games}
+    every, never = [True] * 14, [False] * 14
+    imported.merge_import("schedule", {"dates": md, "teams": {
+        "1": [row("a1", "AAA", "PG", every), row("a2", "BBB", "IL", every)],
+        "2": [row("b1", "CCC", "PG", every), row("b2", "DDD", "BN", never, "O")]}})
+    iso = [d.isoformat() for d in days]
+    imported.merge_import("week", {"week": 2, "pairs": [["1", "2"]], "dates": iso[:7], "official": {}, "days": {}, "players": {}})
+    imported.merge_import("meta", {"league_id": "1", "current_week": 2})
+    return imported.ImportedProvider()
+
+
+def test_forecast(tmp_path, monkeypatch):
+    from backend import forecast
+    p = _with_schedule(tmp_path, monkeypatch)
+    f = forecast.forecast(p)
+    assert f["available"] and [w["week"] for w in f["weeks"]] == [2]
+    m = f["weeks"][0]["matchups"][0]
+    assert abs(m["p_a"] + m["p_b"] + m["p_tie"] - 1) < 1e-9
+    assert m["games_left"] == {"a": 7, "b": 7}                 # a2 sits in IL, b2 is out
+    assert {x["name"] for x in m["out"]["a"]} == {"Pa2"} and {x["name"] for x in m["out"]["b"]} == {"Pb2"}
+    assert m["favorite"] == "a" and m["p_a"] > 0.9             # a1 (30 ppg) vs b1 (20 ppg)
+    assert sum(m["score"].values()) == 9 and m["score"]["W"] > m["score"]["L"]
+    pts = next(c for c in m["categories"] if c["key"] == "PTS")
+    assert abs(pts["a"] - 7 * 30) < 25 and pts["p_a"] > 0.95
+    assert forecast.forecast(p)["weeks"][0]["matchups"][0]["p_a"] == m["p_a"]   # seeded: reproducible
+
+
+def test_power_rankings(tmp_path, monkeypatch):
+    from backend import forecast
+    p = _with_schedule(tmp_path, monkeypatch)
+    r = forecast.power(p)
+    assert r["available"] and r["weeks"] == [1]
+    assert [t["rank"] for t in r["teams"]] == [1, 2]
+    top = r["teams"][0]
+    assert 0 <= top["power"] <= 100 and top["prev_rank"] is None
+    assert sum(t["allplay"][0] for t in r["teams"]) == sum(t["allplay"][1] for t in r["teams"])
+    assert all(t["record"] == t["allplay"] for t in r["teams"])   # two teams: all-play is the real schedule

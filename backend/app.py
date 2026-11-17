@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analysis, engine, imported
+from . import analysis, engine, forecast, imported
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parent.parent
@@ -221,6 +221,29 @@ def draft():
 @app.get("/api/moves")
 def moves():
     return _report(analysis.moves_report)
+
+
+_cache: dict = {}
+
+
+def _cached(name, fn):
+    """Simulations take a moment: reuse the result until new data is imported."""
+    if not isinstance(P(), imported.ImportedProvider):
+        return {"available": False, "reason": "demo"}
+    stamp = (P().store.get("last_import"), forecast.today_et())
+    if _cache.get(name, (None,))[0] != stamp:
+        _cache[name] = (stamp, fn(P()))
+    return _cache[name][1]
+
+
+@app.get("/api/forecast")
+def get_forecast():
+    return _cached("forecast", forecast.forecast)
+
+
+@app.get("/api/power")
+def get_power():
+    return _cached("power", forecast.power)
 
 
 app.mount("/static", StaticFiles(directory=ROOT / "frontend"), name="static")

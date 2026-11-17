@@ -8,6 +8,7 @@
 //   (it ended more than 2 days ago and everything about it is stored).
 // - Draft results (1 page): once. Transactions: newest pages until one has nothing new.
 // - League-wide player list with season averages (12 pages): once a day.
+// - Upcoming NBA games and today's lineups (1 page per team) + next week's pairings: every sync.
 // - A day's lineups + box scores (1 page per team): read once. Only the last 2 days
 //   are re-read, because Yahoo applies stat corrections to them.
 //
@@ -39,7 +40,7 @@ let running = false;
 chrome.runtime.onMessage.addListener((m, _sender, reply) => {
   if (m.type === "start-sync") {
     if (running) { reply({ ok: false, error: "Senkron zaten çalışıyor." }); return; }
-    chrome.storage.local.set({ job: { tabId: m.tabId, lid: m.lid, server: m.server, force: !!m.force, info: null, extrasDone: false, rl: 0 } })
+    chrome.storage.local.set({ job: { tabId: m.tabId, lid: m.lid, server: m.server, force: !!m.force, info: null, extrasDone: false, scheduleDone: false, rl: 0 } })
       .then(() => run());
     reply({ ok: true });
   }
@@ -188,6 +189,26 @@ async function run(resumed = false) {
         stats.pool = Object.keys(players).length;
       }
       await patchJob({ extrasDone: true });
+    }
+
+    // 1c) upcoming NBA games + today's lineups (for projections): every sync, 1 page per team
+    if (!job.scheduleDone) {
+      const teams = {};
+      let dates = [];
+      for (const [i, tid] of info.teams.entries()) {
+        say(`Fikstür ve güncel dizilişler okunuyor… (${i + 1}/${info.teams.length})`);
+        const res = await inTab(tabId, "teamSchedule", lid, tid);
+        if (res.dates.length) dates = res.dates;
+        teams[tid] = res.rows;
+      }
+      if (dates.length) await post(server, { kind: "schedule", data: { dates, teams, synced_at: new Date().toISOString() } });
+      // next week's pairings (no stats yet)
+      const next = await inTab(tabId, "weekMeta", lid, info.current_week + 1, info.my_team);
+      if (next.pairs.length) {
+        await post(server, { kind: "week", data: { week: info.current_week + 1, pairs: next.pairs, dates: next.dates,
+                                                    official: {}, final: false, days: {}, players: {} } });
+      }
+      await patchJob({ scheduleDone: true });
     }
 
     // 2) weeks, day by day

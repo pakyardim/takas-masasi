@@ -299,5 +299,37 @@
     return parseRosterTable(doc).map((r) => ({ player: r.player, line: r.line }));
   }
 
-  window.__takas = { leagueInfo, teamAverages, weekMeta, matchupTotals, teamDay, draft, transactions, playerPool, parseRosterTable, get };
+  /** One team's "Opponents" view: the next 14 days of NBA games for every roster player,
+   *  plus today's lineup slot. -> {dates: ["11/16", ...], rows: [{player, slot, games: [bool]}]} */
+  async function teamSchedule(lid, tid) {
+    const doc = await get(`/nba/${lid}/${tid}?stat1=O`);
+    for (const table of doc.querySelectorAll("table")) {
+      const h = headerMap(table);
+      if (!h || h.map.player == null) continue;
+      const cols = [];
+      let col = 0;
+      for (const c of h.row.cells) {
+        const t = clean(c.innerText);
+        if (/^\d{1,2}\/\d{1,2}$/.test(t)) cols.push({ date: t, col });
+        col += c.colSpan || 1;
+      }
+      if (!cols.length) continue;
+      const rows = [];
+      let after = false;
+      for (const row of table.rows) {
+        if (row === h.row) { after = true; continue; }
+        if (!after) continue;
+        const pc = cellAt(row, h.map.player);
+        const player = pc && parsePlayerCell(pc);
+        if (!player) continue;
+        const slot = row.querySelector("[data-pos]")?.dataset.pos || clean(cellAt(row, h.map.pos ?? 0)?.innerText) || "BN";
+        rows.push({ player, slot: slot === "Util" ? "UTIL" : slot,
+                    games: cols.map((c) => clean(cellAt(row, c.col)?.innerText) !== "") });
+      }
+      return { dates: cols.map((c) => c.date), rows };
+    }
+    return { dates: [], rows: [] };
+  }
+
+  window.__takas = { leagueInfo, teamAverages, weekMeta, matchupTotals, teamDay, draft, transactions, playerPool, teamSchedule, parseRosterTable, get };
 })();

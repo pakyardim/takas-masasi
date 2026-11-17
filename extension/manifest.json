@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Takas Masası – Yahoo Senkron",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Yahoo Fantasy NBA liginin kadro ve istatistiklerini okuyup yerel Takas Masası uygulamasına aktarır.",
   "permissions": [
     "activeTab",

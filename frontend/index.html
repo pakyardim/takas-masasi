@@ -15,6 +15,8 @@
       <span class="nav-label"><span class="ball"></span> Fantasy Basketbol</span>
       <button class="tab active" data-tab="trade">Takas Analizi</button>
       <button class="tab" data-tab="whatif">Ya Olsaydı?</button>
+      <button class="tab" data-tab="forecast">Tahmin</button>
+      <button class="tab" data-tab="power">Güç Sıralaması</button>
       <button class="tab" data-tab="draft">Draft</button>
       <button class="tab" data-tab="moves">Transferler</button>
     </nav>
@@ -95,6 +97,20 @@
       </div>
 
       <div id="wi-result"></div>
+    </section>
+
+    <!-- ============ FORECAST ============ -->
+    <section id="tab-forecast" class="tab-panel hidden">
+      <h2 class="page-title">Tahmin</h2>
+      <p class="muted" style="margin:0 0 14px">Bu hafta ve gelecek hafta kim kaç kaç kazanır? Kalan maçlar binlerce kez simüle edilir.</p>
+      <div id="forecast-body"></div>
+    </section>
+
+    <!-- ============ POWER RANKINGS ============ -->
+    <section id="tab-power" class="tab-panel hidden">
+      <h2 class="page-title">Güç Sıralaması</h2>
+      <p class="muted" style="margin:0 0 14px">Fikstür şansından arındırılmış performans, son form ve bugünkü kadro gücü.</p>
+      <div id="power-body"></div>
     </section>
 
     <!-- ============ DRAFT ============ -->
