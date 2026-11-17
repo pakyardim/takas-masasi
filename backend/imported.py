@@ -44,9 +44,16 @@ def merge_import(kind: str, data: dict) -> dict:
         store["base"] = data
         for pid, p in data["players"].items():
             store["players"][pid] = {**store["players"].get(pid, {}), **{k: v for k, v in p.items() if k != "owner"}}
+    elif kind == "meta":
+        # light refresh of league basics (current week etc.) without touching rosters/averages
+        if not store.get("base") or store["base"].get("league_id") != data.get("league_id"):
+            raise ValueError("no base data for this league yet")
+        store["base"].update({k: v for k, v in data.items() if k not in ("rosters", "players", "averages")})
     elif kind == "week":
         w = str(data["week"])
-        store["weeks"][w] = {"pairs": data["pairs"], "dates": data["dates"], "official": data.get("official", {})}
+        # final = Yahoo's official totals were read after the week (and its stat corrections) was over
+        store["weeks"][w] = {"pairs": data["pairs"], "dates": data["dates"], "official": data.get("official", {}),
+                             "final": bool(data.get("final"))}
         for d, teams in data["days"].items():
             store["days"][d] = teams
         for pid, p in data["players"].items():
@@ -61,9 +68,13 @@ def status(league_id: str | None = None) -> dict:
     store = load()
     base = store.get("base")
     if not base or (league_id and base.get("league_id") != league_id):
-        return {"league_id": None, "dates": [], "weeks": []}
+        return {"league_id": None, "dates": [], "weeks": [], "final_weeks": [], "synced_at": None}
+    # weeks that never need to be read again: official totals are final and every day is stored
+    final = sorted(int(w) for w, v in store["weeks"].items()
+                   if v.get("final") and v["dates"] and all(d in store["days"] for d in v["dates"]))
     return {"league_id": base["league_id"], "dates": sorted(store["days"]),
-            "weeks": sorted(int(w) for w in store["weeks"]), "synced_at": base.get("synced_at")}
+            "weeks": sorted(int(w) for w in store["weeks"]), "final_weeks": final,
+            "synced_at": base.get("synced_at")}
 
 
 class ImportedProvider:

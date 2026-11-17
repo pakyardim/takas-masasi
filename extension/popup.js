@@ -10,6 +10,7 @@ function show(state) {
   $("#status").className = state.cls || "";
   $("#sync").disabled = !!state.running && !stale || !onYahoo();
   $("#sync").textContent = state.running && !stale ? "Senkronize ediliyor…" : "Senkronize et";
+  $("#cancel").hidden = !state.running;
 }
 const onYahoo = () => !!tab?.url?.startsWith("https://basketball.fantasysports.yahoo.com/");
 
@@ -39,6 +40,8 @@ $("#sync").addEventListener("click", async () => {
   const server = $("#server").value.trim().replace(/\/$/, "");
   if (!/^\d+$/.test(lid)) return show({ msg: "Lig ID sayı olmalı.", cls: "err" });
   await chrome.storage.local.set({ server, lid });
-  const r = await chrome.runtime.sendMessage({ type: "start-sync", tabId: tab.id, lid, server });
+  const r = await chrome.runtime.sendMessage({ type: "start-sync", tabId: tab.id, lid, server, force: $("#force").checked });
   if (!r?.ok) show({ msg: r?.error || "Başlatılamadı.", cls: "err" });
 });
+
+$("#cancel").addEventListener("click", () => chrome.runtime.sendMessage({ type: "cancel-sync" }));

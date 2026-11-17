@@ -4,6 +4,8 @@
 
 For every synced matchup, rebuilds each team's week from daily lineups + box
 scores and compares it with the totals Yahoo shows on the matchup page."""
+from datetime import date
+
 from . import engine, imported
 
 STATS = ("FGM", "FGA", "FTM", "FTA", "3PTM", "PTS", "REB", "AST", "ST", "BLK", "TO")
@@ -18,8 +20,14 @@ def main():
     lg = p.league()
     print(f"{lg['name']} · güncel hafta {lg['current_week']} · senkronize haftalar {[w['week'] for w in lg['weeks']]}")
     ok = diff = 0
+    today = date.today().isoformat()
     for w in lg["weeks"]:
         off = p.official(w["week"])
+        info = p.store["weeks"][str(w["week"])]
+        missing = [d for d in info["dates"] if d < today and d not in p.store["days"]]
+        if missing:
+            print(f"  {w['week']}. hafta: {len(missing)} gün henüz senkronize edilmemiş ({missing[0]} …), karşılaştırılmadı.")
+            continue
         for a, b in p.matchups(w["week"]):
             wk = p.week(w["week"], [a, b])
             ours = engine.what_if(lg, wk, a, b, [])["actual"]["score"]
@@ -31,11 +39,12 @@ def main():
                     ov = (off.get(t) or {}).get(k)
                     if ov is not None and abs(tot.get(k, 0) - ov) > 0.01:
                         gaps[f"takım{t}.{k}"] = (round(tot.get(k, 0), 1), ov)
-            same = ours == theirs and not gaps
+            same = ours == theirs
             ok += same
             diff += not same
-            print(f"  {w['week']}. hafta  {a} v {b}:  bizim {fmt(ours)}  yahoo {fmt(theirs)}  {'✓' if same else '✗ ' + str(gaps)}")
-    print(f"Sonuç: {ok} eşleşme birebir aynı, {diff} farklı.")
+            note = "✓" if same and not gaps else ("✓ skor aynı, küçük istatistik farkı: " if same else "✗ SKOR FARKLI: ") + str(gaps)
+            print(f"  {w['week']}. hafta  {a} v {b}:  bizim {fmt(ours)}  yahoo {fmt(theirs)}  {note}")
+    print(f"Sonuç: {ok} eşleşmenin skoru Yahoo ile aynı, {diff} farklı.")
 
 
 if __name__ == "__main__":

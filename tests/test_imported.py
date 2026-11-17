@@ -55,3 +55,19 @@ def test_new_league_resets(tmp_path, monkeypatch):
     imported.merge_import("week", week)
     imported.merge_import("base", {**base, "league_id": "2"})
     assert imported.status()["dates"] == []
+
+
+def test_final_weeks_and_meta(tmp_path, monkeypatch):
+    monkeypatch.setattr(imported, "DATA_FILE", tmp_path / "league.json")
+    base, week = _payloads()
+    imported.merge_import("base", base)
+    imported.merge_import("week", {**week, "days": {}, "final": True})
+    assert imported.status("1")["final_weeks"] == []          # final but its day is not stored yet
+    imported.merge_import("week", {**week, "final": True})
+    assert imported.status("1")["final_weeks"] == [1]
+    imported.merge_import("week", {**week, "week": 2, "dates": ["2026-10-27"], "days": {}})
+    assert imported.status("1")["final_weeks"] == [1]         # week 2 is not final
+
+    imported.merge_import("meta", {"league_id": "1", "current_week": 7, "rosters": {"x": []}})
+    b = imported.load()["base"]
+    assert b["current_week"] == 7 and b["rosters"] == base["rosters"]

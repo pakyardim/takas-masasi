@@ -14,12 +14,15 @@
       try {
         const r = await fetch(path, { credentials: "include", signal: AbortSignal.timeout(20000) });
         if (r.url.includes("login.yahoo.com")) throw new Error("LOGIN");
+        // 999 / 429 = Yahoo rate limit. Don't retry here; background.js pauses the whole sync.
+        if (r.status === 999 || r.status === 429) throw new Error("RATE_LIMIT");
         if (!r.ok) throw new Error(`${path} -> HTTP ${r.status}`);
         const doc = new DOMParser().parseFromString(await r.text(), "text/html");
         if (doc.querySelector('form[action*="login.yahoo.com"]')) throw new Error("LOGIN");
         return doc;
       } catch (e) {
         if (e.message === "LOGIN") throw new Error("Yahoo oturumu kapalı. Yahoo'ya giriş yapıp tekrar dene.");
+        if (e.message === "RATE_LIMIT") throw e;
         lastErr = e;
       }
     }

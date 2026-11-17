@@ -33,7 +33,14 @@ Başvuru, API anahtarı ya da şifre gerekmez. Eklenti, Yahoo'ya giriş yapmış
 4. Chrome'da Yahoo'daki ligini aç (ör. `basketball.fantasysports.yahoo.com/nba/56909`), eklenti simgesine tıkla → **Senkronize et**.
 5. Bitince uygulamayı yenile.
 
-İlk senkron bütün haftaları okur: her gün × her takım için bir sayfa, sayfalar arasında kısa bekleme ile. Birkaç dakika sürer. Eklenti penceresini kapatabilirsin, senkron arka planda sürer; yalnızca Yahoo sekmesini kapatma. Sonraki senkronlar yalnızca yeni günleri (ve düzeltmeler için son 2 günü) okur. Veri `data/league.json` dosyasında durur.
+İlk senkron bütün haftaları okur (her gün × her takım için bir sayfa, sayfalar arasında 1–2 saniye bekleyerek) ve 6–8 dakika sürer. Eklenti penceresini kapatabilirsin, senkron arka planda sürer; yalnızca Yahoo sekmesini kapatma.
+
+Sonraki senkronlar yalnızca eksik olanı okur:
+- Bitmiş haftalar (bitişinin üzerinden 2 günden fazla geçmiş, tüm günleri kayıtlı) hiç okunmaz.
+- Kayıtlı günler atlanır; yalnızca son 2 gün yeniden okunur (Yahoo istatistik düzeltmeleri için).
+- Kadrolar ve ortalamalar en fazla 6 saatte bir yenilenir; hemen yenilemek için penceredeki kutuyu işaretle.
+
+Yahoo çok sık istek görürse geçici hız sınırı koyar (HTTP 999). Eklenti bu durumda birkaç dakika bekleyip kaldığı yerden kendiliğinden devam eder. Veri `data/league.json` dosyasında durur; `.venv/bin/python -m backend.validate` komutu kayıtlı haftaları Yahoo'nun resmi skorlarıyla karşılaştırır.
 
 Notlar:
 - Okunanlar: lig ayarları, takımlar, güncel kadrolar, sezon / son 30 / 14 / 7 gün ortalamaları, her günün aktif/yedek dizilişi ve kutu skorları, haftalık eşleşmeler ve Yahoo'nun resmi haftalık toplamları. Ya Olsaydı? sekmesi kendi hesapladığı skoru resmi skorla karşılaştırır.

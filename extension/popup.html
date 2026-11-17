@@ -26,9 +26,11 @@
     <div><label for="server">Uygulama adresi</label><input id="server" value="http://127.0.0.1:8000"></div>
   </div>
 
+  <label style="display:flex;gap:6px;align-items:center;font-weight:500"><input type="checkbox" id="force" style="width:auto"> Kadro ve ortalamaları da şimdi yenile</label>
   <button id="sync">Senkronize et</button>
+  <button id="cancel" class="secondary" hidden>Durdur</button>
   <button id="open" class="secondary">Uygulamayı aç</button>
-  <div class="muted" style="margin-top:8px">İlk senkron birkaç dakika sürebilir (her gün × her takım için bir sayfa). Sonrakilerde yalnızca yeni günler okunur. Bu pencereyi kapatabilirsin, senkron arka planda sürer; Yahoo sekmesini ise kapatma.</div>
+  <div class="muted" style="margin-top:8px">Yalnızca eksik olan okunur: bitmiş haftalar ve kayıtlı günler atlanır, kadrolar 6 saatte bir yenilenir. Bu pencereyi kapatabilirsin; Yahoo sekmesini kapatma.</div>
   <div id="status"></div>
 
   <script src="popup.js"></script>
