@@ -8,7 +8,7 @@
 //   (it ended more than 2 days ago and everything about it is stored).
 // - Draft results (1 page): once. Transactions: newest pages until one has nothing new.
 // - League-wide player list with season averages (12 pages): once a day.
-// - Upcoming NBA games and today's lineups (1 page per team) + next week's pairings: every sync.
+// - Today's lineups (1 page per team): every sync.
 // - A day's lineups + box scores (1 page per team): read once. Only the last 2 days
 //   are re-read, because Yahoo applies stat corrections to them.
 //
@@ -191,23 +191,17 @@ async function run(resumed = false) {
       await patchJob({ extrasDone: true });
     }
 
-    // 1c) upcoming NBA games + today's lineups (for projections): every sync, 1 page per team
+    // 1c) today's lineups (who sits in IL, who is out): every sync, 1 page per team
     if (!job.scheduleDone) {
       const teams = {};
       let dates = [];
       for (const [i, tid] of info.teams.entries()) {
-        say(`Fikstür ve güncel dizilişler okunuyor… (${i + 1}/${info.teams.length})`);
+        say(`Güncel dizilişler okunuyor… (${i + 1}/${info.teams.length})`);
         const res = await inTab(tabId, "teamSchedule", lid, tid);
         if (res.dates.length) dates = res.dates;
         teams[tid] = res.rows;
       }
       if (dates.length) await post(server, { kind: "schedule", data: { dates, teams, synced_at: new Date().toISOString() } });
-      // next week's pairings (no stats yet)
-      const next = await inTab(tabId, "weekMeta", lid, info.current_week + 1, info.my_team);
-      if (next.pairs.length) {
-        await post(server, { kind: "week", data: { week: info.current_week + 1, pairs: next.pairs, dates: next.dates,
-                                                    official: {}, final: false, days: {}, players: {} } });
-      }
       await patchJob({ scheduleDone: true });
     }
 

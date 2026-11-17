@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import analysis, engine, forecast, imported
+from . import analysis, engine, imported, rankings
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parent.parent
@@ -245,7 +245,7 @@ def allplay(team: str):
     others = [t["key"] for t in lg["teams"] if t["key"] != team]
     if len(others) == len(lg["teams"]):
         raise HTTPException(404, "Takım bulunamadı.")
-    today = forecast.today_et()
+    today = rankings.today_et()
     weeks = []
     for w in lg["weeks"]:
         try:
@@ -321,28 +321,23 @@ _cache: dict = {}
 
 
 def _cached(name, fn):
-    """Simulations take a moment: reuse the result until new data is imported."""
+    """Reuse a report until new data is imported."""
     if not isinstance(P(), imported.ImportedProvider):
         return {"available": False, "reason": "demo"}
-    stamp = (P().store.get("last_import"), forecast.today_et())
+    stamp = (P().store.get("last_import"), rankings.today_et())
     if _cache.get(name, (None,))[0] != stamp:
         _cache[name] = (stamp, fn(P()))
     return _cache[name][1]
 
 
-@app.get("/api/forecast")
-def get_forecast():
-    return _cached("forecast", forecast.forecast)
-
-
 @app.get("/api/power")
 def get_power():
-    return _cached("power", forecast.power)
+    return _cached("power", rankings.power)
 
 
 @app.get("/api/standings")
 def get_standings():
-    return _cached("standings", forecast.standings)
+    return _cached("standings", rankings.standings)
 
 
 # ---------------------------------------------------------------- web UI (Vite build in web/dist)

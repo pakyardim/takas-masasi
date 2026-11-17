@@ -13,13 +13,10 @@ Yahoo Fantasy NBA ligin için iki araç sunan bir web uygulaması. AI yorumu yok
    - **Günlük diziliş:** ızgarada bir hücreye tıklayarak bir oyuncuyu tek bir gün için oynat ya da oynatma ("son gün onu oynatmasaydım").
    - **Oyuncu değiştir:** çıkan oyuncunun aktif olduğu günlerde yerine gelenin o günkü istatistiği sayılır; rakibin oyuncusuysa ters değişim de uygulanabilir.
    - Senaryo aktif kadro sayısını aşarsa uyarır (pozisyon uygunluğu kontrol edilmez).
-3. **Tahmin:** Bu haftanın ve gelecek haftanın her eşleşmesi için öngörülen skor ve kazanma olasılığı.
-   Oynanmış günler gerçek istatistiklerle sayılır; kalan her maç için oyuncunun son 15 maçından rastgele gerçek bir kutu skoru çekilir ve hafta 3000 kez simüle edilir.
-   Her gün takımın maçı olan en iyi oyuncuları oynatılır (IL ve "O" durumundakiler hariç, pozisyon kontrolü yok).
-4. **Güç Sıralaması:** %45 "herkese karşı" kategori oranı (her hafta ligdeki herkesle oynasaydın), %25 son 2 haftanın formu, %30 bugünkü kadro gücü. Ayrıca fikstür şansı ve haftalık değişim.
-5. **Puan Durumu:** Aynı sezonun dört formatta sıralaması: H2H Kategori (ligin gerçek formatı), H2H Tek Galibiyet, Rotisserie (sezon toplamlarıyla her kategoride tüm lig sıralanır, birinci N puan alır) ve Puan ligi (Yahoo'nun varsayılan puan değerleriyle).
-6. **Draft:** Her seçimin bugüne kadarki değeri, takımların draft sıralaması, en iyi ve en kötü seçimler.
-7. **Transferler:** Serbest oyuncu eklemelerinin ve takasların, oyuncunun yeni takımında aktif oynadığı maçlarda ürettiği değere göre sıralaması.
+3. **Güç Sıralaması:** %45 "herkese karşı" kategori oranı (her hafta ligdeki herkesle oynasaydın), %25 son 2 haftanın formu, %30 bugünkü kadro gücü. Ayrıca fikstür şansı ve haftalık değişim.
+4. **Puan Durumu:** Aynı sezonun dört formatta sıralaması: H2H Kategori (ligin gerçek formatı), H2H Tek Galibiyet, Rotisserie (sezon toplamlarıyla her kategoride tüm lig sıralanır, birinci N puan alır) ve Puan ligi (Yahoo'nun varsayılan puan değerleriyle).
+5. **Draft:** Her seçimin bugüne kadarki değeri, takımların draft sıralaması, en iyi ve en kötü seçimler.
+6. **Transferler:** Serbest oyuncu eklemelerinin ve takasların, oyuncunun yeni takımında aktif oynadığı maçlarda ürettiği değere göre sıralaması.
 
 Draft ve Transferler tek bir ölçü kullanır: **değer** = oyuncunun maç başı z-skoru eksi "yedek seviyesi" (en iyi 20 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır.
 
@@ -63,7 +60,7 @@ Sonraki senkronlar yalnızca eksik olanı okur:
 Yahoo çok sık istek görürse geçici hız sınırı koyar (HTTP 999). Eklenti bu durumda birkaç dakika bekleyip kaldığı yerden kendiliğinden devam eder. Veri `data/league.json` dosyasında durur; `.venv/bin/python -m backend.validate` komutu kayıtlı haftaları Yahoo'nun resmi skorlarıyla karşılaştırır.
 
 Notlar:
-- Okunanlar: lig ayarları, takımlar, önümüzdeki 14 günün NBA fikstürü ve güncel dizilişler (takım başına 1 sayfa), gelecek haftanın eşleşmeleri, draft sonuçları, transfer geçmişi, ligdeki ilk 300 oyuncunun sezon ortalamaları (günde bir), güncel kadrolar, sezon / son 30 / 14 / 7 gün ortalamaları, her günün aktif/yedek dizilişi ve kutu skorları, haftalık eşleşmeler ve Yahoo'nun resmi haftalık toplamları. Ya Olsaydı? sekmesi kendi hesapladığı skoru resmi skorla karşılaştırır.
+- Okunanlar: lig ayarları, takımlar, güncel dizilişler (takım başına 1 sayfa), draft sonuçları, transfer geçmişi, ligdeki ilk 300 oyuncunun sezon ortalamaları (günde bir), güncel kadrolar, sezon / son 30 / 14 / 7 gün ortalamaları, her günün aktif/yedek dizilişi ve kutu skorları, haftalık eşleşmeler ve Yahoo'nun resmi haftalık toplamları. Ya Olsaydı? sekmesi kendi hesapladığı skoru resmi skorla karşılaştırır.
 - Bu yöntem Yahoo'nun sayfa yapısına bağlı. Yahoo tasarımı değiştirirse eklentinin güncellenmesi gerekir.
 - Otomatik sayfa okumak Yahoo'nun kullanım koşullarında gri bir alanda. Eklenti yalnızca kendi ligini, yavaş ve elle başlatıldığında okur.
 - Serbest oyuncuların yalnızca sezon ortalamaları var, günlük istatistikleri yok. Ya Olsaydı? sekmesinde yalnızca o gün herhangi bir takımın kadrosunda olan oyuncular kullanılabilir.
@@ -90,7 +87,7 @@ Token `.yahoo_tokens.json` dosyasında saklanır ve otomatik yenilenir. Yahoo ya
 |---|---|
 | `backend/engine.py` | Saf hesaplama: kategori karşılaştırma, z-skor, takas etkisi, hafta tekrarı |
 | `extension/` | Chrome eklentisi: Yahoo sayfalarını okur, uygulamaya gönderir |
-| `backend/forecast.py` | Tahmin simülasyonu ve güç sıralaması |
+| `backend/rankings.py` | Güç sıralaması ve farklı formatlarda puan durumu |
 | `backend/analysis.py` | Draft ve transfer değerlendirmesi |
 | `backend/imported.py` | Eklentiden gelen veriyi saklar ve uygulamaya sunar |
 | `backend/yahoo.py` | Yahoo Fantasy API istemcisi (OAuth2, XML ayrıştırma, cache) |

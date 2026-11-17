@@ -105,13 +105,20 @@ export function drawAllPlayPoster(data: AllPlay, teamName: string): HTMLCanvasEl
     ctx.fillStyle = C.muted; ctx.font = `500 15px ${FONT}`; ctx.fillText(t.s, x + 20, statsY + 98);
   });
 
-  // ---- sweep banner
+  // ---- sweep banner: a dark bar with a gold score chip
   if (sweeps.length) {
     const by = statsY + statsH + 22;
-    rr(ctx, M, by, W - 2 * M, bannerH, 16, C.goldSoft, C.gold, 2);
-    ctx.fillStyle = C.text; ctx.textAlign = "center"; ctx.font = `900 26px ${FONT}`;
+    rr(ctx, M, by, W - 2 * M, bannerH, 14, C.text);
+    rr(ctx, M, by, 8, bannerH, 4, C.gold);                       // gold edge
+    const chipW = 86, chipH = 36, cx = M + 28, cy = by + (bannerH - chipH) / 2;
+    rr(ctx, cx, cy, chipW, chipH, chipH / 2, C.gold);
+    ctx.textAlign = "center"; ctx.fillStyle = C.text; ctx.font = `900 21px ${FONT}`;
+    ctx.fillText(`${nT}/${nT}`, cx + chipW / 2, by + bannerH / 2 + 1);
     const wk = sweeps.map((w) => `${w.week}.`).join(", ");
-    ctx.fillText(`👑  ${wk} haftada TÜM LİGİ YENDİ  👑`, W / 2, by + bannerH / 2 + 1);
+    ctx.textAlign = "left"; ctx.fillStyle = C.white;
+    ctx.fillText(fit(ctx, `${wk} haftada ligdeki herkesi yendi`, W - 2 * M - chipW - 250, 25, 800), cx + chipW + 18, by + bannerH / 2 + 1);
+    ctx.textAlign = "right"; ctx.fillStyle = C.gold; ctx.font = `700 14px ${FONT}`;
+    ctx.fillText(sweeps.length > 1 ? `${sweeps.length} KUSURSUZ HAFTA` : "KUSURSUZ HAFTA", W - M - 24, by + bannerH / 2 + 1);
   }
 
   // ---- grid: column headers
@@ -165,7 +172,7 @@ export function drawAllPlayPoster(data: AllPlay, teamName: string): HTMLCanvasEl
     rr(ctx, x, cy, cw, ch, 10, sweep ? C.gold : c.wins > nT / 2 ? C.winSoft : C.white, sweep ? null : C.line, 2);
     ctx.textAlign = "center"; ctx.fillStyle = sweep ? C.text : c.wins > nT / 2 ? C.win : C.text;
     ctx.font = `900 22px ${FONT}`;
-    ctx.fillText(`${sweep ? "👑 " : ""}${c.wins}/${nT}`, x + cw / 2, cy + ch / 2 + 1);
+    ctx.fillText(`${c.wins}/${nT}`, x + cw / 2, cy + ch / 2 + 1);
   });
   ctx.fillStyle = C.brand; ctx.font = `900 22px ${FONT}`;
   ctx.fillText(`${tot.W}/${tot.W + tot.L + tot.T}`, gx + NAME_W + nW * cellW + TOT_W / 2, by + ROW_H / 2);

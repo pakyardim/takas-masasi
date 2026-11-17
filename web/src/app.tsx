@@ -3,7 +3,6 @@ import { useEffect, useState } from "preact/hooks";
 import { api, store } from "./store";
 import type { LeagueResponse } from "./types";
 import { Draft } from "./tabs/Draft";
-import { Forecast } from "./tabs/Forecast";
 import { Moves } from "./tabs/Moves";
 import { Power } from "./tabs/Power";
 import { Standings } from "./tabs/Standings";
@@ -13,7 +12,6 @@ import { WhatIf } from "./tabs/WhatIf";
 const TABS: { id: string; label: string; view: ComponentType }[] = [
   { id: "trade", label: "Takas Analizi", view: Trade },
   { id: "whatif", label: "Ya Olsaydı?", view: WhatIf },
-  { id: "forecast", label: "Tahmin", view: Forecast },
   { id: "power", label: "Güç Sıralaması", view: Power },
   { id: "standings", label: "Puan Durumu", view: Standings },
   { id: "draft", label: "Draft", view: Draft },

@@ -114,26 +114,10 @@ def _with_schedule(tmp_path, monkeypatch):
     return imported.ImportedProvider()
 
 
-def test_forecast(tmp_path, monkeypatch):
-    from backend import forecast
-    p = _with_schedule(tmp_path, monkeypatch)
-    f = forecast.forecast(p)
-    assert f["available"] and [w["week"] for w in f["weeks"]] == [2]
-    m = f["weeks"][0]["matchups"][0]
-    assert abs(m["p_a"] + m["p_b"] + m["p_tie"] - 1) < 1e-9
-    assert m["games_left"] == {"a": 7, "b": 7}                 # a2 sits in IL, b2 is out
-    assert {x["name"] for x in m["out"]["a"]} == {"Pa2"} and {x["name"] for x in m["out"]["b"]} == {"Pb2"}
-    assert m["favorite"] == "a" and m["p_a"] > 0.9             # a1 (30 ppg) vs b1 (20 ppg)
-    assert sum(m["score"].values()) == 9 and m["score"]["W"] > m["score"]["L"]
-    pts = next(c for c in m["categories"] if c["key"] == "PTS")
-    assert abs(pts["a"] - 7 * 30) < 25 and pts["p_a"] > 0.95
-    assert forecast.forecast(p)["weeks"][0]["matchups"][0]["p_a"] == m["p_a"]   # seeded: reproducible
-
-
 def test_power_rankings(tmp_path, monkeypatch):
-    from backend import forecast
+    from backend import rankings
     p = _with_schedule(tmp_path, monkeypatch)
-    r = forecast.power(p)
+    r = rankings.power(p)
     assert r["available"] and r["weeks"] == [1]
     assert [t["rank"] for t in r["teams"]] == [1, 2]
     top = r["teams"][0]
@@ -143,9 +127,9 @@ def test_power_rankings(tmp_path, monkeypatch):
 
 
 def test_alternative_standings(tmp_path, monkeypatch):
-    from backend import forecast
+    from backend import rankings
     p = _with_schedule(tmp_path, monkeypatch)
-    r = forecast.standings(p)
+    r = rankings.standings(p)
     assert r["available"] and r["n"] == 2 and r["weeks_done"] == [1]
     by = {t["team"]: t for t in r["teams"]}
     # two teams, nine categories: roto points per category are 2 and 1 (or 1.5 each when tied)

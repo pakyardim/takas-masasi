@@ -73,19 +73,7 @@ export interface AllPlay {
   weeks: { week: number; start: string; end: string; complete: boolean; real_opponent: string | null; rows: VersusRow[] }[];
 }
 
-// ---- forecast / power / standings
-export interface ForecastMatchup {
-  a: string; b: string; a_name: string; b_name: string;
-  categories: { key: string; a: number; b: number; p_a: number; p_b: number; result: Res }[];
-  score: Score; favorite: "a" | "b"; p_a: number; p_b: number; p_tie: number; exp_a: number; exp_b: number;
-  now: { score: Score; result: Res } | null; games_left: { a: number; b: number };
-  players: Record<"a" | "b", { player: string; name: string; games: number; few_games: boolean }[]>;
-  out: Record<"a" | "b", { name: string; status: string }[]>;
-}
-export interface Forecast {
-  available: boolean; sims: number; active_slots: number;
-  weeks: { week: number; start: string; end: string; days_played: number; days_left: number; uncovered_dates: string[]; matchups: ForecastMatchup[] }[];
-}
+// ---- power / standings
 export interface PowerTeam {
   team: string; name: string; rank: number; prev_rank: number | null; power: number;
   allplay: [number, number, number]; allplay_pct: number; form_pct: number; roster: number;
