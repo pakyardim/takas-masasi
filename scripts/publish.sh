@@ -1,19 +1,33 @@
 #!/usr/bin/env bash
-# Yayınla: son senkronize edilen lig verisini repoya ekler ve gönderir.
-# Barındırma servisi her gönderimde siteyi yeniden derler
-# (derleme: cd web && npm ci && npm run build:site, çıktı klasörü: web/dist).
+# Yayınla: siteyi derler, son senkronize edilen lig verisini içine koyar ve
+# Cloudflare Pages'e doğrudan yükler. Lig verisi repoya girmez.
+#
+# İlk çalıştırmada:
+#   - Cloudflare'e giriş ister (tarayıcı açılır),
+#   - proje adını sorar ve projeyi oluşturur. Site adresi <proje-adı>.pages.dev olur.
+# Proje adı .publish-project dosyasında saklanır (repoya girmez).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+WRANGLER="npx --yes wrangler@4"
 
 [ -f data/league.json ] || { echo "data/league.json yok. Önce eklentiyle senkronize et."; exit 1; }
 
-# data/ .gitignore'da durur (yanlışlıkla eklenmesin diye); burada bilerek ekleniyor
-git add -f data/league.json
-[ -d data/logos ] && git add -f data/logos
-if git diff --cached --quiet -- data; then
-  echo "Veri değişmemiş; yayınlanacak yeni bir şey yok."
-  exit 0
+if [ ! -f .publish-project ]; then
+  echo "Site adresi <proje-adı>.pages.dev olacak. Yalnızca küçük harf, rakam ve tire kullan."
+  echo "Bağlantıyı bilen herkes siteyi görebilir; tahmin edilmesi zor bir ad seç (ör. okkesi-lig-7f3k)."
+  read -r -p "Proje adı: " name
+  [[ "$name" =~ ^[a-z0-9][a-z0-9-]{1,56}[a-z0-9]$ ]] || { echo "Geçersiz ad."; exit 1; }
+  # proje zaten varsa bu adım hata verir; o durumda var olan projeye yüklenir
+  $WRANGLER pages project create "$name" --production-branch main || echo "(Proje oluşturulamadı ya da zaten var; yüklemeye devam ediliyor.)"
+  echo "$name" > .publish-project
 fi
-git commit -q -m "Lig verisi: $(date '+%Y-%m-%d %H:%M')" -- data
-git push -q
-echo "Gönderildi. Site birkaç dakika içinde güncellenir."
+PROJECT="$(cat .publish-project)"
+
+echo "Site derleniyor…"
+(cd web && npm run --silent build:site)
+
+echo "Cloudflare Pages'e yükleniyor: $PROJECT"
+$WRANGLER pages deploy web/dist --project-name "$PROJECT" --branch main --commit-dirty=true
+
+echo
+echo "Yayında: https://$PROJECT.pages.dev"

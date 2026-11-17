@@ -60,26 +60,28 @@ Eklenti: Chrome'da `chrome://extensions` → **Geliştirici modu** → **Paketle
 
 İlk senkron bütün sezonu okur (6–8 dakika). Sonrakiler yalnızca eksik olanı okur: bitmiş haftalar ve kayıtlı günler atlanır, son 2 gün yeniden okunur, kadrolar ve ortalamalar en fazla 6 saatte bir yenilenir. Yahoo geçici hız sınırı koyarsa (HTTP 999) eklenti birkaç dakika bekleyip kaldığı yerden devam eder.
 
-## Yayına alma
+## Yayına alma (Cloudflare Pages)
 
-Site statik olduğu için herhangi bir statik barındırma servisi yeter (Cloudflare Pages, Netlify vb.). Servise şu ayarları ver:
-
-| Ayar | Değer |
-|---|---|
-| Derleme komutu | `cd web && npm ci && npm run build:site` |
-| Çıktı klasörü | `web/dist` |
-
-`build:site`, siteyi derleyip `data/` klasörünü içine kopyalar. Bu yüzden **lig verisinin repoda olması gerekir**. Senkrondan sonra:
+Site statik olduğu için sunucu gerekmez. Yayınlamak tek komut:
 
 ```bash
 scripts/publish.sh
 ```
 
-Bu komut `data/league.json` ve `data/logos` dosyalarını commit edip gönderir; barındırma servisi siteyi kendiliğinden yeniden derler.
+Komut siteyi derler, `data/` klasöründeki lig verisini ve logoları içine koyar ve Cloudflare Pages'e doğrudan yükler. **Lig verisi repoya girmez.**
 
-Dikkat:
-- `data/` klasörü `.gitignore`'dadır; yalnızca `publish.sh` onu bilerek ekler.
-- Yayınlanan site ve içindeki veri dosyası, bağlantıyı bilen herkes tarafından okunabilir (repo özel olsa bile). Yalnızca lig arkadaşların görsün istiyorsan barındırma servisinin erişim kısıtlamasını (ör. Cloudflare Access) kullan.
+İlk çalıştırmada:
+1. Ücretsiz bir Cloudflare hesabın olmalı (https://dash.cloudflare.com/sign-up).
+2. Komut tarayıcıda Cloudflare girişi ister ve izin onayı alır.
+3. Bir proje adı sorar. Site adresi `<proje-adı>.pages.dev` olur; ad `.publish-project` dosyasında saklanır (repoya girmez).
+
+Sonraki güncellemeler: eklentiyle senkronize et, sonra `scripts/publish.sh`.
+
+Kimler görebilir:
+- Site, bağlantıyı bilen herkese açıktır. Tahmin edilmesi zor bir proje adı seçip bağlantıyı yalnızca gruba atmak en basit yoldur.
+- Gerçek bir giriş kapısı istersen Cloudflare Zero Trust → Access altında, alan adı `<proje-adı>.pages.dev` olan bir "self-hosted" uygulama tanımlayıp izin verilen e-postaları listeleyebilirsin.
+
+Not: Bu yöntemle oluşturulan proje "Direct Upload" türündedir ve sonradan Git bağlantısına çevrilemez. Git ile otomatik derleme istersen ayrı bir proje açıp derleme komutu olarak `cd web && npm ci && npm run build:site`, çıktı klasörü olarak `web/dist` verirsin; o durumda `data/` klasörünün repoda olması gerekir.
 
 ## Geliştirme
 
