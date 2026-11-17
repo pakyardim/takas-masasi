@@ -122,6 +122,11 @@ def merge_import(kind: str, data: dict) -> dict:
         store["pool_at"] = data.get("synced_at")
         for pid, pl in data["players"].items():
             store["players"][pid] = {**store["players"].get(pid, {}), **pl}
+    elif kind == "prev_season":
+        # last season's per-game averages (roster players and league pool); read once per league
+        store["prev_season"] = {"season": data["season"], "averages": data["averages"], "synced_at": data.get("synced_at")}
+        for pid, pl in data["players"].items():
+            store["players"][pid] = {**store["players"].get(pid, {}), **pl}
     elif kind == "schedule":
         # data: {dates: ["11/16", ...], teams: {tid: [{player, slot, games: [bool]}]}}
         dates = [_near_date(d) for d in data["dates"]]
@@ -186,7 +191,7 @@ def status(league_id: str | None = None) -> dict:
     base = store.get("base")
     if not base or (league_id and base.get("league_id") != league_id):
         return {"league_id": None, "dates": [], "weeks": [], "final_weeks": [], "synced_at": None,
-                "has_draft": False, "tx_keys": [], "tx_complete": False, "pool_at": None}
+                "has_draft": False, "tx_keys": [], "tx_complete": False, "pool_at": None, "prev_done": False}
     # weeks that never need to be read again: official totals are final and every day is stored
     final = sorted(int(w) for w, v in store["weeks"].items()
                    if v.get("final") and v["dates"] and all(d in store["days"] for d in v["dates"]))
@@ -194,4 +199,4 @@ def status(league_id: str | None = None) -> dict:
             "weeks": sorted(int(w) for w in store["weeks"]), "final_weeks": final,
             "synced_at": base.get("synced_at"), "has_draft": bool(store.get("draft")),
             "tx_keys": sorted(store.get("transactions", {})), "tx_complete": bool(store.get("tx_complete")),
-            "pool_at": store.get("pool_at")}
+            "pool_at": store.get("pool_at"), "prev_done": bool(store.get("prev_season"))}

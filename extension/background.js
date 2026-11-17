@@ -109,7 +109,7 @@ async function run(resumed = false) {
   const job = await getJob();
   const { tabId, lid, server } = job;
   const say = (msg) => setState({ running: true, msg: (resumed ? "(kaldığı yerden) " : "") + msg });
-  const stats = { pages: 0, skippedWeeks: 0, skippedDays: 0, rosters: false, draft: 0, tx: 0, pool: 0 };
+  const stats = { pages: 0, skippedWeeks: 0, skippedDays: 0, rosters: false, draft: 0, tx: 0, pool: 0, prev: 0 };
 
   try {
     await patchJob({ pauseUntil: null });
@@ -191,6 +191,27 @@ async function run(resumed = false) {
       await patchJob({ extrasDone: true });
     }
 
+    // 1b2) last season's per-game averages (roster players and the league pool), once per league
+    if (!have.prev_done || job.force) {
+      const prevView = (info.season_view || "").replace(/(\d{4})$/, (y) => String(+y - 1));
+      if (/^AS_\d{4}$/.test(prevView)) {
+        const averages = {}, players = {};
+        for (const [i, tid] of info.teams.entries()) {
+          say(`Geçen sezon ortalamaları: takım ${i + 1}/${info.teams.length}`);
+          const rows = await inTab(tabId, "teamAverages", lid, tid, prevView);
+          for (const r of rows) { players[r.player.id] = r.player; averages[r.player.id] = r.line || { GP: 0 }; }
+        }
+        for (let page = 0; page < POOL_PAGES; page++) {
+          say(`Geçen sezon oyuncu havuzu (${page + 1}/${POOL_PAGES})`);
+          const rows = await inTab(tabId, "playerPool", lid, prevView, page * 25);
+          for (const r of rows) { players[r.player.id] ??= r.player; averages[r.player.id] ??= r.line || { GP: 0 }; }
+          if (rows.length < 25) break;
+        }
+        await post(server, { kind: "prev_season", data: { season: prevView, players, averages, synced_at: new Date().toISOString() } });
+        stats.prev = Object.keys(averages).length;
+      }
+    }
+
     // 1c) today's lineups (who sits in IL, who is out): every sync, 1 page per team
     if (!job.scheduleDone) {
       const teams = {};
@@ -210,7 +231,7 @@ async function run(resumed = false) {
     const haveDates = new Set(have.dates || []);
     const finalWeeks = new Set(have.final_weeks || []);
     for (let w = 1; w <= info.current_week; w++) {
-      if (finalWeeks.has(w)) { stats.skippedWeeks++; continue; }
+      if (!job.force && finalWeeks.has(w)) { stats.skippedWeeks++; continue; }
       say(`${w}/${info.current_week}. hafta: eşleşmeler okunuyor…`);
       const meta = await inTab(tabId, "weekMeta", lid, w, info.my_team);
       const official = {};
@@ -222,7 +243,7 @@ async function run(resumed = false) {
 
       const past = meta.dates.filter((d) => d < today);
       // keep stored days, except the last 2 (stat corrections)
-      const todo = past.filter((d) => !(haveDates.has(d) && d < cutoff));
+      const todo = past.filter((d) => job.force || !(haveDates.has(d) && d < cutoff));
       stats.skippedDays += past.length - todo.length;
       for (const [i, d] of todo.entries()) {
         const teams = {}, players = {};
@@ -231,7 +252,8 @@ async function run(resumed = false) {
           const rows = await inTab(tabId, "teamDay", lid, d, tid);
           teams[tid] = rows.map((r) => {
             players[r.player.id] = { ...players[r.player.id], ...r.player };
-            return { player: r.player.id, slot: r.slot, line: r.line };
+            // status is the injury flag Yahoo shows that day ("O" out, "Q" questionable, ...)
+            return { player: r.player.id, slot: r.slot, line: r.line, ...(r.player.status ? { status: r.player.status } : {}) };
           });
           stats.pages++;
         }
@@ -245,7 +267,7 @@ async function run(resumed = false) {
     await chrome.alarms.clear(WATCHDOG);
     await setState({ running: false, cls: "ok", msg:
       `Tamam. Okunan: ${stats.pages / info.teams.length} gün${stats.rosters ? ", kadrolar ve ortalamalar" : ""}` +
-      `${stats.draft ? `, draft (${stats.draft} seçim)` : ""}${stats.tx ? `, ${stats.tx} yeni transfer` : ""}${stats.pool ? `, ${stats.pool} oyunculuk havuz` : ""}.\n` +
+      `${stats.draft ? `, draft (${stats.draft} seçim)` : ""}${stats.tx ? `, ${stats.tx} yeni transfer` : ""}${stats.pool ? `, ${stats.pool} oyunculuk havuz` : ""}${stats.prev ? `, geçen sezonun ${stats.prev} oyuncusu` : ""}.\n` +
       `Atlanan (zaten kayıtlı): ${stats.skippedWeeks} bitmiş hafta, ${stats.skippedDays} gün` +
       `${stats.rosters ? "" : `, kadrolar (son ${ROSTER_MAX_AGE_H} saatte okunmuş)`}.\nUygulamayı yenile.` });
   } catch (e) {

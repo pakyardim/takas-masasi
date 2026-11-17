@@ -2,7 +2,7 @@
 import type { Category, League, Player, Players, StatLine } from "../types";
 import type { EngineLeague, Week } from "./core";
 
-export interface DayRow { player: string; slot: string; line: StatLine | null }
+export interface DayRow { player: string; slot: string; line: StatLine | null; status?: string }
 export interface RawPlayer { id?: string; name?: string; nba_team?: string; positions?: string[]; status?: string }
 export interface RawWeek { pairs: [string, string][]; dates: string[]; official?: Record<string, StatLine>; final?: boolean }
 export interface RawPick { round: number; pick: number; overall: number; player: string; team: string | null; team_name: string }
@@ -19,6 +19,7 @@ export interface RawStore {
   draft?: RawPick[];
   transactions?: Record<string, RawTx>;
   pool?: Record<string, StatLine>;
+  prev_season?: { season: string; averages: Record<string, StatLine>; synced_at?: string };
   lineup_now?: Record<string, { player: string; slot: string }[]>;
   logos?: Record<string, { url: string; file: string; v: string }>;
   last_import?: string;
@@ -127,6 +128,9 @@ export class LeagueData {
     for (const k of keys) out[k] = { ...(filled(src[k]) ?? filled(pool[k]) ?? { GP: 0 }) };
     return out;
   }
+
+  /** Last season's per-game averages (roster players and the league pool), if synced. */
+  prevAverages(): Record<string, StatLine> { return this.store.prev_season?.averages ?? {}; }
 
   matchups(week: number): [string, string][] { return this.store.weeks[String(week)]?.pairs ?? []; }
   official(week: number): Record<string, StatLine> { return this.store.weeks[String(week)]?.official ?? {}; }

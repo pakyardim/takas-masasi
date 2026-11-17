@@ -92,10 +92,15 @@ Not: Bu yöntemle oluşturulan proje "Direct Upload" türündedir ve sonradan Gi
 4. İstersen http://127.0.0.1:8000 adresinden kontrol et.
 5. `scripts/publish.sh` ile yayınla. Canlı adres: https://okkesi-koruma-ve-yasatma-ligi.pages.dev
 
+**Sakatlık takibi için (sürüm 0.9.0):**
+- Eklentiyi güncelledikten sonra bir kez **"Her şeyi baştan oku (sakatlık durumları ve geçen sezon için)"** kutusunu işaretleyip senkronla. Bu, geçmiş günlerdeki sakatlık durumlarını da okur (yaklaşık 8–10 dk). Bu seferden sonrası normal senkronla yetişir.
+- Geçen sezonun oyuncu ortalamaları da bu sırada bir kez çekilir. Sakatlık sayfasında bir oyuncunun bu sezonki maçı 10'dan azsa, kaybettiği değer geçen sezonun ortalamasıyla hesaplanır.
+
 **Kod değiştirdikten sonra:** GitHub'a push etmek siteyi güncellemez. Değişikliğin yayında görünmesi için `scripts/publish.sh` çalıştırılır (veri senkronlanmamış olsa bile aynı komut yeterli).
 
 **Açık kararlar:**
 - Yahoo Product Sans fontu kullanılmıyor (Yahoo'nun tescilli fontu; herkese açık sitede dağıtılması izin gerektirir). Yerine Inter ya da Figtree gibi açık lisanslı bir font konulabilir. Henüz yapılmadı.
+- Yahoo'nun sakatlık bayrakları ("O", "Q") artık günlük olarak kaydediliyor; yalnızca "O" ve IL slotundakiler sakat sayılıyor.
 - Otomatik yayın (GitHub'a push'ta siteyi kendiliğinden güncelleme) için lig verisinin GitHub dışında bir yerde (ör. Cloudflare R2) tutulması gerekir. Henüz kurulmadı; şimdilik elle yayınlanıyor.
 
 **Mobil:** 375 px genişlikte kontrol edildi; yatay kayma yok. Geniş tablolar kendi kutusu içinde kayar.

@@ -11,11 +11,15 @@
 // NBA team has a stat line that day. Teams with no player in our data that day count as off.
 // Day-by-day injury status is not stored by the sync, so only the current status is shown.
 
-import { INACTIVE_SLOTS } from "./core";
+import { INACTIVE_SLOTS, playerZ } from "./core";
 import type { LeagueData } from "./data";
 import { Valuer } from "./analysis";
 
 const IL_SLOTS = new Set(["IL", "IL+", "IR", "NA"]);
+// Yahoo's injury flags for a day. "Q" (questionable) is not counted as out.
+const OUT_STATUS = new Set(["O", "INJ", "OFS", "SUSP"]);
+/** Fewer games than this this season: the season value is too noisy, use last season's. */
+const MIN_GAMES_THIS_SEASON = 10;
 
 export interface InjuryCell { il: number; missed: number; lost: number }
 export interface InjuryReport {
@@ -46,6 +50,14 @@ export function injuries(data: LeagueData): InjuryReport {
   const weekOf: Record<string, number> = {};
   for (const [w, info] of Object.entries(store.weeks)) for (const d of info.dates ?? []) weekOf[d] = +w;
   const nbaOf = (pid: string) => store.players[pid]?.nba_team ?? "";
+  // last season's value per game, on this season's yardstick (same z model)
+  const prevZ: Record<string, number> = {};
+  for (const [k, avg] of Object.entries(data.prevAverages())) if (avg.GP) prevZ[k] = playerZ(avg, v.league, v.model).TOTAL;
+  const perGame = (pid: string): number => {
+    const gp = v.avg[pid]?.GP ?? 0;
+    const z = gp < MIN_GAMES_THIS_SEASON && prevZ[pid] !== undefined ? prevZ[pid] : v.z[pid];
+    return z !== undefined ? z - v.repl : 0;
+  };
   const teamTotals: Record<string, Bucket> = {};
   const playerTotals: Record<string, Bucket> = {};
 
@@ -58,16 +70,17 @@ export function injuries(data: LeagueData): InjuryReport {
     for (const [team, rows] of Object.entries(teamsToday)) {
       for (const r of rows) {
         const pid = r.player;
-        if (IL_SLOTS.has(r.slot)) {
+        const inIL = IL_SLOTS.has(r.slot);
+        // injured: on the injured list, or flagged out that day (even if still in an active slot)
+        if (inIL || OUT_STATUS.has((r.status ?? "").toUpperCase())) {
           add(bucket(teamTotals, team), w, "il", 1);
           add(bucket(playerTotals, pid), w, "il", 1);
           bucket(playerTotals, pid).team = team;
-          continue;
         }
-        if (INACTIVE_SLOTS.has(r.slot)) continue;
+        if (inIL || INACTIVE_SLOTS.has(r.slot)) continue;
         const didPlay = !!r.line && Object.keys(r.line).length > 0;
         if (didPlay || !played.has(nbaOf(pid))) continue;
-        const lost = v.z[pid] !== undefined ? v.z[pid] - v.repl : 0;
+        const lost = perGame(pid);
         add(bucket(teamTotals, team), w, "missed", 1);
         add(bucket(teamTotals, team), w, "lost", lost);
         add(bucket(playerTotals, pid), w, "missed", 1);

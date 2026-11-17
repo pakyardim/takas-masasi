@@ -23,3 +23,29 @@ describe("injury report", () => {
     expect(a1?.missed ?? 0).toBeGreaterThanOrEqual(0);
   });
 });
+
+describe("injury flags and last season", () => {
+  // a1 (team 1, active PG) on 2026-10-27; his NBA team is set to one that plays that day
+  const withA1Out = (line: unknown, status?: string) => {
+    const store = JSON.parse(JSON.stringify(fx.store));
+    store.players.a1.nba_team = "BBB";
+    const row = store.days["2026-10-27"]["1"].find((x: { player: string }) => x.player === "a1");
+    row.line = line;
+    if (status) row.status = status;
+    return store;
+  };
+  it("counts a day flagged out as an injured day, even in an active slot", () => {
+    const r = injuries(new LeagueData(withA1Out(null, "O")));
+    expect(r.teams.find((t) => t.team === "1")!.il).toBeGreaterThanOrEqual(1);
+    expect(r.players.find((p) => p.key === "a1")!.missed).toBeGreaterThanOrEqual(1);
+  });
+  it("uses last season's value for a player with few games this season", () => {
+    const store = withA1Out(null);
+    store.base.averages.season.a1.GP = 3;                  // few games this season: fall back to last season
+    const lost = (r: ReturnType<typeof injuries>) => r.players.find((p) => p.key === "a1")!.lost;
+    const base = injuries(new LeagueData(store));
+    store.prev_season = { season: "AS_2025", averages: { a1: { GP: 40, PTS: 60, TO: 0, FGM: 25, FGA: 40 } } };
+    const withPrev = injuries(new LeagueData(store));
+    expect(lost(withPrev)).not.toBe(lost(base));
+  });
+});
