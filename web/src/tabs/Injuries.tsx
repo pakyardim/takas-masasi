@@ -1,6 +1,8 @@
 import { api, num, store } from "../store";
 import type { InjuryCell, InjuryReport } from "../types";
 import { Card, Empty, ErrorBox, PageHead, PlayerLabel, TableWrap, TeamName, useLoad } from "../ui";
+import { PosterButton } from "../PosterButton";
+import { injuriesPoster } from "../posters";
 
 const signedNum = (x: number, d = 1) => (x > 0 ? "+" : x < 0 ? "−" : "") + num(Math.abs(x), d);
 const dayShort = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
@@ -10,7 +12,9 @@ export function Injuries() {
   const me = store.league.my_team;
   return (
     <section>
-      <PageHead title="Sakatlıklar" sub="Kim kimi vurdu? Hafta hafta sakat oyuncular, kaçırılan maçlar ve kaybedilen üretim." />
+      <PageHead title="Sakatlıklar" sub="Kim kimi vurdu? Hafta hafta sakat oyuncular, kaçırılan maçlar ve kaybedilen üretim.">
+        {r?.available && <PosterButton name="sakatliklar" make={() => injuriesPoster(r)} />}
+      </PageHead>
       {error ? <ErrorBox msg={error} /> : !r ? <Empty>Yükleniyor…</Empty> : !r.available ? <Empty>Henüz günlük veri yok. Eklentiyle senkronize et.</Empty> : <Body r={r} me={me} />}
     </section>
   );

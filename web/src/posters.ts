@@ -2,7 +2,7 @@
 import { drawPoster, TONE, type Cell, type PCell, type PSection } from "./poster";
 import { loadLogos } from "./share";
 import { catByKey, dayLong, fmt, num, pct, pname, rec, RES, scoreText, signed, store } from "./store";
-import type { DraftPick, DraftReport, Edit, MovesReport, Power, Standings, StandingsTeam, WeekData, WhatIfResult } from "./types";
+import type { DraftPick, DraftReport, Edit, InjuryReport, MovesReport, Power, Standings, StandingsTeam, WeekData, WhatIfResult } from "./types";
 
 const allLogos = () => loadLogos(store.league.teams.map((t) => t.key));
 const tone = (v: number, eps = 0.0001) => (v > eps ? TONE.good : v < -eps ? TONE.bad : undefined);
@@ -188,4 +188,39 @@ export async function scenarioPoster(wk: WeekData, r: WhatIfResult, edits: Edit[
     sections,
     footer: "Geçmiş haftanın gerçek kutu skorlarıyla yeniden hesaplandı",
   }, await loadLogos([wk.team, wk.opponent]));
+}
+
+// ---------------------------------------------------------------- injuries
+export async function injuriesPoster(r: InjuryReport) {
+  const top = r.teams[0];
+  const byMissed = [...r.players].sort((a, b) => b.missed - a.missed || b.il - a.il).slice(0, 12);
+  const worst = byMissed[0];
+  const totalMissed = r.teams.reduce((a, t) => a + t.missed, 0);
+  const status = (s: string): Cell => (s ? { text: s, color: TONE.bad, bold: true } : { text: "sağlıklı", color: TONE.muted });
+  const numCol = { label: "#", w: 0.6, align: "c" as const };
+  return drawPoster({
+    title: "Sakatlıklar", width: 1280,
+    subtitle: `${r.days_covered} gün · kaçırılan maçlar ve kaybedilen üretim`,
+    tiles: [
+      { k: "En çok kayıp yaşayan", v: top?.name ?? "–", s: top ? `${signed(top.lost, 1)} değer · ${top.missed} maç` : "", tone: "bad" },
+      { k: "En çok maç kaçıran", v: worst?.name ?? "–", s: worst ? `${worst.missed} maç · ${signed(worst.lost, 1)} değer` : "", tone: "plain" },
+      { k: "Toplam kaçırılan maç", v: String(totalMissed), s: `${r.days_covered} gün`, tone: "plain" },
+    ],
+    sections: [
+      {
+        heading: "Takımlar",
+        columns: [numCol, { label: "Takım", w: 3.4, align: "l" }, { label: "IL gün", w: 1 }, { label: "Kaçırılan maç", w: 1.3 }, { label: "Kaybedilen değer", w: 1.6 }],
+        rows: r.teams.map((t, i) => [{ pill: true, text: String(i + 1) }, team(t.team), String(t.il), String(t.missed), val(t.lost)]),
+      },
+      {
+        heading: "En çok maç kaçıranlar",
+        columns: [numCol, { label: "Oyuncu", w: 3, align: "l" }, { label: "Takım", w: 3, align: "l" }, { label: "IL gün", w: 1 },
+          { label: "Kaçırılan maç", w: 1.3 }, { label: "Kaybedilen değer", w: 1.6 }, { label: "Şu an", w: 1.4, align: "l" }],
+        rows: byMissed.map((p, i) => [{ pill: true, text: String(i + 1) }, player(p.key, p.name),
+          p.team ? team(p.team, p.team_name ?? undefined) : "–", String(p.il || "–"), { text: String(p.missed), bold: true },
+          val(p.lost), status(p.status)]),
+      },
+    ],
+    footer: "Kaçırılan maç: aktif kadroda olup NBA takımı oynarken kutu skoru olmayan günler · değer: yedek seviyesi üstü, az maçı olanlarda geçen sezon ortalaması",
+  }, await allLogos());
 }
