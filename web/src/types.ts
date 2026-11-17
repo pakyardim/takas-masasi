@@ -113,3 +113,11 @@ export interface LuckReport {
   available: boolean; weeks: number[]; byWeek: Record<number, LuckRow[]>;
   season: { team: string; name: string; wins: number; losses: number; ties: number; luck: number }[];
 }
+
+// ---- injuries
+export interface InjuryCell { il: number; missed: number; lost: number }
+export interface InjuryReport {
+  available: boolean; days_covered: number; first_day: string | null; last_day: string | null; weeks: number[];
+  teams: { team: string; name: string; il: number; missed: number; lost: number; byWeek: Record<number, InjuryCell> }[];
+  players: { key: string; name: string; nba_team: string; team: string | null; team_name: string | null; il: number; missed: number; lost: number; status: string; byWeek: Record<number, InjuryCell> }[];
+}

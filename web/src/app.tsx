@@ -6,6 +6,7 @@ import { Moves } from "./tabs/Moves";
 import { Power } from "./tabs/Power";
 import { Standings } from "./tabs/Standings";
 import { Trade } from "./tabs/Trade";
+import { Injuries } from "./tabs/Injuries";
 import { WhatIf } from "./tabs/WhatIf";
 
 const TABS: { id: string; label: string; view: ComponentType }[] = [
@@ -13,6 +14,7 @@ const TABS: { id: string; label: string; view: ComponentType }[] = [
   { id: "whatif", label: "Ya Olsaydı?", view: WhatIf },
   { id: "power", label: "Güç Sıralaması", view: Power },
   { id: "standings", label: "Puan Durumu", view: Standings },
+  { id: "injuries", label: "Sakatlıklar", view: Injuries },
   { id: "draft", label: "Draft", view: Draft },
   { id: "moves", label: "Transferler", view: Moves },
 ];
