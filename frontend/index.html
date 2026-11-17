@@ -8,22 +8,22 @@
 </head>
 <body>
   <header>
-    <div class="brand">
-      <span class="logo">◐</span>
-      <div>
-        <h1>Takas Masası</h1>
-        <div id="league-name" class="muted">Yükleniyor…</div>
-      </div>
+    <div class="topbar">
+      <div class="brand-name">takas<span>masası</span></div>
     </div>
     <nav>
+      <span class="nav-label"><span class="ball"></span> Fantasy Basketbol</span>
       <button class="tab active" data-tab="trade">Takas Analizi</button>
       <button class="tab" data-tab="whatif">Ya Olsaydı?</button>
     </nav>
+    <div id="league-name">Yükleniyor…</div>
   </header>
 
   <main>
     <!-- ============ TRADE ============ -->
     <section id="tab-trade" class="tab-panel">
+      <h2 class="page-title">Takas Analizi</h2>
+      <p class="muted" style="margin:0 0 14px">Oyunculara tıklayarak iki tarafın paketini oluştur. Sonuç otomatik hesaplanır.</p>
       <div class="toolbar">
         <label>İstatistik dönemi
           <select id="period">
@@ -33,7 +33,6 @@
             <option value="last7">Son 7 gün</option>
           </select>
         </label>
-        <span class="muted small">Oyunculara tıklayarak takas paketlerini oluştur. Sonuç otomatik hesaplanır.</span>
       </div>
 
       <div class="two-col">
@@ -60,6 +59,8 @@
 
     <!-- ============ WHAT IF ============ -->
     <section id="tab-whatif" class="tab-panel hidden">
+      <h2 class="page-title">Ya Olsaydı?</h2>
+      <p class="muted" style="margin:0 0 14px">Geçmiş bir haftayı farklı oyuncularla yeniden oynat.</p>
       <div class="toolbar">
         <label>Hafta <select id="wi-week"></select></label>
         <label>Takım <select id="wi-team" class="team-select"></select></label>

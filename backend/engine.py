@@ -272,7 +272,8 @@ def team_week_totals(week: dict, team: str, swaps: list[dict], extra_stats: dict
                 lines.append(line)
                 if e["player"] in tracked:
                     tracked[e["player"]].append(line)
-    return add_lines(lines), {p: add_lines(ls) for p, ls in tracked.items()}
+    # GP = games counted in an active slot (daily lines from Yahoo carry no GP of their own)
+    return add_lines(lines), {p: {**add_lines(ls), "GP": len(ls)} if ls else {} for p, ls in tracked.items()}
 
 
 def what_if(league: dict, week: dict, team_a: str, team_b: str,

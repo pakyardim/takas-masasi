@@ -32,10 +32,12 @@ const cls = (v) => (v > 0.0001 ? "pos" : v < -0.0001 ? "neg" : "");
 const pname = (k) => S.players[k]?.name || k;
 const RES = { W: "Galibiyet", L: "Mağlubiyet", T: "Beraberlik" };
 
+// Yahoo-style player cell: name in link blue, injury tag in red, "NYK - PG,SG" underneath
 function playerLabel(k) {
   const p = S.players[k] || {};
-  const st = p.status ? ` <span class="badge">${esc(p.status)}</span>` : "";
-  return `${esc(p.name || k)}${st}`;
+  const st = p.status ? `<span class="inj">${esc(p.status)}</span>` : "";
+  const sub = [p.nba_team, (p.positions || []).join(",")].filter(Boolean).join(" - ");
+  return `<span class="pl-name">${esc(p.name || k)}</span>${st}${sub ? `<span class="pl-sub">${esc(sub)}</span>` : ""}`;
 }
 
 // ---------------------------------------------------------------- tabs
@@ -51,7 +53,8 @@ async function init() {
   const data = await api("/api/league");
   S.league = data.league; S.rosters = data.rosters; S.players = data.players;
   S.league.teams.forEach((t) => (S.teamName[t.key] = t.name));
-  $("#league-name").innerHTML = esc(S.league.name) + (S.league.demo ? ' <span class="badge" style="background:var(--sel);color:var(--accent)">DEMO VERİ</span>' : "");
+  $("#league-name").innerHTML = esc(S.league.name) + (S.league.demo ? ' <span class="badge">DEMO VERİ</span>' : ` (ID# ${esc(S.league.key)})`)
+    + (S.league.synced_at ? ` · son senkron ${new Date(S.league.synced_at).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })}` : "");
 
   const opts = S.league.teams.map((t) => `<option value="${t.key}">${esc(t.name)}${t.key === S.league.my_team ? " (sen)" : ""}</option>`).join("");
   ["#team-a", "#team-b", "#wi-team"].forEach((s) => ($(s).innerHTML = opts));
@@ -81,11 +84,9 @@ function renderRosters() {
     const team = $("#team-" + side).value;
     const sel = side === "a" ? S.selA : S.selB;
     $("#roster-" + side).innerHTML = S.rosters[team].map((k) => {
-      const p = S.players[k] || {};
       return `<div class="prow ${sel.has(k) ? "sel" : ""}" data-k="${k}" data-side="${side}">
         <input type="checkbox" ${sel.has(k) ? "checked" : ""} tabindex="-1">
         <div>${playerLabel(k)}</div>
-        <div class="meta">${esc((p.positions || []).join(","))} · ${esc(p.nba_team || "")}</div>
       </div>`;
     }).join("");
   }
@@ -134,11 +135,11 @@ function renderTrade(r) {
   }
 
   const catRows = r.categories.map((c) => {
-    const winner = c.better_for_a === "W" ? `<td class="win">${esc(A)}</td>` : c.better_for_a === "L" ? `<td class="loss">${esc(B)}</td>` : `<td>=</td>`;
+    const winner = c.better_for_a === "W" ? `<td><span class="side-tag a mini">A</span>${esc(A)}</td>` : c.better_for_a === "L" ? `<td><span class="side-tag b mini">B</span>${esc(B)}</td>` : `<td class="faded">=</td>`;
     const net = c.a_net === null ? "–" : (catByKey(c.key)?.ratio ? signed(c.a_net, 3) : signed(c.a_net, 1));
     const netCls = c.better_for_a === "W" ? "pos" : c.better_for_a === "L" ? "neg" : "";
     return `<tr><td><b>${esc(c.label)}</b>${c.higher ? "" : ' <span class="muted small">(az iyi)</span>'}</td>
-      <td>${fmt(c.key, c.a_gives)}</td><td>${fmt(c.key, c.b_gives)}</td>
+      <td class="${c.better_for_a === "L" ? "win" : ""}">${fmt(c.key, c.a_gives)}</td><td class="${c.better_for_a === "W" ? "win" : ""}">${fmt(c.key, c.b_gives)}</td>
       <td class="${netCls}">${net}</td>${winner}</tr>`;
   }).join("");
   const aWins = r.categories.filter((c) => c.better_for_a === "W").length;
@@ -150,7 +151,7 @@ function renderTrade(r) {
     const vals = isPts ? `<td>${p.fpts.toFixed(1)}</td>`
       : cs.map((c) => `<td title="z: ${p.z[c.key].toFixed(2)}" class="${p.z[c.key] > 1 ? "pos" : p.z[c.key] < -1 ? "neg" : ""}">${fmt(c.key, c.ratio ? (avg[c.ratio[1]] ? avg[c.ratio[0]] / avg[c.ratio[1]] : null) : avg[c.key])}</td>`).join("")
         + `<td><b class="${cls(p.z.TOTAL)}">${signed(p.z.TOTAL)}</b></td>`;
-    return `<tr><td><span class="side-tag ${tag}" style="width:18px;height:18px;font-size:10px">${tag.toUpperCase()}</span> ${playerLabel(k)}</td><td>${avg.GP ?? "–"}</td>${vals}</tr>`;
+    return `<tr><td><div style="display:flex;align-items:center;gap:6px"><span class="side-tag ${tag} mini">${tag.toUpperCase()}</span><div>${playerLabel(k)}</div></div></td><td>${avg.GP ?? "–"}</td>${vals}</tr>`;
   }).join("");
   const aKeys = Object.keys(r.players).filter((k) => S.selA.has(k));
   const bKeys = Object.keys(r.players).filter((k) => S.selB.has(k));
@@ -170,10 +171,10 @@ function renderTrade(r) {
       <div class="stat-card"><div class="k">${esc(A)} veriyor (${metric})</div><div class="v">${r.a_gives_value.toFixed(d)}</div></div>
       <div class="stat-card"><div class="k">${esc(B)} veriyor (${metric})</div><div class="v">${r.b_gives_value.toFixed(d)}</div></div>
       <div class="stat-card"><div class="k">${esc(A)} için net</div><div class="v ${cls(r.a_net_value)}">${signed(r.a_net_value, d)}</div></div>
-      ${isPts ? "" : `<div class="stat-card"><div class="k">Kategori üstünlüğü</div><div class="v"><span style="color:var(--a)">${aWins}</span> – <span style="color:var(--b)">${bWins}</span></div><div class="muted small">A'nın lehine – B'nin lehine</div></div>`}
+      ${isPts ? "" : `<div class="stat-card"><div class="k">Kategori üstünlüğü</div><div class="v"><span style="color:var(--a)">${aWins}</span> <span class="muted" style="font-size:14px;font-weight:700">vs</span> <span style="color:var(--b)">${bWins}</span></div><div class="muted small">${esc(A)} lehine – ${esc(B)} lehine</div></div>`}
     </div>
     ${spots}
-    <div class="card"><h3>Paket karşılaştırması (maç başı)</h3>
+    <div class="card"><h3>Paket karşılaştırması (maç başı)</h3><p class="muted small" style="margin:-4px 0 8px">Mavi hücre: o kategoride daha iyi olan paket.</p>
       <div class="table-wrap"><table><thead><tr><th>Kategori</th><th>${esc(A)} veriyor</th><th>${esc(B)} veriyor</th><th>${esc(A)} için net</th><th>Kazanan taraf</th></tr></thead><tbody>${catRows}</tbody></table></div>
     </div>
     <div class="card"><h3>Oyuncular</h3>
@@ -202,29 +203,31 @@ async function loadWeek() {
   renderSwaps();
 }
 
-function matchupTable(res, label) {
+function scoreboard(res, title) {
   const T = S.teamName[S.wk.team], O = S.teamName[S.wk.opponent];
-  if (S.league.scoring === "points") {
-    return `<div class="matchup-head"><div><div class="muted small">${label}</div><div class="score">${res.a_points.toFixed(1)} – ${res.b_points.toFixed(1)}</div></div>
-      <span class="result-pill ${res.result}">${RES[res.result]}</span></div>`;
-  }
-  const rows = res.categories.map((c) => {
-    const meta = catByKey(c.key);
-    return `<tr><td><b>${esc(meta.label)}</b></td>
-      <td class="${c.result === "W" ? "win" : ""}">${fmt(c.key, c.a, "total")}</td>
-      <td class="${c.result === "L" ? "loss" : ""}">${fmt(c.key, c.b, "total")}</td></tr>`;
-  }).join("");
-  return `<div class="matchup-head"><div><div class="muted small">${label}</div>
-      <div class="score">${res.score.W} – ${res.score.L}${res.score.T ? " – " + res.score.T : ""}</div></div>
-      <span class="result-pill ${res.result}">${RES[res.result]}</span></div>
-    <div class="table-wrap"><table><thead><tr><th>Kategori</th><th>${esc(T)}</th><th>${esc(O)}</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  const isPts = S.league.scoring === "points";
+  const a = isPts ? res.a_points.toFixed(1) : res.score.W, b = isPts ? res.b_points.toFixed(1) : res.score.L;
+  const tie = !isPts && res.score.T ? ` · ${res.score.T} berabere` : "";
+  return `<div class="scoreboard"><div class="sb-title">${title}</div>
+    <div class="sb-row"><div class="sb-team">${esc(T)}</div><div class="sb-score">${a}</div><div class="sb-vs">vs</div><div class="sb-score">${b}</div><div class="sb-team">${esc(O)}</div></div>
+    <div class="sb-foot ${res.result}">${esc(T)}: ${RES[res.result]}${tie}</div></div>`;
+}
+
+function matchupTable(res, title) {
+  const T = S.teamName[S.wk.team], O = S.teamName[S.wk.opponent];
+  if (S.league.scoring === "points") return scoreboard(res, title);
+  const head = res.categories.map((c) => `<th>${esc(catByKey(c.key).label)}</th>`).join("");
+  const row = (name, side, winRes) => `<tr><td><span class="pl-name">${esc(name)}</span></td>${res.categories.map((c) =>
+    `<td class="${c.result === winRes ? "win" : ""}">${fmt(c.key, c[side], "total")}</td>`).join("")}</tr>`;
+  return `${scoreboard(res, title)}
+    <div class="table-wrap"><table><thead><tr><th>Takım</th>${head}</tr></thead><tbody>${row(T, "a", "W")}${row(O, "b", "L")}</tbody></table></div>`;
 }
 
 function renderActual() {
   const w = S.wk;
   const roster = (team) => Object.entries(w.usage).filter(([, u]) => u.team === team)
     .sort((a, b) => b[1].active_games - a[1].active_games)
-    .map(([k, u]) => `<tr><td>${playerLabel(k)}</td><td>${u.active_games}</td><td class="${u.bench_games ? "neg" : "muted"}">${u.bench_games}</td></tr>`).join("");
+    .map(([k, u]) => `<tr><td>${playerLabel(k)}</td><td>${u.active_games}</td><td class="${u.bench_games ? "neg" : "faded"}">${u.bench_games}</td></tr>`).join("");
   const rosterCard = (team) => `<div class="card"><h3>${esc(S.teamName[team])}</h3>
     <div class="table-wrap"><table><thead><tr><th>Oyuncu</th><th>Aktifte oynadı</th><th>Yedekte oynadı</th></tr></thead><tbody>${roster(team)}</tbody></table></div></div>`;
   let note = `Skor, haftalık kadro ve günlük kutu skorlarından yeniden hesaplandı.`;
@@ -236,8 +239,8 @@ function renderActual() {
       : ` <b class="neg">Yahoo'nun resmi skoru: ${o.W}-${o.L}${o.T ? "-" + o.T : ""}. Fark, eksik senkronize edilmiş günlerden ya da istatistik düzeltmelerinden olabilir; tekrar senkronize etmeyi dene.</b>`;
   }
   $("#wi-actual").innerHTML = `
-    <div class="card">${matchupTable(w.result, `${w.week}. hafta · ${esc(S.teamName[w.team])} vs ${esc(S.teamName[w.opponent])} · gerçek sonuç`)}
-      <p class="muted small">${note}</p></div>
+    <div class="card">${matchupTable(w.result, `${w.week}. hafta · gerçek sonuç`)}
+      <p class="muted small note">${note}</p></div>
     <div class="two-col">${rosterCard(w.team)}${rosterCard(w.opponent)}</div>`;
 }
 
@@ -332,14 +335,14 @@ function renderWhatIf(r) {
     const T = S.teamName[S.wk.team], O = S.teamName[S.wk.opponent];
     const rows = h.categories.map((c, i) => {
       const c0 = a.categories[i], meta = catByKey(c.key);
-      const tag = (res) => `<td class="${res === "W" ? "win" : res === "L" ? "loss" : ""}">${res === "W" ? "K" : res === "L" ? "M" : "B"}</td>`;
+      const tag = (res) => `<td class="${res === "W" ? "tag-w" : res === "L" ? "tag-l" : ""}">${res === "W" ? "K" : res === "L" ? "M" : "B"}</td>`;
       return `<tr class="${c.changed ? "changed" : ""}"><td><b>${esc(meta.label)}</b></td>
-        <td>${fmt(c.key, c0.a, "total")}</td><td><b>${fmt(c.key, c.a, "total")}</b></td>
-        <td>${fmt(c.key, c0.b, "total")}</td><td><b>${fmt(c.key, c.b, "total")}</b></td>
+        <td class="faded">${fmt(c.key, c0.a, "total")}</td><td class="${c.result === "W" ? "win" : ""}">${fmt(c.key, c.a, "total")}</td>
+        <td class="faded">${fmt(c.key, c0.b, "total")}</td><td class="${c.result === "L" ? "win" : ""}">${fmt(c.key, c.b, "total")}</td>
         ${tag(c0.result)}${tag(c.result)}</tr>`;
     }).join("");
     table = `<div class="table-wrap"><table><thead><tr><th>Kategori</th><th>${esc(T)} gerçek</th><th>${esc(T)} senaryo</th><th>${esc(O)} gerçek</th><th>${esc(O)} senaryo</th><th>Gerçek</th><th>Senaryo</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <div class="legend"><span>K = ${esc(T)} kazanır, M = kaybeder, B = berabere</span><span>Sarı satır: sonucu değişen kategori</span></div>`;
+      <div class="legend"><span>K = ${esc(T)} kazanır, M = kaybeder, B = berabere</span><span>Mavi hücre: senaryoda kategoriyi kazanan</span><span>Sarı satır: sonucu değişen kategori</span></div>`;
   }
 
   const cs = isPts ? [] : S.league.categories;
