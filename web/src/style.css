@@ -210,3 +210,9 @@ th.sortable { cursor: pointer; } th.sortable:hover { color: var(--brand); } th.s
 .delta { font-size: 12px; font-weight: 700; margin-left: 4px; }
 td.heat { font-weight: 700; }
 td.heat small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; line-height: 13px; }
+
+/* ---------- additions for the component build ---------- */
+.swatch { display: inline-block; padding: 0 8px; border-radius: 9999px; font-weight: 600; }
+.swatch.on { background: var(--a); color: #fff; } .swatch.off { background: #e0e4e9; color: var(--muted); }
+a.primary.btn { display: inline-block; background: var(--brand); color: #fff; border-radius: 9999px; padding: 9px 26px; font-weight: 700; }
+a.primary.btn:hover { background: var(--brand-dark); }

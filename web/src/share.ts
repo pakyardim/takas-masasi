@@ -1,5 +1,8 @@
 // Draws the "what if I had played everyone, every week" poster on a canvas.
 // Pure drawing code: takes the /api/allplay response, returns a <canvas> (2x resolution).
+import type { AllPlay, Res } from "./types";
+
+type Ctx = CanvasRenderingContext2D;
 
 const C = {
   brand: "#6001d2", brandDark: "#3b0086", text: "#232a31", muted: "#5b636a", line: "#e0e4e9",
@@ -8,9 +11,9 @@ const C = {
 };
 const FONT = `"Helvetica Neue", Helvetica, Arial, sans-serif`;
 const MONTHS = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
-const dm = (iso) => `${+iso.slice(8, 10)} ${MONTHS[+iso.slice(5, 7) - 1]}`;
+const dm = (iso: string) => `${+iso.slice(8, 10)} ${MONTHS[+iso.slice(5, 7) - 1]}`;
 
-function fit(ctx, text, maxWidth, size, weight = 800, min = 14) {
+function fit(ctx: Ctx, text: string, maxWidth: number, size: number, weight = 800, min = 14): string {
   let s = size;
   do { ctx.font = `${weight} ${s}px ${FONT}`; s -= 1; } while (ctx.measureText(text).width > maxWidth && s > min);
   if (ctx.measureText(text).width <= maxWidth) return text;
@@ -19,14 +22,14 @@ function fit(ctx, text, maxWidth, size, weight = 800, min = 14) {
   return t + "…";
 }
 
-function rr(ctx, x, y, w, h, r, fill, stroke, lw = 2) {
+function rr(ctx: Ctx, x: number, y: number, w: number, h: number, r: number, fill?: string | null, stroke?: string | null, lw = 2) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
 }
 
-export function drawAllPlayPoster(data, teamName) {
+export function drawAllPlayPoster(data: AllPlay, teamName: string): HTMLCanvasElement {
   const weeks = data.weeks, teams = data.teams;
   const nW = weeks.length, nT = teams.length;
   const isPts = data.scoring === "points";
@@ -37,11 +40,11 @@ export function drawAllPlayPoster(data, teamName) {
     return { wins: res.filter((x) => x === "W").length, losses: res.filter((x) => x === "L").length, ties: res.filter((x) => x === "T").length };
   });
   const tot = col.reduce((a, c) => ({ W: a.W + c.wins, L: a.L + c.losses, T: a.T + c.ties }), { W: 0, L: 0, T: 0 });
-  const real = { W: 0, L: 0, T: 0 };
+  const real: Record<Res, number> = { W: 0, L: 0, T: 0 };
   weeks.forEach((w) => { const r = w.rows.find((x) => x.team === w.real_opponent); if (r && w.complete) real[r.actual.result]++; });
-  const sweeps = weeks.filter((w, i) => col[i].wins === nT);
+  const sweeps = weeks.filter((_, i) => col[i].wins === nT);
   const best = col.reduce((bi, c, i) => (c.wins > col[bi].wins ? i : bi), 0);
-  const rec = (o) => `${o.W}G ${o.L}M${o.T ? ` ${o.T}B` : ""}`;
+  const rec = (o: Record<Res, number>) => `${o.W}G ${o.L}M${o.T ? ` ${o.T}B` : ""}`;
 
   // ---- geometry (logical px; canvas is 2x)
   const M = 44, NAME_W = 300, TOT_W = 118, GAP = 8, ROW_H = 62, HEAD_H = 268;
@@ -58,7 +61,7 @@ export function drawAllPlayPoster(data, teamName) {
 
   const canvas = document.createElement("canvas");
   canvas.width = W * 2; canvas.height = H * 2;
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d")!;
   ctx.scale(2, 2);
   ctx.textBaseline = "middle";
 
@@ -128,7 +131,7 @@ export function drawAllPlayPoster(data, teamName) {
     if (r % 2 === 0) rr(ctx, gx - 12, y, gridW + 24, ROW_H, 12, C.panel);
     ctx.textAlign = "left"; ctx.fillStyle = C.text;
     ctx.fillText(fit(ctx, t.name, NAME_W - 20, 21, 700), gx + 4, y + ROW_H / 2);
-    const vs = { W: 0, L: 0, T: 0 };
+    const vs: Record<Res, number> = { W: 0, L: 0, T: 0 };
     weeks.forEach((w, i) => {
       const row = w.rows.find((x) => x.team === t.key);
       if (!row) return;
@@ -141,7 +144,8 @@ export function drawAllPlayPoster(data, teamName) {
       ctx.textAlign = "center";
       ctx.fillStyle = res === "W" ? C.white : res === "L" ? C.lossText : C.tieText;
       ctx.font = `${res === "W" ? 900 : 700} 23px ${FONT}`;
-      const label = isPts ? `${a.a_points.toFixed(0)}-${a.b_points.toFixed(0)}` : `${a.score.W}-${a.score.L}${a.score.T ? `-${a.score.T}` : ""}`;
+      const sc = a.score ?? { W: 0, L: 0, T: 0 };
+      const label = isPts ? `${(a.a_points ?? 0).toFixed(0)}-${(a.b_points ?? 0).toFixed(0)}` : `${sc.W}-${sc.L}${sc.T ? `-${sc.T}` : ""}`;
       ctx.fillText(fit(ctx, label, cw - 8, 23, res === "W" ? 900 : 700, 12), x + cw / 2, cy + ch / 2 + 1);
     });
     ctx.textAlign = "center"; ctx.fillStyle = vs.W > vs.L ? C.win : vs.L > vs.W ? C.lossText : C.muted;

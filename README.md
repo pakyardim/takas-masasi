@@ -25,13 +25,23 @@ Draft ve Transferler tek bir ölçü kullanır: **değer** = oyuncunun maç baş
 
 ## Çalıştırma
 
+Bir kez kurulum (Python 3.11+ ve Node 20+ gerekir):
+
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
+cd web && npm install && npm run build && cd ..
+```
+
+Sonra uygulamayı başlat:
+
+```bash
 .venv/bin/uvicorn backend.app:app --reload
 ```
 
-Sonra http://127.0.0.1:8000 adresini aç. Henüz veri yoksa uygulama **demo verisiyle** açılır (hayali bir 10 takımlı 9-cat lig).
+http://127.0.0.1:8000 adresini aç. Henüz veri yoksa uygulama **demo verisiyle** açılır (hayali bir 10 takımlı 9-cat lig).
+
+Arayüz `web/` klasöründe (Vite + Preact + TypeScript) ve `npm run build` ile `web/dist` içine derlenir; FastAPI bu derlemeyi sunar. Arayüzde değişiklik yaparken `cd web && npm run dev` komutu http://localhost:5173 adresinde anında yenilenen bir geliştirme sunucusu açar (API istekleri 8000'deki uygulamaya yönlenir). Arayüzü ilk kez derlediysen ya da derleme klasörü yeni oluştuysa `uvicorn`'u yeniden başlat.
 
 ## Kendi ligini bağlama: Chrome eklentisi (önerilen)
 
@@ -86,7 +96,9 @@ Token `.yahoo_tokens.json` dosyasında saklanır ve otomatik yenilenir. Yahoo ya
 | `backend/yahoo.py` | Yahoo Fantasy API istemcisi (OAuth2, XML ayrıştırma, cache) |
 | `backend/demo.py` | Demo lig ve sahte günlük kutu skorları |
 | `backend/app.py` | FastAPI uç noktaları + statik arayüz |
-| `frontend/` | Derleme gerektirmeyen HTML/CSS/JS arayüz |
+| `web/src/tabs/` | Arayüz: her sekme ayrı bir Preact bileşeni (TypeScript) |
+| `web/src/share.ts` | Paylaşılabilir görseli çizen canvas kodu |
+| `web/src/types.ts` | API yanıtlarının tipleri |
 | `tests/` | Testler (`.venv/bin/python -m pytest`) |
 
 ## Bilinen sınırlar

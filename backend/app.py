@@ -9,7 +9,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -345,14 +345,29 @@ def get_standings():
     return _cached("standings", forecast.standings)
 
 
-app.mount("/static", StaticFiles(directory=ROOT / "frontend"), name="static")
+# ---------------------------------------------------------------- web UI (Vite build in web/dist)
+DIST = ROOT / "web" / "dist"
+NOT_BUILT = """<!doctype html><meta charset="utf-8"><title>Takas Masası</title>
+<body style="font:16px/1.5 system-ui;max-width:560px;margin:60px auto;padding:0 20px">
+<h2>Arayüz henüz derlenmemiş</h2>
+<p>Bir kez şu komutları çalıştır, sonra bu sayfayı yenile:</p>
+<pre style="background:#f5f8fa;padding:12px;border-radius:8px">cd web
+npm install
+npm run build</pre></body>"""
+
+if (DIST / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
 
 
+@app.get("/favicon.svg", include_in_schema=False)
 @app.get("/favicon.ico", include_in_schema=False)
 def favicon():
-    return FileResponse(ROOT / "frontend" / "favicon.svg", media_type="image/svg+xml")
+    return FileResponse(ROOT / "web" / "public" / "favicon.svg", media_type="image/svg+xml")
 
 
 @app.get("/")
 def index():
-    return FileResponse(ROOT / "frontend" / "index.html")
+    if not (DIST / "index.html").exists():
+        return HTMLResponse(NOT_BUILT, status_code=503)
+    # never cache the entry page: it points at the current hashed asset files
+    return FileResponse(DIST / "index.html", headers={"Cache-Control": "no-cache"})
