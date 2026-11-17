@@ -168,6 +168,30 @@ def week(week: int, team: str, opponent: str | None = None):
             "active_slots": _active_slots()}
 
 
+@app.get("/api/allplay")
+def allplay(team: str):
+    """Every week of the season for one team: its score against every other team's week."""
+    lg = P().league()
+    others = [t["key"] for t in lg["teams"] if t["key"] != team]
+    if len(others) == len(lg["teams"]):
+        raise HTTPException(404, "Takım bulunamadı.")
+    today = forecast.today_et()
+    weeks = []
+    for w in lg["weeks"]:
+        try:
+            wk = P().week(w["week"], [t["key"] for t in lg["teams"]])
+        except KeyError:
+            continue
+        played = [d for d in wk["days"] if any(d["stats"].get(e["player"]) for e in d["lineups"].get(team, []))]
+        if not played:
+            continue
+        weeks.append({"week": w["week"], "start": w["start"], "end": w["end"], "complete": w["end"] < today,
+                      "real_opponent": _real_opponent(w["week"], team),
+                      "rows": engine.versus_all(lg, wk, team, others)})
+    return {"team": team, "league": lg["name"], "scoring": lg["scoring"],
+            "teams": [t for t in lg["teams"] if t["key"] != team], "weeks": weeks}
+
+
 class Edit(BaseModel):
     team: str
     type: str = "swap"            # swap | bench | start

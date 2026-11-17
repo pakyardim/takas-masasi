@@ -9,6 +9,7 @@ Yahoo Fantasy NBA ligin için iki araç sunan bir web uygulaması. AI yorumu yok
    - 2'ye 1 gibi takaslarda kadro yeri uyarısı
 2. **Ya Olsaydı?:** Geçmiş bir haftayı yeniden oynatır.
    - **Başka rakip:** o haftaki istatistiklerinle ligdeki her takıma karşı skorun; rakibi seçip ayrıntıya bakabilirsin.
+     "Tüm haftaların görselini oluştur" düğmesi, seçili takımın her hafta her rakibe karşı skorunu tek bir PNG'de (2160 piksel genişlik) toplar; indirip ya da kopyalayıp paylaşabilirsin.
    - **Günlük diziliş:** ızgarada bir hücreye tıklayarak bir oyuncuyu tek bir gün için oynat ya da oynatma ("son gün onu oynatmasaydım").
    - **Oyuncu değiştir:** çıkan oyuncunun aktif olduğu günlerde yerine gelenin o günkü istatistiği sayılır; rakibin oyuncusuysa ters değişim de uygulanabilir.
    - Senaryo aktif kadro sayısını aşarsa uyarır (pozisyon uygunluğu kontrol edilmez).

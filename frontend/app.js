@@ -1,3 +1,5 @@
+import { drawAllPlayPoster } from "/static/share.js";
+
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -264,11 +266,52 @@ function renderVersus(rows) {
   const body = rows.map((r) => `<tr class="rowlink ${r.team === w.opponent ? "selected" : ""}" data-team="${r.team}">
       <td><span class="pl-name">${esc(S.teamName[r.team])}</span>${r.team === w.real_opponent ? ' <span class="badge">gerçek rakip</span>' : ""}</td>
       <td>${pill(r.actual)}</td>${hasHypo ? `<td>${pill(r.hypothetical)}</td>` : ""}</tr>`).join("");
-  $("#wi-versus").innerHTML = `<div class="card"><h3>Bu hafta başkasıyla oynasaydın</h3>
+  $("#wi-versus").innerHTML = `<div class="card"><div class="card-title-row"><h3 style="margin:0">Bu hafta başkasıyla oynasaydın</h3>
+      <button id="share-open" class="ghost">Tüm haftaların görselini oluştur</button></div>
     <p class="muted small" style="margin:-4px 0 8px">${esc(S.teamName[w.team])} bu haftaki istatistikleriyle ligdeki ${rows.length} takımdan <b>${wins("actual")}</b> tanesini yenerdi${hasHypo ? `; senaryodaki dizilişle <b>${wins("hypothetical")}</b> tanesini` : ""}. Satıra tıklayınca o rakibe karşı ayrıntıyı görürsün.</p>
     <div class="table-wrap"><table><thead><tr><th>Rakip</th><th>Gerçek dizilişle</th>${hasHypo ? "<th>Senaryoyla</th>" : ""}</tr></thead><tbody>${body}</tbody></table></div></div>`;
   document.querySelectorAll("#wi-versus tr.rowlink").forEach((tr) => tr.addEventListener("click", () => loadWeek(tr.dataset.team)));
+  $("#share-open").addEventListener("click", () => openShare(w.team));
 }
+
+// ---- shareable poster: every week vs every team, for one team
+let shareBlob = null, shareName = "";
+async function openShare(team) {
+  const btn = $("#share-open");
+  btn.disabled = true; btn.textContent = "Hazırlanıyor…";
+  try {
+    const data = await api(`/api/allplay?team=${encodeURIComponent(team)}`);
+    if (!data.weeks.length) throw new Error("Bu takım için oynanmış hafta yok.");
+    const canvas = drawAllPlayPoster(data, S.teamName[team]);
+    shareBlob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+    shareName = `${S.teamName[team]}-herkese-karsi`.toLowerCase().replace(/[^a-z0-9ğüşıöç]+/gi, "-").replace(/^-|-$/g, "") + ".png";
+    $("#share-img").src = URL.createObjectURL(shareBlob);
+    $("#share-msg").textContent = `${canvas.width}×${canvas.height} piksel PNG`;
+    $("#share-modal").classList.remove("hidden");
+  } catch (e) {
+    alert("Görsel oluşturulamadı: " + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "Tüm haftaların görselini oluştur";
+  }
+}
+const closeShare = () => $("#share-modal").classList.add("hidden");
+$("#share-close").addEventListener("click", closeShare);
+$("#share-modal").addEventListener("click", (e) => { if (e.target.id === "share-modal") closeShare(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeShare(); });
+$("#share-download").addEventListener("click", () => {
+  if (!shareBlob) return;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(shareBlob); a.download = shareName;
+  document.body.appendChild(a); a.click(); a.remove();
+});
+$("#share-copy").addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": shareBlob })]);
+    $("#share-msg").textContent = "Panoya kopyalandı. WhatsApp'a yapıştırabilirsin.";
+  } catch {
+    $("#share-msg").textContent = "Kopyalanamadı (tarayıcı izin vermedi). PNG indir düğmesini kullan.";
+  }
+});
 
 // ---- daily lineup grid: click a cell to bench / start that player on that day
 const dayEdit = (team, player, date) => S.edits.find((e) => e.team === team && e.player === player && e.dates?.[0] === date && e.type !== "swap");

@@ -183,3 +183,16 @@ th.l, td.l { text-align: left; }
 .power-score { font-size: 18px; font-weight: 900; }
 .power-bar { display: block; height: 4px; border-radius: 9999px; background: var(--brand); margin-top: 3px; }
 tr.me td { background: var(--sel); }
+
+/* ---------- share image modal ---------- */
+.modal { position: fixed; inset: 0; background: rgba(35,42,49,.6); z-index: 50; display: grid; place-items: center; padding: 20px; }
+.modal-box { background: var(--card); border-radius: 14px; max-width: min(1000px, 100%); max-height: 100%; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+.modal-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.modal-actions { display: flex; gap: 8px; align-items: center; }
+#share-msg { padding: 0 16px; min-height: 0; }
+#share-msg:not(:empty) { padding: 8px 16px; }
+.modal-body { overflow: auto; padding: 16px; background: var(--panel); }
+.modal-body img { display: block; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(35,42,49,.2); }
+button.ghost { background: var(--card); color: var(--brand); border: 1px solid var(--brand); border-radius: 9999px; padding: 8px 18px; font: inherit; font-weight: 700; cursor: pointer; }
+button.ghost:hover { background: var(--sel); }
+.card-title-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
