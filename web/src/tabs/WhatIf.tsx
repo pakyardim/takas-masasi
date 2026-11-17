@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api, catByKey, dayLabel, dayLong, fmt, pname, registerPlayers, RES, scoreText, store } from "../store";
 import { drawAllPlayPoster, loadLogos } from "../share";
+import { makeShare, ShareModal, type Share } from "../ShareModal";
 import type { AllPlay, Brief, Edit, Matchup, Player, StatLine, VersusRow, WeekData, WhatIfResult } from "../types";
 import { Empty, ErrorBox, PlayerLabel, TableWrap, TeamLogo, TeamName, TeamOptions } from "../ui";
 
@@ -16,7 +17,7 @@ export function WhatIf() {
   const [res, setRes] = useState<WhatIfResult | null>(null);
   const [resErr, setResErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [share, setShare] = useState<{ url: string; blob: Blob; name: string; msg: string } | null>(null);
+  const [share, setShare] = useState<Share | null>(null);
   const [sharing, setSharing] = useState(false);
   const loadSeq = useRef(0), runSeq = useRef(0);
 
@@ -46,9 +47,7 @@ export function WhatIf() {
       if (!data.weeks.length) throw new Error("Bu takım için oynanmış hafta yok.");
       const logos = await loadLogos([team, ...data.teams.map((t) => t.key)]);
       const canvas = drawAllPlayPoster(data, store.teamName[team], logos);
-      const blob = await new Promise<Blob>((ok, no) => canvas.toBlob((b) => (b ? ok(b) : no(new Error("PNG oluşturulamadı"))), "image/png"));
-      const name = `${store.teamName[team]}-herkese-karsi`.toLowerCase().replace(/[^a-z0-9ğüşıöç]+/gi, "-").replace(/^-|-$/g, "") + ".png";
-      setShare({ url: URL.createObjectURL(blob), blob, name, msg: `${canvas.width}×${canvas.height} piksel PNG` });
+      setShare(await makeShare(canvas, `${store.teamName[team]}-herkese-karsi`));
     } catch (e) {
       alert("Görsel oluşturulamadı: " + (e as Error).message);
     } finally {
@@ -87,7 +86,7 @@ export function WhatIf() {
         </div>
       </>}
 
-      {share && <ShareModal share={share} onClose={() => setShare(null)} onMsg={(msg) => setShare({ ...share, msg })} />}
+      {share && <ShareModal share={share} onClose={() => setShare(null)} />}
     </section>
   );
 }
@@ -349,39 +348,6 @@ function Result({ wk, r }: { wk: WeekData; r: WhatIfResult }) {
           ))}
         </tbody>
       </TableWrap>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------- poster modal
-function ShareModal({ share, onClose, onMsg }: { share: { url: string; blob: Blob; name: string; msg: string }; onClose: () => void; onMsg: (m: string) => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
-  const copy = async () => {
-    try {
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": share.blob })]);
-      onMsg("Panoya kopyalandı. WhatsApp'a yapıştırabilirsin.");
-    } catch {
-      onMsg("Kopyalanamadı (tarayıcı izin vermedi). PNG indir düğmesini kullan.");
-    }
-  };
-  return (
-    <div class="modal" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div class="modal-box">
-        <div class="modal-head">
-          <h3 style="margin:0">Paylaşılabilir görsel</h3>
-          <div class="modal-actions">
-            <a class="primary btn" href={share.url} download={share.name}>PNG indir</a>
-            <button class="ghost" onClick={copy}>Kopyala</button>
-            <button class="ghost" title="Kapat" onClick={onClose}>✕</button>
-          </div>
-        </div>
-        <div id="share-msg" class="muted small">{share.msg}</div>
-        <div class="modal-body"><img src={share.url} alt="Herkese karşı sonuç görseli" /></div>
-      </div>
     </div>
   );
 }

@@ -1,14 +1,14 @@
 // Draws the "what if I had played everyone, every week" poster on a canvas.
 // Pure drawing code: takes the /api/allplay response, returns a <canvas> (2x resolution).
 import { store } from "./store";
-import type { AllPlay, Res } from "./types";
+import type { AllPlay, Res, TradeResult } from "./types";
 
 type Ctx = CanvasRenderingContext2D;
 
 const C = {
   brand: "#6001d2", brandDark: "#3b0086", text: "#232a31", muted: "#5b636a", line: "#e0e4e9",
   panel: "#f5f8fa", win: "#0f8a43", winSoft: "#e3f6ea", loss: "#fdecef", lossText: "#c2143a",
-  tie: "#eef0f3", tieText: "#5b636a", gold: "#f5b301", goldSoft: "#fff4cc", white: "#ffffff",
+  tie: "#eef0f3", tieText: "#5b636a", gold: "#f5b301", white: "#ffffff", a: "#0063eb",
 };
 const FONT = `"Helvetica Neue", Helvetica, Arial, sans-serif`;
 const MONTHS = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
@@ -224,5 +224,186 @@ export function drawAllPlayPoster(data: AllPlay, teamName: string, logos: Logos 
   ctx.fillText("takasmasası", W - M, footY + 19);
   ctx.fillStyle = C.muted; ctx.font = `500 13px ${FONT}`;
   ctx.fillText(`${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`, W - M, footY + 42);
+  return canvas;
+}
+
+// ================================================================ trade poster
+const signedTxt = (v: number, d: number) => (v > 0 ? "+" : "") + v.toFixed(d);
+
+function header(ctx: Ctx, W: number, H: number, league: string, title: string, subtitle: string) {
+  const M = 44;
+  const g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, C.brand); g.addColorStop(1, C.brandDark);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalAlpha = 0.09; ctx.strokeStyle = C.white; ctx.lineWidth = 38;
+  ctx.beginPath(); ctx.arc(W - 90, 40, 190, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(W - 90, 40, 300, 0, Math.PI * 2); ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = C.white; ctx.textAlign = "left";
+  ctx.font = `italic 900 24px ${FONT}`; ctx.fillText("takasmasası", M, 50);
+  ctx.globalAlpha = 0.8;
+  ctx.fillText(fit(ctx, league, W - 2 * M - 180, 17, 600), M + 158, 51);
+  ctx.globalAlpha = 1;
+  ctx.font = `900 60px ${FONT}`; ctx.fillText(title, M, 122);
+  ctx.globalAlpha = 0.92; ctx.font = `600 22px ${FONT}`; ctx.fillText(subtitle, M, 172);
+  ctx.globalAlpha = 1;
+}
+
+function footer(ctx: Ctx, W: number, y: number, note: string) {
+  const M = 44, d = new Date();
+  ctx.textAlign = "left"; ctx.fillStyle = C.muted; ctx.font = `500 15px ${FONT}`;
+  ctx.fillText(note, M, y + 19);
+  ctx.textAlign = "right"; ctx.fillStyle = C.brand; ctx.font = `italic 900 17px ${FONT}`;
+  ctx.fillText("takasmasası", W - M, y + 19);
+  ctx.fillStyle = C.muted; ctx.font = `500 13px ${FONT}`;
+  ctx.fillText(`${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`, W - M, y + 42);
+}
+
+interface Section { label: string; color: string; players: string[] }
+
+/** One image for a trade: what each side gives (and must drop / can add), each side's
+ *  net value, and the per-category change with league rank before -> after. */
+export function drawTradePoster(r: TradeResult, giveA: string[], giveB: string[], period: string, logos: Logos = {}): HTMLCanvasElement {
+  const isPts = r.scoring === "points";
+  const d = isPts ? 1 : 2;
+  const teams = { a: r.teams.a, b: r.teams.b };
+  const name = (t: string) => store.teamName[t] ?? t;
+  const value = (k: string) => (isPts ? r.players[k]?.fpts : r.players[k]?.z?.TOTAL) ?? null;
+  const sections = (side: "a" | "b"): Section[] => {
+    const give = side === "a" ? giveA : giveB;
+    const drops = side === "a" ? r.moves.drops_a : r.moves.drops_b;
+    const adds = side === "a" ? r.moves.adds_a : r.moves.adds_b;
+    return [
+      { label: "VERİR", color: C.muted, players: give },
+      { label: "YER AÇMAK İÇİN BIRAKIR", color: C.lossText, players: drops },
+      { label: "AÇILAN YERE EKLER", color: C.win, players: adds },
+    ].filter((s) => s.players.length);
+  };
+  const secA = sections("a"), secB = sections("b");
+
+  // ---- geometry (logical px; canvas is 2x)
+  const W = 1080, M = 44, HEAD_H = 204, GAP = 60, PROW = 56, SEC_H = 34;
+  const PW = (W - 2 * M - GAP) / 2;
+  const panelH = (s: Section[]) => 100 + s.reduce((h, x) => h + SEC_H + x.players.length * PROW, 0) + 12;
+  const PH = Math.max(panelH(secA), panelH(secB));
+  const y0 = HEAD_H + 28;
+  const y1 = y0 + PH + 18, TILE_H = 112;
+  const y2 = y1 + TILE_H + 30, TH = 46, ROW = 48;
+  const footY = y2 + TH + r.categories.length * ROW + 24;
+  const H = footY + 70;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = W * 2; canvas.height = H * 2;
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(2, 2);
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
+  header(ctx, W, HEAD_H, store.league.name, "Takas Analizi", `${period} · maç başı değerler`);
+
+  // ---- the two sides
+  const panel = (side: "a" | "b", x: number, secs: Section[]) => {
+    const t = teams[side];
+    ctx.shadowColor = "rgba(35,42,49,.14)"; ctx.shadowBlur = 18; ctx.shadowOffsetY = 4;
+    rr(ctx, x, y0, PW, PH, 16, C.white);
+    ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    rr(ctx, x, y0, PW, 6, 3, side === "a" ? C.a : C.brand);
+    const lg = logos[t];
+    if (lg) circleLogo(ctx, lg, x + 50, y0 + 52, 30, C.line, 2);
+    ctx.textAlign = "left"; ctx.fillStyle = C.text;
+    ctx.fillText(fit(ctx, name(t), PW - (lg ? 116 : 40), 27, 900, 16), x + (lg ? 94 : 20), y0 + 52);
+    let y = y0 + 96;
+    for (const s of secs) {
+      ctx.fillStyle = s.color; ctx.font = `800 13px ${FONT}`; ctx.textAlign = "left";
+      ctx.fillText(s.label, x + 20, y + SEC_H / 2);
+      y += SEC_H;
+      for (const k of s.players) {
+        const p = store.players[k];
+        const v = value(k);
+        rr(ctx, x + 12, y + 3, PW - 24, PROW - 6, 10, C.panel);
+        ctx.textAlign = "left"; ctx.fillStyle = C.text;
+        ctx.fillText(fit(ctx, p?.name ?? k, PW - 150, 20, 700, 13), x + 26, y + 20);
+        ctx.fillStyle = C.muted; ctx.font = `600 13px ${FONT}`;
+        const sub = p ? [p.nba_team, (p.positions || []).join(",")].filter(Boolean).join(" - ") : "";
+        ctx.fillText(sub + (p?.status ? `  ·  ${p.status}` : ""), x + 26, y + 41);
+        ctx.textAlign = "right"; ctx.font = `800 20px ${FONT}`;
+        ctx.fillStyle = v == null ? C.muted : v > 0 ? C.win : v < 0 ? C.lossText : C.text;
+        ctx.fillText(v == null ? "–" : signedTxt(v, d), x + PW - 26, y + PROW / 2);
+        y += PROW;
+      }
+    }
+  };
+  panel("a", M, secA);
+  panel("b", M + PW + GAP, secB);
+
+  // swap arrows between the panels
+  const cx = W / 2, cy = y0 + 52;
+  ctx.strokeStyle = C.brand; ctx.fillStyle = C.brand; ctx.lineWidth = 4; ctx.lineCap = "round";
+  const arrow = (y: number, dir: 1 | -1) => {
+    const x1 = cx - 18 * dir, x2 = cx + 18 * dir;
+    ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x2 + 4 * dir, y); ctx.lineTo(x2 - 8 * dir, y - 8); ctx.lineTo(x2 - 8 * dir, y + 8); ctx.closePath(); ctx.fill();
+  };
+  arrow(cy - 9, 1); arrow(cy + 9, -1);
+
+  // ---- net value tiles
+  const uneven = r.moves.drops_a.length + r.moves.drops_b.length + r.moves.adds_a.length + r.moves.adds_b.length > 0;
+  const tile = (side: "a" | "b", x: number) => {
+    const net = side === "a" ? r.a_net_value : r.b_net_value;
+    const key = side === "a" ? "better_for_a" : "better_for_b";
+    const up = r.categories.filter((c) => c[key] === "W").length, down = r.categories.filter((c) => c[key] === "L").length;
+    rr(ctx, x, y1, PW, TILE_H, 16, net > 0 ? C.winSoft : net < 0 ? C.loss : C.tie);
+    ctx.textAlign = "left"; ctx.fillStyle = C.muted; ctx.font = `700 15px ${FONT}`;
+    ctx.fillText(`Net ${isPts ? "FPTS / maç" : "değer (z-skor)"}${uneven ? " · bırakılan ve eklenen dahil" : ""}`, x + 20, y1 + 26);
+    ctx.fillStyle = net > 0 ? C.win : net < 0 ? C.lossText : C.text; ctx.font = `900 44px ${FONT}`;
+    ctx.fillText(signedTxt(net, d), x + 20, y1 + 68);
+    if (!isPts) {
+      ctx.textAlign = "right"; ctx.fillStyle = C.text; ctx.font = `700 17px ${FONT}`;
+      ctx.fillText(`${up} kategori iyileşir`, x + PW - 20, y1 + 56);
+      ctx.fillText(`${down} kategori kötüleşir`, x + PW - 20, y1 + 82);
+    }
+  };
+  tile("a", M); tile("b", M + PW + GAP);
+
+  // ---- categories: change of each team's own per-game total, and league rank before -> after
+  const CW = 150, sideW = (W - 2 * M - CW) / 2, netW = sideW * 0.46;
+  const colX = { aNet: M + netW / 2, aRank: M + netW + (sideW - netW) / 2, cat: W / 2,
+                 bNet: W / 2 + CW / 2 + netW / 2, bRank: W / 2 + CW / 2 + netW + (sideW - netW) / 2 };
+  rr(ctx, M, y2, W - 2 * M, TH, 10, C.panel);
+  ctx.textAlign = "center"; ctx.fillStyle = C.text;
+  ctx.fillText(fit(ctx, name(teams.a), netW + (sideW - netW) - 20, 17, 800), M + sideW / 2, y2 + 14);
+  ctx.fillText(fit(ctx, name(teams.b), sideW - 20, 17, 800), W / 2 + CW / 2 + sideW / 2, y2 + 14);
+  ctx.fillStyle = C.muted; ctx.font = `600 12px ${FONT}`;
+  for (const x of [colX.aNet, colX.bNet]) ctx.fillText("net değişim", x, y2 + 33);
+  for (const x of [colX.aRank, colX.bRank]) ctx.fillText(`lig sırası (${r.league_size} takım)`, x, y2 + 33);
+  ctx.fillStyle = C.text; ctx.font = `800 15px ${FONT}`; ctx.fillText("Kategori", colX.cat, y2 + TH / 2);
+
+  const impact = (t: string, k: string) => r.team_impact[t]?.find((x) => x.key === k);
+  r.categories.forEach((c, i) => {
+    const y = y2 + TH + i * ROW;
+    if (i % 2) rr(ctx, M, y, W - 2 * M, ROW, 8, "#fafbfc");
+    const ratio = !!store.league.categories.find((x) => x.key === c.key)?.ratio;
+    ctx.textAlign = "center"; ctx.fillStyle = C.text; ctx.font = `800 19px ${FONT}`;
+    ctx.fillText(c.label, colX.cat, y + ROW / 2);
+    const side = (net: number | null, res: Res, t: string, xNet: number, xRank: number) => {
+      ctx.font = `800 20px ${FONT}`;
+      ctx.fillStyle = res === "W" ? C.win : res === "L" ? C.lossText : C.muted;
+      ctx.fillText(net == null ? "–" : signedTxt(net, ratio ? 3 : 1), xNet, y + ROW / 2);
+      const im = impact(t, c.key);
+      if (!im) return;
+      const dr = im.rank_before - im.rank_after;
+      ctx.font = `${dr ? 800 : 600} 18px ${FONT}`;
+      ctx.fillStyle = dr > 0 ? C.win : dr < 0 ? C.lossText : C.muted;
+      ctx.fillText(`${im.rank_before}.  →  ${im.rank_after}.${dr > 0 ? `  ▲${dr}` : dr < 0 ? `  ▼${-dr}` : ""}`, xRank, y + ROW / 2);
+    };
+    side(c.a_net, c.better_for_a, teams.a, colX.aNet, colX.aRank);
+    side(c.b_net, c.better_for_b, teams.b, colX.bNet, colX.bRank);
+  });
+  // divider under the category column
+  ctx.strokeStyle = C.line; ctx.lineWidth = 2;
+  for (const x of [W / 2 - CW / 2, W / 2 + CW / 2]) {
+    ctx.beginPath(); ctx.moveTo(x, y2 + TH + 6); ctx.lineTo(x, y2 + TH + r.categories.length * ROW - 6); ctx.stroke();
+  }
+
+  footer(ctx, W, footY, isPts ? "Oyuncu değeri: maç başı fantasy puanı" : "Oyuncu değeri: maç başı z-skor toplamı · net değişim: takımın kendi toplamındaki fark");
   return canvas;
 }

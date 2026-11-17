@@ -6,10 +6,11 @@ Yahoo Fantasy NBA ligin için iki araç sunan bir web uygulaması. AI yorumu yok
    - maç başı ortalamalar (sezon / son 30 / 14 / 7 gün)
    - oyuncu başına z-skor (yüzdeler atış hacmiyle ağırlıklı, TO ters çevrilmiş)
    - her iki takımın kategori bazında lig sıralamasının takastan önceki ve sonraki hali
+   - **görsel:** "Bu takasın görselini oluştur" düğmesi takası tek bir görselde toplar (iki tarafın verdiği, bıraktığı ve eklediği oyuncular, net değer, kategori değişimleri ve lig sırası); PNG ya da JPG olarak indirilebilir
    - **kadro dengesi:** oyuncu sayısı eşit olmayan takasta (ör. 3'e 1) fazla oyuncu alan takımın bırakması gereken oyuncular ve diğer takımda açılan yerlere eklenebilecek serbest oyuncular önerilir; seçimleri değiştirebilirsin ve hepsi net değere, kategori farklarına ve lig sıralarına dahil edilir
 2. **Ya Olsaydı?:** Geçmiş bir haftayı yeniden oynatır.
    - **Başka rakip:** o haftaki istatistiklerinle ligdeki her takıma karşı skorun; rakibi seçip ayrıntıya bakabilirsin.
-     "Tüm haftaların görselini oluştur" düğmesi, seçili takımın her hafta her rakibe karşı skorunu tek bir PNG'de (2160 piksel genişlik) toplar; indirip ya da kopyalayıp paylaşabilirsin.
+     "Tüm haftaların görselini oluştur" düğmesi, seçili takımın her hafta her rakibe karşı skorunu tek bir görselde (2160 piksel genişlik) toplar; PNG ya da JPG olarak indirip ya da kopyalayıp paylaşabilirsin.
    - **Günlük diziliş:** ızgarada bir hücreye tıklayarak bir oyuncuyu tek bir gün için oynat ya da oynatma ("son gün onu oynatmasaydım").
    - **Oyuncu değiştir:** çıkan oyuncunun aktif olduğu günlerde yerine gelenin o günkü istatistiği sayılır; rakibin oyuncusuysa ters değişim de uygulanabilir.
    - Senaryo aktif kadro sayısını aşarsa uyarır (pozisyon uygunluğu kontrol edilmez).

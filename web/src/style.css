@@ -203,3 +203,5 @@ a.primary.btn:hover { background: var(--brand-dark); }
 .tname { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
 .scoreboard .sb-team { display: flex; align-items: center; gap: 8px; }
 .scoreboard .sb-team:last-child { justify-content: flex-end; }
+a.ghost.btn { display: inline-block; background: var(--card); color: var(--brand); border: 1px solid var(--brand); border-radius: 9999px; padding: 8px 18px; font-weight: 700; }
+a.ghost.btn:hover { background: var(--sel); }
