@@ -53,11 +53,13 @@ $("#sync").addEventListener("click", async () => {
     }
 
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["scraper.js"] });
-    const wrap = (name) => async (...a) => {
-      try { return await window.__takas[name](...a); } catch (e) { return { __error: String(e.message || e) }; }
+    // Runs inside the tab. Chrome serializes this function's source only (no closures),
+    // so the task name must be passed as an argument.
+    const call = async (task, ...a) => {
+      try { return await window.__takas[task](...a); } catch (e) { return { __error: String(e.message || e) }; }
     };
 
-    const base = await inTab(wrap("base"), [lid]);
+    const base = await inTab(call, ["base", lid]);
     await post("/api/import", { kind: "base", data: base });
 
     // Re-read the last 2 days every time (Yahoo stat corrections), skip older days we already have.
@@ -65,7 +67,7 @@ $("#sync").addEventListener("click", async () => {
     const skip = (have.dates || []).filter((d) => d < cutoff);
     const teamIds = base.teams.map((t) => t.id);
     for (let w = 1; w <= base.current_week; w++) {
-      const wk = await inTab(wrap("week"), [lid, w, base.my_team, teamIds, skip]);
+      const wk = await inTab(call, ["week", lid, w, base.my_team, teamIds, skip]);
       await post("/api/import", { kind: "week", data: wk });
     }
     status(`Tamam: ${base.teams.length} takım, ${base.current_week} hafta senkronize edildi.\nUygulamayı yenile.`, "ok");
