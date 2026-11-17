@@ -19,7 +19,7 @@ def _store(tmp_path, monkeypatch):
         "players": {k: {**pl(k), "owner": "1" if k[0] == "a" else "2"} for k in season},
         "averages": {p: season for p in ("season", "last30", "last14", "last7")},
     })
-    # free agents (replacement level = their average); fa2 was drafted by A and dropped
+    # free agents (replacement level = average of the best free agents); fa2 was drafted by A and dropped
     imported.merge_import("pool", {"players": {"fa1": pl("fa1"), "fa2": pl("fa2")},
                                    "averages": {"fa1": {"GP": 10, **L(14)}, "fa2": {"GP": 10, **L(4)}}})
     imported.merge_import("draft", {"picks": [
@@ -72,11 +72,25 @@ def test_moves_report(tmp_path, monkeypatch):
 def test_trade_sides(tmp_path, monkeypatch):
     _store(tmp_path, monkeypatch)
     pl = lambda k: {"id": k, "name": f"P{k}", "nba_team": "X", "positions": ["PG"]}
+    # Oct 24: b1 goes to team 1 (and plays a good game there), a2 goes to team 2 (no game yet)
+    day = {"1": [{"player": "a1", "slot": "PG", "line": L(30)}, {"player": "b1", "slot": "SG", "line": L(25)}],
+           "2": [{"player": "a2", "slot": "PG", "line": None}]}
+    imported.merge_import("week", {"week": 1, "pairs": [["1", "2"]], "official": {}, "players": {},
+                                   "dates": ["2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23", "2026-10-24"],
+                                   "days": {"2026-10-24": day}})
     imported.merge_import("transactions", {"rows": [
-        {"ts": "Oct 22, 1:00 am", "team": "1", "moves": [{"player": pl("a1"), "action": "trade", "source": ""}]},
-        {"ts": "Oct 22, 1:00 am", "team": "2", "moves": [{"player": pl("b1"), "action": "trade", "source": ""}]},
+        {"ts": "Oct 24, 1:00 am", "team": "1", "moves": [{"player": pl("b1"), "action": "trade", "source": ""}]},
+        {"ts": "Oct 24, 1:00 am", "team": "2", "moves": [{"player": pl("a2"), "action": "trade", "source": ""}]},
     ]})
     r = analysis.moves_report(imported.ImportedProvider())
     assert len(r["trades"]) == 1
     sides = r["trades"][0]["sides"]
     assert sides[0]["team"] == "1" and sides[0]["value"] > sides[1]["value"] == 0
+    assert sides[0]["players"][0]["active_games"] == 1
+
+
+def test_readd_same_player_is_not_double_counted(tmp_path, monkeypatch):
+    p = _store(tmp_path, monkeypatch)       # the fixture adds a1 twice at the same time
+    r = analysis.moves_report(p)
+    a1 = [x for x in r["pickups"] if x["player"]["key"] == "a1"]
+    assert sorted(x["games"] for x in a1) == [0, 3]

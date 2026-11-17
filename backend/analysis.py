@@ -6,7 +6,7 @@ Everything is measured with one yardstick, "değer" (value over replacement):
                minus the z-score of a replacement-level player
     value   =  that difference summed over games
 
-Replacement level = what the waiver wire offers: the average z-score of the five
+Replacement level = what the waiver wire offers: the average z-score of the twenty
 best players who are not on any roster (from the league-wide player list).
 A player who never plays is worth 0; a below-replacement player who plays is
 negative. Because z-scores are linear in the stats, summing single games gives
@@ -17,6 +17,19 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 from . import engine
+
+
+REPLACEMENT_POOL = 20
+
+
+def _ts_key(tx: dict) -> tuple:
+    """Sortable (date, minutes) for a transaction; ts looks like 'Oct 31, 4:57 pm'."""
+    try:
+        hm, ap = tx["ts"].split(", ")[1].split()
+        h, m = (int(x) for x in hm.split(":"))
+        return tx["date"], (h % 12 + (12 if ap == "pm" else 0)) * 60 + m
+    except (IndexError, ValueError):
+        return tx["date"], 0
 
 
 class Valuer:
@@ -34,11 +47,11 @@ class Valuer:
         model_pool = {k: self.avg[k] for k in rostered if self.avg.get(k, {}).get("GP")}
         self.model = engine.build_z_model(model_pool or {k: v for k, v in self.avg.items() if v.get("GP")}, self.league)
         self.z = {k: engine.player_z(v, self.league, self.model)["TOTAL"] for k, v in self.avg.items() if v.get("GP")}
-        # replacement level: what the waiver wire offers = mean z of the 5 best unrostered players
+        # replacement level: what the waiver wire offers = mean z of the 20 best unrostered players
         free = sorted((z for k, z in self.z.items() if k not in rostered and self.avg[k]["GP"] >= 3), reverse=True)
         self.has_pool = bool(free)
         if free:
-            top = free[:5]
+            top = free[:REPLACEMENT_POOL]
             self.repl = sum(top) / len(top)
         else:   # no free-agent data yet: approximate with the 15th percentile of rostered players
             ranked = sorted(self.z.values(), reverse=True)
@@ -48,6 +61,19 @@ class Valuer:
         order = sorted(self.season_value, key=self.season_value.get, reverse=True)
         self.value_rank = {k: i + 1 for i, k in enumerate(order)}
         self.dates = sorted(self.store["days"])
+        # when did a player leave a team? (drop, or traded to someone else) -> bounds a stint
+        self.outs: dict[tuple, list] = {}
+        self.used: set[tuple] = set()      # (team, player, day) already credited to an earlier move
+        for tx in (self.store.get("transactions") or {}).values():
+            for m in tx["moves"]:
+                if m["action"] == "drop":
+                    self.outs.setdefault((tx["team"], m["player"]), []).append(_ts_key(tx))
+                elif m["action"] == "trade":
+                    for t in self.rosters:
+                        if t != tx["team"]:
+                            self.outs.setdefault((t, m["player"]), []).append(_ts_key(tx))
+        for v in self.outs.values():
+            v.sort()
 
     def game_value(self, line: dict) -> float:
         return engine.player_z(line, self.league, self.model)["TOTAL"] - self.repl
@@ -57,24 +83,37 @@ class Valuer:
         return {"key": pid, "name": p.get("name", pid), "nba_team": p.get("nba_team", ""),
                 "positions": p.get("positions", []), "status": p.get("status", ""), "owner": self.owner.get(pid)}
 
-    def stint(self, pid: str, team: str, from_date: str) -> dict:
-        """What a player produced for a team from (about) a date until he left it.
-        Starts at the first stored day on/after from_date-1 where he is on that roster."""
-        start = (date.fromisoformat(from_date) - timedelta(days=1)).isoformat()
+    def stint(self, pid: str, team: str, tx: dict) -> dict:
+        """What a player produced for a team after a move (add / trade) until he left it.
+
+        Starts at the first stored day on/after the move date - 1 (time zones) where he is
+        on that roster, never before the team's previous drop of him, and ends when he
+        leaves the roster or at the team's next drop/trade of him. Each day is credited
+        to one move only. Call in chronological order."""
+        when = _ts_key(tx)
+        outs = self.outs.get((team, pid), [])
+        prev_out = max((o for o in outs if o <= when), default=None)
+        next_out = min((o for o in outs if o > when), default=None)
+        d0 = date.fromisoformat(tx["date"])
+        start = (d0 - timedelta(days=1)).isoformat()
+        if prev_out and prev_out[0] > start:
+            start = prev_out[0]
+        give_up = (d0 + timedelta(days=3)).isoformat()
         out = {"days": 0, "games": 0, "active_games": 0, "value": 0.0, "value_all": 0.0,
                "first": None, "last": None, "ongoing": False}
         on = False
         for d in self.dates:
-            if d < start:
+            if d < start or (team, pid, d) in self.used:
                 continue
+            if next_out and d > next_out[0]:
+                break
             row = next((r for r in self.store["days"][d].get(team, []) if r["player"] == pid), None)
             if not row:
-                if on:
-                    break
-                if d > (date.fromisoformat(from_date) + timedelta(days=3)).isoformat():
-                    break          # never showed up on this roster around that date
+                if on or d > give_up:
+                    break          # left the roster / never showed up around that date
                 continue
             on = True
+            self.used.add((team, pid, d))
             out["first"] = out["first"] or d
             out["last"] = d
             out["days"] += 1
@@ -96,15 +135,22 @@ def draft_report(provider) -> dict:
         return {"available": False}
     v = Valuer(provider)
     names = {t["id"]: t["name"] for t in provider.base["teams"]}
-    by_value = sorted(v.season_value.values(), reverse=True)
+    # What a draft slot "should" return: the drafted players' values sorted best-first,
+    # smoothed over +-5 slots. Uses only this draft, so the league's surplus sums to ~0.
+    drafted = sorted((v.season_value.get(x["player"], 0.0) for x in picks), reverse=True)
+
+    def expected_at(overall: int) -> float:
+        lo, hi = max(0, overall - 1 - 5), min(len(drafted), overall + 5)
+        window = drafted[lo:hi]
+        return sum(window) / len(window) if window else 0.0
+
     rows = []
     for x in picks:
         pid = x["player"]
         avg = v.avg.get(pid)
         value = v.season_value.get(pid, 0.0)
         rank = v.value_rank.get(pid)
-        # what that draft slot "should" return: the value of the player ranked there today
-        expected = by_value[x["overall"] - 1] if x["overall"] <= len(by_value) else 0.0
+        expected = expected_at(x["overall"])
         rows.append({
             "round": x["round"], "pick": x["pick"], "overall": x["overall"],
             "team": x["team"], "team_name": names.get(x["team"], x["team_name"]),
@@ -133,7 +179,7 @@ def draft_report(provider) -> dict:
 
 def moves_report(provider) -> dict:
     store = provider.store
-    txs = sorted((store.get("transactions") or {}).values(), key=lambda t: (t["date"], t["ts"]))
+    txs = sorted((store.get("transactions") or {}).values(), key=_ts_key)
     if not txs:
         return {"available": False}
     v = Valuer(provider)
@@ -144,7 +190,7 @@ def moves_report(provider) -> dict:
     for tx in txs:
         for m in tx["moves"]:
             if m["action"] == "add":
-                st = v.stint(m["player"], tx["team"], tx["date"])
+                st = v.stint(m["player"], tx["team"], tx)
                 pickups.append({"date": tx["date"], "ts": tx["ts"], "team": tx["team"], "team_name": names.get(tx["team"]),
                                 "player": v.info(m["player"]), "source": m["source"], **st,
                                 "per_game": st["value"] / st["active_games"] if st["active_games"] else None})
@@ -158,7 +204,7 @@ def moves_report(provider) -> dict:
                 tr = trades.setdefault(tx["ts"], {"date": tx["date"], "ts": tx["ts"], "sides": {}})
                 side = tr["sides"].setdefault(tx["team"], {"team": tx["team"], "name": names.get(tx["team"]),
                                                            "players": [], "value": 0.0})
-                st = v.stint(m["player"], tx["team"], tx["date"])
+                st = v.stint(m["player"], tx["team"], tx)
                 side["players"].append({"player": v.info(m["player"]), **st})
                 side["value"] += st["value"]
 

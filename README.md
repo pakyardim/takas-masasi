@@ -15,7 +15,7 @@ Yahoo Fantasy NBA ligin için iki araç sunan bir web uygulaması. AI yorumu yok
 3. **Draft:** Her seçimin bugüne kadarki değeri, takımların draft sıralaması, en iyi ve en kötü seçimler.
 4. **Transferler:** Serbest oyuncu eklemelerinin ve takasların, oyuncunun yeni takımında aktif oynadığı maçlarda ürettiği değere göre sıralaması.
 
-Draft ve Transferler tek bir ölçü kullanır: **değer** = oyuncunun maç başı z-skoru eksi "yedek seviyesi" (en iyi 5 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır.
+Draft ve Transferler tek bir ölçü kullanır: **değer** = oyuncunun maç başı z-skoru eksi "yedek seviyesi" (en iyi 20 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır.
 
 ## Çalıştırma
 

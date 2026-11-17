@@ -424,7 +424,7 @@ function renderWhatIf(r) {
 // ================================================================ DRAFT + TRANSFERS
 const val = (x, d = 1) => `<b class="${cls(x)}">${signed(x, d)}</b>`;
 const needSync = (what) => `<div class="card empty">${what} verisi henüz yok. Eklentiyi (sürüm 0.5.0+) yeniden yükleyip <b>Senkronize et</b>'e bas; draft, transferler ve oyuncu havuzu da okunur.</div>`;
-const VALUE_NOTE = `<b>Değer</b> = oyuncunun maç başı z-skoru eksi “yedek seviyesi” (en iyi 5 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır. 0 = serbest oyuncu havuzundan zaten bulunabilecek katkı.`;
+const VALUE_NOTE = `<b>Değer</b> = oyuncunun maç başı z-skoru eksi “yedek seviyesi” (en iyi 20 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır. 0 = serbest oyuncu havuzundan zaten bulunabilecek katkı.`;
 const pickNo = (r) => `${r.round}.${String(r.pick).padStart(2, "0")} <span class="muted small">(#${r.overall})</span>`;
 
 async function loadDraft(force) {
@@ -446,7 +446,7 @@ async function loadDraft(force) {
     ${r.has_pool ? "" : `<div class="warn">Serbest oyuncuların istatistikleri henüz okunmadı; bırakılmış draft seçimleri 0 değerle sayılıyor. Yeniden senkronize et.</div>`}
     <div class="card"><h3>En iyi draft</h3>
       <div class="table-wrap"><table><thead><tr><th>Takım</th><th>Toplam değer</th><th>Beklenene göre</th><th>Hâlâ kadroda</th><th style="text-align:left">En iyi seçim</th><th style="text-align:left">En kötü seçim</th></tr></thead><tbody>${teamRows}</tbody></table></div>
-      <p class="muted small note">${VALUE_NOTE} <b>Beklenene göre</b>: her seçimin değeri eksi o sıradan beklenen değer (bugün o sırada olan oyuncunun değeri). Satıra tıklayınca takımın seçimleri listelenir.</p></div>
+      <p class="muted small note">${VALUE_NOTE} <b>Beklenene göre</b>: seçimin değeri eksi o draft sırasından beklenen değer (bu draftta seçilenlerin değerleri iyiden kötüye sıralanıp ±5 sıra üzerinden ortalanır; ligin toplamı sıfıra yakındır). Değer, oyuncu sonradan bırakılmış ya da takas edilmiş olsa bile onu seçen takıma yazılır. Satıra tıklayınca takımın seçimleri listelenir.</p></div>
     <div class="card"><div class="card-head"><h3 style="margin:0">Seçimler</h3>${sel}</div><div id="draft-picks"></div></div>`;
   const renderPicks = () => {
     const team = $("#draft-team").value;

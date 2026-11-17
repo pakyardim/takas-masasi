@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import os
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -86,6 +86,7 @@ def merge_import(kind: str, data: dict) -> dict:
             store["players"][pid] = {**store["players"].get(pid, {}), **p}
     else:
         raise ValueError(f"unknown import kind {kind}")
+    store["last_import"] = datetime.now(timezone.utc).isoformat()
     save(store)
     return store
 
@@ -145,7 +146,8 @@ class ImportedProvider:
                 "categories": cats, "modifiers": {}, "current_week": self.base["current_week"],
                 "my_team": self.base["my_team"],
                 "teams": [{"key": t["id"], "name": t["name"], "manager": ""} for t in self.base["teams"]],
-                "weeks": weeks, "demo": False, "synced_at": self.base.get("synced_at")}
+                "weeks": weeks, "demo": False,
+                "synced_at": self.store.get("last_import") or self.base.get("synced_at")}
 
     def active_slots(self) -> int:
         pos = self.base.get("roster_positions") or []
