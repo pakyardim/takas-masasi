@@ -99,7 +99,7 @@ export function injuries(data: LeagueData): InjuryReport {
     .map(([key, b]) => {
       const p = store.players[key] ?? {};
       return {
-        key, name: p.name ?? key, nba_team: p.nba_team ?? "", team: b.team ?? null,
+        key, name: p.name ?? key, nba_team: p.nba_team ?? "", positions: p.positions ?? [], team: b.team ?? null,
         team_name: b.team ? names[b.team] ?? b.team : null,
         il: b.il, missed: b.missed, lost: b.lost, status: p.status ?? "", byWeek: b.byWeek,
       };

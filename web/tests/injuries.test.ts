@@ -13,6 +13,9 @@ describe("injury report", () => {
     expect(r.available).toBe(true);
     expect(r.days_covered).toBe(Object.keys(fx.store.days).length);
   });
+  it("names every listed player, including players no longer on a roster", () => {
+    expect(r.players.every((p) => p.name && p.name !== p.key)).toBe(true);
+  });
   it("counts no injured-list days in the fixture (no IL slots there)", () => {
     expect(r.teams.every((t) => t.il === 0)).toBe(true);
   });

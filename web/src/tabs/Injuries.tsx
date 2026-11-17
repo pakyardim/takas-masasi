@@ -1,4 +1,4 @@
-import { api, num, store } from "../store";
+import { api, num, registerPlayers, store } from "../store";
 import type { InjuryCell, InjuryReport } from "../types";
 import { Card, Empty, ErrorBox, PageHead, PlayerLabel, TableWrap, TeamName, useLoad } from "../ui";
 import { PosterButton } from "../PosterButton";
@@ -8,7 +8,12 @@ const signedNum = (x: number, d = 1) => (x > 0 ? "+" : x < 0 ? "−" : "") + num
 const dayShort = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
 
 export function Injuries() {
-  const { data: r, error } = useLoad(() => api<InjuryReport>("/api/injuries"));
+  const { data: r, error } = useLoad(async () => {
+    const d = await api<InjuryReport>("/api/injuries");
+    // players who are no longer on any roster are not in the league list: register their names here
+    if (d.available) registerPlayers(d.players.map((p) => ({ key: p.key, name: p.name, nba_team: p.nba_team, positions: p.positions, status: p.status, owner: p.team })));
+    return d;
+  });
   const me = store.league.my_team;
   return (
     <section>
