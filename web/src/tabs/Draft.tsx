@@ -1,7 +1,9 @@
 import { useRef, useState } from "preact/hooks";
 import { api, registerPlayers, signed, store } from "../store";
 import type { DraftPick, DraftReport } from "../types";
-import { Card, Empty, ErrorBox, NeedSync, PlayerLabel, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
+import { Card, Empty, ErrorBox, NeedSync, PageHead, PlayerLabel, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
+import { PosterButton } from "../PosterButton";
+import { draftPoster } from "../posters";
 
 export const VALUE_NOTE = (
   <><b>Değer</b> = oyuncunun maç başı z-skoru eksi “yedek seviyesi” (en iyi 20 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır. 0 = serbest oyuncu havuzundan zaten bulunabilecek katkı.</>
@@ -20,8 +22,9 @@ export function Draft() {
 
   return (
     <section>
-      <h2 class="page-title">Draft</h2>
-      <p class="muted" style="margin:0 0 14px">Kim iyi draft yaptı? Her seçimin bugüne kadarki değeri.</p>
+      <PageHead title="Draft" sub="Kim iyi draft yaptı? Her seçimin bugüne kadarki değeri.">
+        {r?.available && <PosterButton name="draft-karnesi" make={() => draftPoster(r, team)} />}
+      </PageHead>
       {error ? <ErrorBox msg={error} /> : !r ? <Empty>Yükleniyor…</Empty> : !r.available ? <NeedSync what="Draft" ver="0.5.0" /> : <>
         {!r.has_pool && <div class="warn">Serbest oyuncuların istatistikleri henüz okunmadı; bırakılmış draft seçimleri 0 değerle sayılıyor. Yeniden senkronize et.</div>}
         <Card title="En iyi draft">

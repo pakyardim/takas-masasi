@@ -19,6 +19,8 @@ Yahoo Fantasy NBA ligin için iki araç sunan bir web uygulaması. AI yorumu yok
 5. **Draft:** Her seçimin bugüne kadarki değeri, takımların draft sıralaması, en iyi ve en kötü seçimler.
 6. **Transferler:** Serbest oyuncu eklemelerinin ve takasların, oyuncunun yeni takımında aktif oynadığı maçlarda ürettiği değere göre sıralaması.
 
+Her sekmede bir **görsel oluştur** düğmesi var: o sayfadaki sonucu (takas, haftalık "herkese karşı" tablosu, senaryo, güç sıralaması, puan durumu, draft ve transfer karnesi) paylaşılabilir tek bir görsele çevirir; PNG ya da JPG olarak indirilir ya da panoya kopyalanır.
+
 Draft ve Transferler tek bir ölçü kullanır: **değer** = oyuncunun maç başı z-skoru eksi "yedek seviyesi" (en iyi 20 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır.
 
 ## Çalıştırma
@@ -95,7 +97,7 @@ Token `.yahoo_tokens.json` dosyasında saklanır ve otomatik yenilenir. Yahoo ya
 | `backend/demo.py` | Demo lig ve sahte günlük kutu skorları |
 | `backend/app.py` | FastAPI uç noktaları + statik arayüz |
 | `web/src/tabs/` | Arayüz: her sekme ayrı bir Preact bileşeni (TypeScript) |
-| `web/src/share.ts` | Paylaşılabilir görseli çizen canvas kodu |
+| `web/src/share.ts`, `poster.ts`, `posters.ts` | Paylaşılabilir görselleri çizen canvas kodu ve her sekmenin görsel içeriği |
 | `web/src/types.ts` | API yanıtlarının tipleri |
 | `tests/` | Testler (`.venv/bin/python -m pytest`) |
 

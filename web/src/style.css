@@ -205,3 +205,4 @@ a.primary.btn:hover { background: var(--brand-dark); }
 .scoreboard .sb-team:last-child { justify-content: flex-end; }
 a.ghost.btn { display: inline-block; background: var(--card); color: var(--brand); border: 1px solid var(--brand); border-radius: 9999px; padding: 8px 18px; font-weight: 700; }
 a.ghost.btn:hover { background: var(--sel); }
+.title-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }

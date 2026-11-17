@@ -1,6 +1,8 @@
 import { api, pct, rec, signed, store } from "../store";
 import type { Power as PowerData, PowerTeam } from "../types";
-import { Card, Empty, ErrorBox, NeedSync, RankPill, TableWrap, TeamName, useLoad } from "../ui";
+import { PosterButton } from "../PosterButton";
+import { powerPoster } from "../posters";
+import { Card, Empty, ErrorBox, NeedSync, PageHead, RankPill, TableWrap, TeamName, useLoad } from "../ui";
 
 function Trend({ t }: { t: PowerTeam }) {
   if (t.prev_rank == null || t.prev_rank === t.rank) return <span class="muted">·</span>;
@@ -12,8 +14,9 @@ export function Power() {
   const { data: r, error } = useLoad(() => api<PowerData>("/api/power"));
   return (
     <section>
-      <h2 class="page-title">Güç Sıralaması</h2>
-      <p class="muted" style="margin:0 0 14px">Fikstür şansından arındırılmış performans, son form ve bugünkü kadro gücü.</p>
+      <PageHead title="Güç Sıralaması" sub="Fikstür şansından arındırılmış performans, son form ve bugünkü kadro gücü.">
+        {r?.available && <PosterButton name="guc-siralamasi" make={() => powerPoster(r)} />}
+      </PageHead>
       {error ? <ErrorBox msg={error} /> : !r ? <Empty>Yükleniyor…</Empty> : !r.available ? <NeedSync what="Güç sıralaması" ver="0.6.0" /> : <>
         <Card>
           <TableWrap>

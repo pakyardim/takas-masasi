@@ -3,18 +3,18 @@
 import { store } from "./store";
 import type { AllPlay, Res, TradeResult } from "./types";
 
-type Ctx = CanvasRenderingContext2D;
+export type Ctx = CanvasRenderingContext2D;
 
-const C = {
+export const C = {
   brand: "#6001d2", brandDark: "#3b0086", text: "#232a31", muted: "#5b636a", line: "#e0e4e9",
   panel: "#f5f8fa", win: "#0f8a43", winSoft: "#e3f6ea", loss: "#fdecef", lossText: "#c2143a",
   tie: "#eef0f3", tieText: "#5b636a", gold: "#f5b301", white: "#ffffff", a: "#0063eb",
 };
-const FONT = `"Helvetica Neue", Helvetica, Arial, sans-serif`;
+export const FONT = `"Helvetica Neue", Helvetica, Arial, sans-serif`;
 const MONTHS = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
 const dm = (iso: string) => `${+iso.slice(8, 10)} ${MONTHS[+iso.slice(5, 7) - 1]}`;
 
-function fit(ctx: Ctx, text: string, maxWidth: number, size: number, weight = 800, min = 14): string {
+export function fit(ctx: Ctx, text: string, maxWidth: number, size: number, weight = 800, min = 14): string {
   let s = size;
   do { ctx.font = `${weight} ${s}px ${FONT}`; s -= 1; } while (ctx.measureText(text).width > maxWidth && s > min);
   if (ctx.measureText(text).width <= maxWidth) return text;
@@ -23,7 +23,7 @@ function fit(ctx: Ctx, text: string, maxWidth: number, size: number, weight = 80
   return t + "…";
 }
 
-function rr(ctx: Ctx, x: number, y: number, w: number, h: number, r: number, fill?: string | null, stroke?: string | null, lw = 2) {
+export function rr(ctx: Ctx, x: number, y: number, w: number, h: number, r: number, fill?: string | null, stroke?: string | null, lw = 2) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
   if (fill) { ctx.fillStyle = fill; ctx.fill(); }
@@ -47,7 +47,7 @@ export async function loadLogos(teams: string[]): Promise<Logos> {
 }
 
 /** Picture cropped to a circle ("cover"), with a ring. */
-function circleLogo(ctx: Ctx, img: HTMLImageElement, cx: number, cy: number, r: number, ring: string, ringW: number) {
+export function circleLogo(ctx: Ctx, img: HTMLImageElement, cx: number, cy: number, r: number, ring: string, ringW: number) {
   const s = Math.min(img.naturalWidth, img.naturalHeight);
   ctx.save();
   ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
@@ -230,7 +230,7 @@ export function drawAllPlayPoster(data: AllPlay, teamName: string, logos: Logos 
 // ================================================================ trade poster
 const signedTxt = (v: number, d: number) => (v > 0 ? "+" : "") + v.toFixed(d);
 
-function header(ctx: Ctx, W: number, H: number, league: string, title: string, subtitle: string) {
+export function header(ctx: Ctx, W: number, H: number, league: string, title: string, subtitle: string) {
   const M = 44;
   const g = ctx.createLinearGradient(0, 0, W, H);
   g.addColorStop(0, C.brand); g.addColorStop(1, C.brandDark);
@@ -244,12 +244,13 @@ function header(ctx: Ctx, W: number, H: number, league: string, title: string, s
   ctx.globalAlpha = 0.8;
   ctx.fillText(fit(ctx, league, W - 2 * M - 180, 17, 600), M + 158, 51);
   ctx.globalAlpha = 1;
-  ctx.font = `900 60px ${FONT}`; ctx.fillText(title, M, 122);
-  ctx.globalAlpha = 0.92; ctx.font = `600 22px ${FONT}`; ctx.fillText(subtitle, M, 172);
+  ctx.fillText(fit(ctx, title, W - 2 * M, 60, 900, 30), M, 122);
+  ctx.globalAlpha = 0.92;
+  ctx.fillText(fit(ctx, subtitle, W - 2 * M, 22, 600, 14), M, 172);
   ctx.globalAlpha = 1;
 }
 
-function footer(ctx: Ctx, W: number, y: number, note: string) {
+export function footer(ctx: Ctx, W: number, y: number, note: string) {
   const M = 44, d = new Date();
   ctx.textAlign = "left"; ctx.fillStyle = C.muted; ctx.font = `500 15px ${FONT}`;
   ctx.fillText(note, M, y + 19);

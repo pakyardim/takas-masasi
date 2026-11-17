@@ -30,6 +30,16 @@ export function TeamName({ team, name, plain }: { team?: string | null; name?: s
   return <span class="tname"><TeamLogo team={team} /><span class={plain ? "" : "pl-name"}>{label}</span></span>;
 }
 
+/** Page title with an optional action (e.g. the poster button) on the right. */
+export function PageHead({ title, sub, children }: { title: string; sub: string; children?: ComponentChildren }) {
+  return (
+    <>
+      <div class="title-row"><h2 class="page-title">{title}</h2>{children}</div>
+      <p class="muted" style="margin:0 0 14px">{sub}</p>
+    </>
+  );
+}
+
 export const Val = ({ x, d = 1 }: { x: number; d?: number }) => <b class={cls(x)}>{signed(x, d)}</b>;
 export const RankPill = ({ n }: { n: number | string }) => <span class="rank-pill">{n}</span>;
 export const SideTag = ({ side, mini }: { side: "a" | "b"; mini?: boolean }) =>

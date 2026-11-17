@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api, catByKey, dayLabel, dayLong, fmt, pname, registerPlayers, RES, scoreText, store } from "../store";
 import { drawAllPlayPoster, loadLogos } from "../share";
-import { makeShare, ShareModal, type Share } from "../ShareModal";
+import { PosterButton } from "../PosterButton";
+import { scenarioPoster } from "../posters";
 import type { AllPlay, Brief, Edit, Matchup, Player, StatLine, VersusRow, WeekData, WhatIfResult } from "../types";
-import { Empty, ErrorBox, PlayerLabel, TableWrap, TeamLogo, TeamName, TeamOptions } from "../ui";
+import { Empty, ErrorBox, PageHead, PlayerLabel, TableWrap, TeamLogo, TeamName, TeamOptions } from "../ui";
 
 export function WhatIf() {
   const lg = store.league;
@@ -17,8 +18,6 @@ export function WhatIf() {
   const [res, setRes] = useState<WhatIfResult | null>(null);
   const [resErr, setResErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [share, setShare] = useState<Share | null>(null);
-  const [sharing, setSharing] = useState(false);
   const loadSeq = useRef(0), runSeq = useRef(0);
 
   useEffect(() => {
@@ -40,25 +39,15 @@ export function WhatIf() {
       .finally(() => { if (mine === runSeq.current) setBusy(false); });
   }, [edits, wk]);
 
-  async function openShare() {
-    setSharing(true);
-    try {
-      const data = await api<AllPlay>(`/api/allplay?team=${encodeURIComponent(team)}`);
-      if (!data.weeks.length) throw new Error("Bu takım için oynanmış hafta yok.");
-      const logos = await loadLogos([team, ...data.teams.map((t) => t.key)]);
-      const canvas = drawAllPlayPoster(data, store.teamName[team], logos);
-      setShare(await makeShare(canvas, `${store.teamName[team]}-herkese-karsi`));
-    } catch (e) {
-      alert("Görsel oluşturulamadı: " + (e as Error).message);
-    } finally {
-      setSharing(false);
-    }
-  }
+  const allPlayPoster = async () => {
+    const data = await api<AllPlay>(`/api/allplay?team=${encodeURIComponent(team)}`);
+    if (!data.weeks.length) throw new Error("Bu takım için oynanmış hafta yok.");
+    return drawAllPlayPoster(data, store.teamName[team], await loadLogos([team, ...data.teams.map((t) => t.key)]));
+  };
 
   return (
     <section>
-      <h2 class="page-title">Ya Olsaydı?</h2>
-      <p class="muted" style="margin:0 0 14px">Geçmiş bir haftayı yeniden oynat: başka bir rakibe karşı, farklı bir dizilişle ya da farklı oyuncularla.</p>
+      <PageHead title="Ya Olsaydı?" sub="Geçmiş bir haftayı yeniden oynat: başka bir rakibe karşı, farklı bir dizilişle ya da farklı oyuncularla." />
       <div class="toolbar">
         <label>Hafta
           <select value={week} onChange={(e) => { setWeek(+e.currentTarget.value); setOppReq(null); }}>
@@ -79,14 +68,13 @@ export function WhatIf() {
 
       {err ? <ErrorBox msg={err} /> : !wk ? <Empty>Hafta verisi yükleniyor…</Empty> : <>
         <Actual wk={wk} />
-        <Versus wk={wk} rows={res?.versus ?? wk.versus} onPick={setOppReq} onShare={openShare} sharing={sharing} />
+        <Versus wk={wk} rows={res?.versus ?? wk.versus} onPick={setOppReq} makePoster={allPlayPoster} />
         <Builder key={`${wk.week}|${wk.team}|${wk.opponent}`} wk={wk} edits={edits} setEdits={setEdits} />
         <div style={{ opacity: busy ? 0.5 : 1 }}>
-          {resErr ? <ErrorBox msg={resErr} /> : res && edits.length ? <Result wk={wk} r={res} /> : null}
+          {resErr ? <ErrorBox msg={resErr} /> : res && edits.length ? <Result wk={wk} r={res} edits={edits} /> : null}
         </div>
       </>}
 
-      {share && <ShareModal share={share} onClose={() => setShare(null)} />}
     </section>
   );
 }
@@ -135,7 +123,7 @@ function Actual({ wk }: { wk: WeekData }) {
 }
 
 // ---------------------------------------------------------------- versus everyone
-function Versus({ wk, rows, onPick, onShare, sharing }: { wk: WeekData; rows: VersusRow[]; onPick: (t: string) => void; onShare: () => void; sharing: boolean }) {
+function Versus({ wk, rows, onPick, makePoster }: { wk: WeekData; rows: VersusRow[]; onPick: (t: string) => void; makePoster: () => Promise<HTMLCanvasElement> }) {
   const hasHypo = rows.some((r) => r.hypothetical);
   const wins = (k: "actual" | "hypothetical") => rows.filter((r) => r[k]?.result === "W").length;
   const pill = (x: Brief) => <><b class={x.result === "W" ? "pos" : x.result === "L" ? "neg" : ""}>{scoreText(x)}</b> <span class="muted small">{RES[x.result]}</span></>;
@@ -143,7 +131,7 @@ function Versus({ wk, rows, onPick, onShare, sharing }: { wk: WeekData; rows: Ve
     <div class="card">
       <div class="card-title-row">
         <h3 style="margin:0">Bu hafta başkasıyla oynasaydın</h3>
-        <button class="ghost" onClick={onShare} disabled={sharing}>{sharing ? "Hazırlanıyor…" : "Tüm haftaların görselini oluştur"}</button>
+        <PosterButton label="Tüm haftaların görselini oluştur" name={`${store.teamName[wk.team]}-herkese-karsi`} make={makePoster} />
       </div>
       <p class="muted small" style="margin:0 0 8px">{store.teamName[wk.team]} bu haftaki istatistikleriyle ligdeki {rows.length} takımdan <b>{wins("actual")}</b> tanesini yenerdi
         {hasHypo ? <>; senaryodaki dizilişle <b>{wins("hypothetical")}</b> tanesini</> : null}. Satıra tıklayınca o rakibe karşı ayrıntıyı görürsün.</p>
@@ -301,7 +289,7 @@ function Builder({ wk, edits, setEdits }: { wk: WeekData; edits: Edit[]; setEdit
 }
 
 // ---------------------------------------------------------------- scenario result
-function Result({ wk, r }: { wk: WeekData; r: WhatIfResult }) {
+function Result({ wk, r, edits }: { wk: WeekData; r: WhatIfResult; edits: Edit[] }) {
   const a = r.actual, h = r.hypothetical;
   const T = store.teamName[wk.team], O = store.teamName[wk.opponent];
   const cs = r.scoring === "points" ? [] : store.league.categories;
@@ -310,7 +298,10 @@ function Result({ wk, r }: { wk: WeekData; r: WhatIfResult }) {
   const cells = (line: StatLine) => <><td>{line.GP || 0}</td>{cs.map((c) => <td key={c.key}>{fmt(c.key, comp(line, c), "total")}</td>)}</>;
   return (
     <div class="card">
-      <h3>Senaryo sonucu</h3>
+      <div class="card-title-row">
+        <h3 style="margin:0">Senaryo sonucu</h3>
+        <PosterButton label="Senaryonun görselini oluştur" name={`ya-olsaydi-${wk.week}-hafta-${store.teamName[wk.team]}`} make={() => scenarioPoster(wk, r, edits)} />
+      </div>
       {r.flipped
         ? <div class="verdict flip">Sonuç değişirdi: {scoreText(a)} {RES[a.result]} → <b>{scoreText(h)} {RES[h.result]}</b></div>
         : <div class="verdict same">Sonuç değişmezdi: {scoreText(a)} → {scoreText(h)} ({RES[h.result]})</div>}

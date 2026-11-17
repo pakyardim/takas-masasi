@@ -2,7 +2,9 @@ import type { ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
 import { api, catByKey, dayLong, fmt, num, rec, store } from "../store";
 import type { Standings as StandingsData, StandingsTeam } from "../types";
-import { Card, Empty, ErrorBox, RankPill, TableWrap, TeamName, useLoad } from "../ui";
+import { PosterButton } from "../PosterButton";
+import { standingsPoster } from "../posters";
+import { Card, Empty, ErrorBox, PageHead, RankPill, TableWrap, TeamName, useLoad } from "../ui";
 
 type SortKey = "h2h" | "one_win" | "roto" | "points";
 const RANK: Record<SortKey, (t: StandingsTeam) => number> = {
@@ -32,7 +34,7 @@ export function Standings() {
   const pv = Object.entries(r.point_values).map(([k, v]) => `${catByKey(k)?.label || k} ${v > 0 ? "+" : ""}${v}`).join(", ");
 
   return (
-    <Shell>
+    <Shell action={<PosterButton name="puan-durumu" make={() => standingsPoster(r, teams)} />}>
       <Card title="Dört formatta sıralama">
         <TableWrap>
           <thead>
@@ -90,11 +92,10 @@ export function Standings() {
   );
 }
 
-function Shell({ children }: { children: ComponentChildren }) {
+function Shell({ children, action }: { children: ComponentChildren; action?: ComponentChildren }) {
   return (
     <section>
-      <h2 class="page-title">Puan Durumu</h2>
-      <p class="muted" style="margin:0 0 14px">Aynı sezon, başka lig formatlarında nasıl görünürdü?</p>
+      <PageHead title="Puan Durumu" sub="Aynı sezon, başka lig formatlarında nasıl görünürdü?">{action}</PageHead>
       {children}
     </section>
   );

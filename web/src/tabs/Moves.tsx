@@ -1,6 +1,8 @@
 import { api, dayLong, registerPlayers, signed, store } from "../store";
 import type { MovesReport, Pickup } from "../types";
-import { Card, Empty, ErrorBox, NeedSync, PlayerLabel, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
+import { Card, Empty, ErrorBox, NeedSync, PageHead, PlayerLabel, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
+import { PosterButton } from "../PosterButton";
+import { movesPoster } from "../posters";
 import { VALUE_NOTE } from "./Draft";
 
 export function Moves() {
@@ -26,8 +28,9 @@ export function Moves() {
 
   return (
     <section>
-      <h2 class="page-title">Transferler</h2>
-      <p class="muted" style="margin:0 0 14px">Serbest oyuncu eklemeleri ve takaslar: kim en iyi hamleyi yaptı?</p>
+      <PageHead title="Transferler" sub="Serbest oyuncu eklemeleri ve takaslar: kim en iyi hamleyi yaptı?">
+        {r?.available && <PosterButton name="transfer-karnesi" make={() => movesPoster(r)} />}
+      </PageHead>
       {error ? <ErrorBox msg={error} /> : !r ? <Empty>Yükleniyor…</Empty> : !r.available ? <NeedSync what="Transfer" ver="0.5.0" /> : <>
         <Card title="Takımların serbest oyuncu hamleleri">
           <TableWrap>

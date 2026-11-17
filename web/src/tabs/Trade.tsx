@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { drawTradePoster, loadLogos } from "../share";
-import { makeShare, ShareModal, type Share } from "../ShareModal";
+import { PosterButton } from "../PosterButton";
 import { api, catByKey, cats, cls, fmt, pname, registerPlayers, signed, store } from "../store";
 import type { Balance, Category, Res, TradeCat, TradeFix, TradeResult } from "../types";
-import { Card, Empty, ErrorBox, PlayerLabel, SideTag, TableWrap, TeamLogo, TeamOptions } from "../ui";
+import { Card, Empty, ErrorBox, PageHead, PlayerLabel, SideTag, TableWrap, TeamLogo, TeamOptions } from "../ui";
 
 type Side = "a" | "b";
 const netCls = (r: Res) => (r === "W" ? "pos" : r === "L" ? "neg" : "");
@@ -50,8 +50,7 @@ export function Trade() {
 
   return (
     <section>
-      <h2 class="page-title">Takas Analizi</h2>
-      <p class="muted" style="margin:0 0 14px">Oyunculara tıklayarak iki tarafın paketini oluştur. Sonuç otomatik hesaplanır.</p>
+      <PageHead title="Takas Analizi" sub="Oyunculara tıklayarak iki tarafın paketini oluştur. Sonuç otomatik hesaplanır." />
       <div class="toolbar">
         <label>İstatistik dönemi
           <select value={period} onChange={(e) => setPeriod(e.currentTarget.value)}>
@@ -92,21 +91,11 @@ export function Trade() {
 const PERIODS: Record<string, string> = { season: "Sezon ortalaması", last30: "Son 30 gün", last14: "Son 14 gün", last7: "Son 7 gün" };
 
 function TradeView({ r, selA, selB, period, onFix }: { r: TradeResult; selA: string[]; selB: string[]; period: string; onFix: (f: TradeFix) => void }) {
-  const [share, setShare] = useState<Share | null>(null);
-  const [sharing, setSharing] = useState(false);
-  const openShare = async () => {
-    setSharing(true);
-    try {
-      const logos = await loadLogos([r.teams.a, r.teams.b]);
-      // only players that are part of this result (the selection may already have changed)
-      const give = (sel: string[]) => sel.filter((k) => r.players[k]);
-      const canvas = drawTradePoster(r, give(selA), give(selB), PERIODS[period] ?? period, logos);
-      setShare(await makeShare(canvas, `takas-${store.teamName[r.teams.a]}-${store.teamName[r.teams.b]}`));
-    } catch (e) {
-      alert("Görsel oluşturulamadı: " + (e as Error).message);
-    } finally {
-      setSharing(false);
-    }
+  const makePoster = async () => {
+    const logos = await loadLogos([r.teams.a, r.teams.b]);
+    // only players that are part of this result (the selection may already have changed)
+    const give = (sel: string[]) => sel.filter((k) => r.players[k]);
+    return drawTradePoster(r, give(selA), give(selB), PERIODS[period] ?? period, logos);
   };
   const A = store.teamName[r.teams.a], B = store.teamName[r.teams.b];
   const isPts = r.scoring === "points";
@@ -217,9 +206,8 @@ function TradeView({ r, selA, selB, period, onFix }: { r: TradeResult; selA: str
 
       <div class="card-title-row" style="margin:-4px 0 14px">
         <span class="muted small">Takası tek bir görselde paylaş: paketler, net değer ve kategori değişimleri.</span>
-        <button class="ghost" onClick={openShare} disabled={sharing}>{sharing ? "Hazırlanıyor…" : "Bu takasın görselini oluştur"}</button>
+        <PosterButton label="Bu takasın görselini oluştur" name={`takas-${store.teamName[r.teams.a]}-${store.teamName[r.teams.b]}`} make={makePoster} />
       </div>
-      {share && <ShareModal share={share} onClose={() => setShare(null)} />}
 
       {uneven && (
         <Card title="Kadro dengesi">
