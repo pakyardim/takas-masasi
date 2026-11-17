@@ -16,6 +16,20 @@ export function PlayerLabel({ k }: { k: string }) {
   );
 }
 
+/** Round team picture (falls back to the team's initial). */
+export function TeamLogo({ team, size = 24 }: { team: string; size?: number }) {
+  const url = store.teamLogo[team];
+  if (url) return <img class="tlogo" src={url} width={size} height={size} alt="" loading="lazy" />;
+  return <span class="tlogo ph" style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}>{(store.teamName[team] ?? "?").slice(0, 1)}</span>;
+}
+
+/** Team picture + name, as one inline unit. */
+export function TeamName({ team, name, plain }: { team?: string | null; name?: string; plain?: boolean }) {
+  const label = name ?? (team ? store.teamName[team] : "") ?? "";
+  if (!team) return <span class={plain ? "" : "pl-name"}>{label}</span>;
+  return <span class="tname"><TeamLogo team={team} /><span class={plain ? "" : "pl-name"}>{label}</span></span>;
+}
+
 export const Val = ({ x, d = 1 }: { x: number; d?: number }) => <b class={cls(x)}>{signed(x, d)}</b>;
 export const RankPill = ({ n }: { n: number | string }) => <span class="rank-pill">{n}</span>;
 export const SideTag = ({ side, mini }: { side: "a" | "b"; mini?: boolean }) =>

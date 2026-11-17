@@ -8,6 +8,7 @@ export const store = {
   rosters: {} as Record<string, string[]>,
   players: {} as Players,
   teamName: {} as Record<string, string>,
+  teamLogo: {} as Record<string, string | null | undefined>,
 };
 
 export function registerPlayers(more?: Players | Player[] | null) {

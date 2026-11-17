@@ -1,6 +1,6 @@
 import { api, pct, rec, signed, store } from "../store";
 import type { Power as PowerData, PowerTeam } from "../types";
-import { Card, Empty, ErrorBox, NeedSync, RankPill, TableWrap, useLoad } from "../ui";
+import { Card, Empty, ErrorBox, NeedSync, RankPill, TableWrap, TeamName, useLoad } from "../ui";
 
 function Trend({ t }: { t: PowerTeam }) {
   if (t.prev_rank == null || t.prev_rank === t.rank) return <span class="muted">·</span>;
@@ -22,7 +22,7 @@ export function Power() {
               {r.teams.map((t) => (
                 <tr key={t.team} class={t.team === store.league.my_team ? "me" : ""}>
                   <td><RankPill n={t.rank} /> <Trend t={t} /></td>
-                  <td class="l"><span class="pl-name">{t.name}</span></td>
+                  <td class="l"><TeamName team={t.team} /></td>
                   <td><span class="power-score">{t.power.toFixed(1)}</span><span class="power-bar" style={{ width: `${Math.max(4, t.power)}%` }} /></td>
                   <td>{rec(t.allplay)} <span class="muted small">{pct(t.allplay_pct)}</span></td>
                   <td>{pct(t.form_pct)}</td>

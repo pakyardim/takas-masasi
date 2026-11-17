@@ -1,7 +1,7 @@
 import { useRef, useState } from "preact/hooks";
 import { api, registerPlayers, signed, store } from "../store";
 import type { DraftPick, DraftReport } from "../types";
-import { Card, Empty, ErrorBox, NeedSync, PlayerLabel, RankPill, TableWrap, useLoad, Val } from "../ui";
+import { Card, Empty, ErrorBox, NeedSync, PlayerLabel, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
 
 export const VALUE_NOTE = (
   <><b>Değer</b> = oyuncunun maç başı z-skoru eksi “yedek seviyesi” (en iyi 20 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır. 0 = serbest oyuncu havuzundan zaten bulunabilecek katkı.</>
@@ -31,7 +31,7 @@ export function Draft() {
               {r.teams.map((t, i) => (
                 <tr key={teamId(t)} class={`rowlink ${t.team === store.league.my_team ? "me" : ""}`}
                   onClick={() => { setTeam(teamId(t)); picksRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}>
-                  <td><RankPill n={i + 1} /> <span class="pl-name">{t.name}</span></td>
+                  <td><RankPill n={i + 1} /> <TeamName team={t.team} name={t.name} /></td>
                   <td><Val x={t.total} /></td><td><Val x={t.surplus} /></td><td>{t.kept}/{t.picks}</td>
                   <td class="l">{brief(t.best)}</td><td class="l">{brief(t.worst)}</td>
                 </tr>
@@ -55,7 +55,7 @@ export function Draft() {
                 <tr key={p.overall}>
                   <td>{p.round}.{String(p.pick).padStart(2, "0")} <span class="muted small">(#{p.overall})</span></td>
                   <td class="l"><PlayerLabel k={p.player.key} /></td>
-                  {!team && <td class="l">{p.team_name}</td>}
+                  {!team && <td class="l"><TeamName team={p.team} name={p.team_name} plain /></td>}
                   <td>{p.gp || 0}</td><td>{p.z == null ? "–" : signed(p.z)}</td>
                   <td>{p.known ? <Val x={p.value} /> : <span class="faded">veri yok</span>}</td>
                   <td>{p.rank ? p.rank + "." : "–"}</td><td><Val x={p.surplus} /></td>

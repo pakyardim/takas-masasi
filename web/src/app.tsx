@@ -30,6 +30,7 @@ export function App() {
     api<LeagueResponse>("/api/league").then((d) => {
       store.league = d.league; store.rosters = d.rosters; store.players = d.players;
       store.teamName = Object.fromEntries(d.league.teams.map((t) => [t.key, t.name]));
+      store.teamLogo = Object.fromEntries(d.league.teams.map((t) => [t.key, t.logo]));
       setReady(true);
     }).catch((e) => setError(e.message));
     const onHash = () => open(fromHash());

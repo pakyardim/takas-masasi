@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api, catByKey, cats, cls, fmt, pname, registerPlayers, signed, store } from "../store";
 import type { Balance, Category, Res, TradeCat, TradeFix, TradeResult } from "../types";
-import { Card, Empty, ErrorBox, PlayerLabel, SideTag, TableWrap, TeamOptions } from "../ui";
+import { Card, Empty, ErrorBox, PlayerLabel, SideTag, TableWrap, TeamLogo, TeamOptions } from "../ui";
 
 type Side = "a" | "b";
 const netCls = (r: Res) => (r === "W" ? "pos" : r === "L" ? "neg" : "");
@@ -63,7 +63,7 @@ export function Trade() {
       <div class="two-col">
         <div class="card">
           <div class="card-head">
-            <SideTag side="a" />
+            <SideTag side="a" /><TeamLogo team={teamA} size={30} />
             <select class="team-select" value={teamA} onChange={(e) => { setTeamA(e.currentTarget.value); setSelA([]); setFix(null); }}><TeamOptions mark={mark} /></select>
             <span class="muted small">verir</span>
           </div>
@@ -71,7 +71,7 @@ export function Trade() {
         </div>
         <div class="card">
           <div class="card-head">
-            <SideTag side="b" />
+            <SideTag side="b" /><TeamLogo team={teamB} size={30} />
             <select class="team-select" value={teamB} onChange={(e) => { setTeamB(e.currentTarget.value); setSelB([]); setFix(null); }}><TeamOptions mark={mark} /></select>
             <span class="muted small">verir</span>
           </div>
@@ -165,7 +165,7 @@ function TradeView({ r, selA, selB, onFix }: { r: TradeResult; selA: string[]; s
 
   const impactCard = (team: string, side: Side) => (
     <div class="card">
-      <div class="card-head"><SideTag side={side} /><h3 style="margin:0">{store.teamName[team]}: takas sonrası</h3></div>
+      <div class="card-head"><SideTag side={side} /><TeamLogo team={team} size={28} /><h3 style="margin:0">{store.teamName[team]}: takas sonrası</h3></div>
       <TableWrap>
         <thead><tr><th>Kategori</th><th>Önce</th><th>Sonra</th><th>Lig sırası ({r.league_size} takım)</th></tr></thead>
         <tbody>

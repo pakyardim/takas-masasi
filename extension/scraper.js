@@ -142,16 +142,19 @@
 
   async function teams(lid) {
     const doc = await get(`/nba/${lid}/teams`);
-    const seen = {};
+    const seen = {}, logos = {};
     let my = null;
     doc.querySelectorAll("a").forEach((a) => {
       const m = (a.getAttribute("href") || "").match(new RegExp(`/nba/${lid}/(\\d+)$`));
+      if (!m) return;
+      const img = a.querySelector("img");
+      if (img?.getAttribute("src")) logos[m[1]] = logos[m[1]] || img.getAttribute("src");   // team picture (URL only)
       const t = clean(a.innerText);
-      if (!m || !t) return;
+      if (!t) return;
       if (t === "My Team") { my = m[1]; return; }
       seen[m[1]] = seen[m[1]] || t;
     });
-    return { teams: Object.entries(seen).map(([id, name]) => ({ id, name })), my_team: my };
+    return { teams: Object.entries(seen).map(([id, name]) => ({ id, name, logo: logos[id] || null })), my_team: my };
   }
 
   async function weekInfo(lid, week, myTeam) {

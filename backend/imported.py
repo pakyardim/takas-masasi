@@ -11,10 +11,14 @@ Storage: data/league.json
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from urllib.parse import urlparse
+
+import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = Path(os.environ.get("TAKAS_DATA_FILE") or ROOT / "data" / "league.json")
@@ -22,6 +26,49 @@ DATA_FILE = Path(os.environ.get("TAKAS_DATA_FILE") or ROOT / "data" / "league.js
 RATIOS = {"FG%": ["FGM", "FGA"], "FT%": ["FTM", "FTA"], "3PT%": ["3PTM", "3PTA"]}
 LOWER_IS_BETTER = {"TO", "PF"}
 LABELS = {"ST": "STL"}
+
+
+LOGO_DIR = DATA_FILE.parent / "logos"
+LOGO_HOSTS = ("s.yimg.com", "yahoofantasysports-res.cloudinary.com")     # Yahoo's image CDNs only
+LOGO_TYPES = {"image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif"}
+
+
+def _download_logo(url: str) -> tuple[bytes, str] | None:
+    """Fetch a team picture from Yahoo's CDN. Returns (bytes, extension) or None."""
+    u = urlparse(url)
+    if u.scheme != "https" or u.hostname not in LOGO_HOSTS:
+        return None
+    # uploaded pictures are served at 90px by default; a 192px rendition exists
+    candidates = [url.replace("/t_s90sq/", "/t_s192sq/"), url] if "/t_s90sq/" in url else [url]
+    for c in candidates:
+        try:
+            r = requests.get(c, timeout=10, allow_redirects=False)
+        except requests.RequestException:
+            continue
+        ext = LOGO_TYPES.get(r.headers.get("content-type", "").split(";")[0].strip())
+        if r.status_code == 200 and ext and 0 < len(r.content) <= 2_000_000:
+            return r.content, ext
+    return None
+
+
+def _sync_logos(store: dict, league_id: str, teams: list[dict]):
+    """Download team pictures whose URL is new; keep the files next to the data."""
+    logos = store.setdefault("logos", {})
+    for t in teams:
+        url, tid = t.get("logo"), str(t.get("id", ""))
+        if not url or not tid.isdigit():
+            continue
+        cur = logos.get(tid)
+        if cur and cur["url"] == url and (LOGO_DIR / cur["file"]).exists():
+            continue
+        got = _download_logo(url)
+        if not got:
+            continue
+        data, ext = got
+        LOGO_DIR.mkdir(parents=True, exist_ok=True)
+        name = f"{league_id}_{tid}.{ext}"
+        (LOGO_DIR / name).write_bytes(data)
+        logos[tid] = {"url": url, "file": name, "v": hashlib.sha1(data).hexdigest()[:8]}
 
 
 def load() -> dict:
@@ -44,6 +91,7 @@ def merge_import(kind: str, data: dict) -> dict:
         if old and old.get("league_id") != data.get("league_id"):
             store = {"base": None, "weeks": {}, "days": {}, "players": {}}   # different league -> start over
         store["base"] = data
+        _sync_logos(store, data.get("league_id", ""), data.get("teams", []))
         for pid, p in data["players"].items():
             store["players"][pid] = {**store["players"].get(pid, {}), **{k: v for k, v in p.items() if k != "owner"}}
     elif kind == "meta":
@@ -51,6 +99,7 @@ def merge_import(kind: str, data: dict) -> dict:
         if not store.get("base") or store["base"].get("league_id") != data.get("league_id"):
             raise ValueError("no base data for this league yet")
         store["base"].update({k: v for k, v in data.items() if k not in ("rosters", "players", "averages")})
+        _sync_logos(store, data.get("league_id", ""), data.get("teams", []))
     elif kind == "draft":
         names = {t["name"]: t["id"] for t in (store.get("base") or {}).get("teams", [])}
         store["draft"] = [{"round": x["round"], "pick": x["pick"], "overall": x["overall"],
@@ -170,9 +219,19 @@ class ImportedProvider:
         return {"key": self.base["league_id"], "name": self.base["name"], "scoring": "categories",
                 "categories": cats, "modifiers": {}, "current_week": self.base["current_week"],
                 "my_team": self.base["my_team"],
-                "teams": [{"key": t["id"], "name": t["name"], "manager": ""} for t in self.base["teams"]],
+                "teams": [{"key": t["id"], "name": t["name"], "manager": "", "logo": self.logo_url(t["id"])}
+                          for t in self.base["teams"]],
                 "weeks": weeks, "demo": False,
                 "synced_at": self.store.get("last_import") or self.base.get("synced_at")}
+
+    def logo_url(self, team: str) -> str | None:
+        lg = self.store.get("logos", {}).get(team)
+        return f"/api/logo/{team}?v={lg['v']}" if lg and (LOGO_DIR / lg["file"]).exists() else None
+
+    def logo_file(self, team: str) -> Path | None:
+        lg = self.store.get("logos", {}).get(team)
+        path = LOGO_DIR / lg["file"] if lg else None
+        return path if path and path.exists() else None
 
     def active_slots(self) -> int:
         pos = self.base.get("roster_positions") or []

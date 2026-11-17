@@ -71,3 +71,34 @@ def test_final_weeks_and_meta(tmp_path, monkeypatch):
     imported.merge_import("meta", {"league_id": "1", "current_week": 7, "rosters": {"x": []}})
     b = imported.load()["base"]
     assert b["current_week"] == 7 and b["rosters"] == base["rosters"]
+
+
+def test_team_logos_downloaded_once_from_allowed_hosts(tmp_path, monkeypatch):
+    monkeypatch.setattr(imported, "DATA_FILE", tmp_path / "league.json")
+    monkeypatch.setattr(imported, "LOGO_DIR", tmp_path / "logos")
+    calls = []
+
+    class Resp:
+        status_code = 200
+        headers = {"content-type": "image/png"}
+        content = b"\x89PNG fake"
+
+    def fake_get(url, **kw):
+        calls.append(url)
+        return Resp()
+
+    monkeypatch.setattr(imported.requests, "get", fake_get)
+    base, _ = _payloads()
+    base["teams"] = [
+        {"id": "1", "name": "A", "logo": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s90sq/fantasy-logos/x.png"},
+        {"id": "2", "name": "B", "logo": "https://evil.example.com/x.png"},
+    ]
+    imported.merge_import("base", base)
+    assert calls == ["https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/x.png"]
+    p = imported.ImportedProvider()
+    teams = {t["key"]: t for t in p.league()["teams"]}
+    assert teams["1"]["logo"].startswith("/api/logo/1?v=") and teams["2"]["logo"] is None
+    assert p.logo_file("1").read_bytes() == b"\x89PNG fake" and p.logo_file("2") is None
+
+    imported.merge_import("meta", {"league_id": "1", "teams": base["teams"]})
+    assert len(calls) == 1                      # same URL, file exists: not downloaded again

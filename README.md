@@ -60,7 +60,7 @@ Sonraki senkronlar yalnızca eksik olanı okur:
 Yahoo çok sık istek görürse geçici hız sınırı koyar (HTTP 999). Eklenti bu durumda birkaç dakika bekleyip kaldığı yerden kendiliğinden devam eder. Veri `data/league.json` dosyasında durur; `.venv/bin/python -m backend.validate` komutu kayıtlı haftaları Yahoo'nun resmi skorlarıyla karşılaştırır.
 
 Notlar:
-- Okunanlar: lig ayarları, takımlar, güncel dizilişler (takım başına 1 sayfa), draft sonuçları, transfer geçmişi, ligdeki ilk 300 oyuncunun sezon ortalamaları (günde bir), güncel kadrolar, sezon / son 30 / 14 / 7 gün ortalamaları, her günün aktif/yedek dizilişi ve kutu skorları, haftalık eşleşmeler ve Yahoo'nun resmi haftalık toplamları. Ya Olsaydı? sekmesi kendi hesapladığı skoru resmi skorla karşılaştırır.
+- Okunanlar: lig ayarları, takımlar ve takım logolarının adresleri (logoları uygulama Yahoo'nun görsel sunucusundan bir kez indirip `data/logos/` içinde saklar), güncel dizilişler (takım başına 1 sayfa), draft sonuçları, transfer geçmişi, ligdeki ilk 300 oyuncunun sezon ortalamaları (günde bir), güncel kadrolar, sezon / son 30 / 14 / 7 gün ortalamaları, her günün aktif/yedek dizilişi ve kutu skorları, haftalık eşleşmeler ve Yahoo'nun resmi haftalık toplamları. Ya Olsaydı? sekmesi kendi hesapladığı skoru resmi skorla karşılaştırır.
 - Bu yöntem Yahoo'nun sayfa yapısına bağlı. Yahoo tasarımı değiştirirse eklentinin güncellenmesi gerekir.
 - Otomatik sayfa okumak Yahoo'nun kullanım koşullarında gri bir alanda. Eklenti yalnızca kendi ligini, yavaş ve elle başlatıldığında okur.
 - Serbest oyuncuların yalnızca sezon ortalamaları var, günlük istatistikleri yok. Ya Olsaydı? sekmesinde yalnızca o gün herhangi bir takımın kadrosunda olan oyuncular kullanılabilir.

@@ -2,7 +2,7 @@ import type { ComponentChildren } from "preact";
 import { useState } from "preact/hooks";
 import { api, catByKey, dayLong, fmt, num, rec, store } from "../store";
 import type { Standings as StandingsData, StandingsTeam } from "../types";
-import { Card, Empty, ErrorBox, RankPill, TableWrap, useLoad } from "../ui";
+import { Card, Empty, ErrorBox, RankPill, TableWrap, TeamName, useLoad } from "../ui";
 
 type SortKey = "h2h" | "one_win" | "roto" | "points";
 const RANK: Record<SortKey, (t: StandingsTeam) => number> = {
@@ -46,7 +46,7 @@ export function Standings() {
           <tbody>
             {teams.map((t) => (
               <tr key={t.team} class={t.team === me ? "me" : ""}>
-                <td class="l"><span class="pl-name">{t.name}</span></td>
+                <td class="l"><TeamName team={t.team} /></td>
                 <td><RankPill n={t.h2h.rank} /> {rec(t.h2h.record)}</td>
                 <td><RankPill n={t.one_win.rank} /> {rec(t.one_win.record)}<Delta rank={t.one_win.rank} base={t.h2h.rank} /></td>
                 <td><RankPill n={t.roto.rank} /> {num(t.roto.points, 1)} p<Delta rank={t.roto.rank} base={t.h2h.rank} /></td>
@@ -64,7 +64,7 @@ export function Standings() {
           <tbody>
             {[...r.teams].sort((a, b) => a.roto.rank - b.roto.rank).map((t) => (
               <tr key={t.team} class={t.team === me ? "me" : ""}>
-                <td><RankPill n={t.roto.rank} /></td><td class="l"><span class="pl-name">{t.name}</span></td>
+                <td><RankPill n={t.roto.rank} /></td><td class="l"><TeamName team={t.team} /></td>
                 {cats.map((c) => {
                   const x = t.roto.cats[c.key];
                   return <td key={c.key} class="heat" style={{ background: shade(x.points) }}>{num(x.points, x.points % 1 ? 1 : 0)}<small>{fmt(c.key, x.value, "total")}</small></td>;

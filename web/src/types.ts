@@ -4,7 +4,7 @@ export type Res = "W" | "L" | "T";
 export type StatLine = Record<string, number>;
 
 export interface Category { key: string; label: string; higher: boolean; ratio?: [string, string] }
-export interface Team { key: string; name: string; manager?: string }
+export interface Team { key: string; name: string; manager?: string; logo?: string | null }
 export interface WeekInfo { week: number; start: string; end: string }
 
 export interface League {

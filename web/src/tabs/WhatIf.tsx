@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { api, catByKey, dayLabel, dayLong, fmt, pname, registerPlayers, RES, scoreText, store } from "../store";
-import { drawAllPlayPoster } from "../share";
+import { drawAllPlayPoster, loadLogos } from "../share";
 import type { AllPlay, Brief, Edit, Matchup, Player, StatLine, VersusRow, WeekData, WhatIfResult } from "../types";
-import { Empty, ErrorBox, PlayerLabel, TableWrap, TeamOptions } from "../ui";
+import { Empty, ErrorBox, PlayerLabel, TableWrap, TeamLogo, TeamName, TeamOptions } from "../ui";
 
 export function WhatIf() {
   const lg = store.league;
@@ -44,7 +44,8 @@ export function WhatIf() {
     try {
       const data = await api<AllPlay>(`/api/allplay?team=${encodeURIComponent(team)}`);
       if (!data.weeks.length) throw new Error("Bu takım için oynanmış hafta yok.");
-      const canvas = drawAllPlayPoster(data, store.teamName[team]);
+      const logos = await loadLogos([team, ...data.teams.map((t) => t.key)]);
+      const canvas = drawAllPlayPoster(data, store.teamName[team], logos);
       const blob = await new Promise<Blob>((ok, no) => canvas.toBlob((b) => (b ? ok(b) : no(new Error("PNG oluşturulamadı"))), "image/png"));
       const name = `${store.teamName[team]}-herkese-karsi`.toLowerCase().replace(/[^a-z0-9ğüşıöç]+/gi, "-").replace(/^-|-$/g, "") + ".png";
       setShare({ url: URL.createObjectURL(blob), blob, name, msg: `${canvas.width}×${canvas.height} piksel PNG` });
@@ -100,7 +101,7 @@ function Scoreboard({ wk, res, title }: { wk: WeekData; res: Matchup; title: str
   return (
     <div class="scoreboard">
       <div class="sb-title">{title}</div>
-      <div class="sb-row"><div class="sb-team">{T}</div><div class="sb-score">{a}</div><div class="sb-vs">vs</div><div class="sb-score">{b}</div><div class="sb-team">{O}</div></div>
+      <div class="sb-row"><div class="sb-team"><TeamLogo team={wk.team} size={34} /> {T}</div><div class="sb-score">{a}</div><div class="sb-vs">vs</div><div class="sb-score">{b}</div><div class="sb-team">{O} <TeamLogo team={wk.opponent} size={34} /></div></div>
       <div class={`sb-foot ${res.result}`}>{T}: {RES[res.result]}{tie}</div>
     </div>
   );
@@ -111,7 +112,6 @@ function Actual({ wk }: { wk: WeekData }) {
   const res = wk.result;
   const o = wk.official?.score, r = res.score;
   const same = !!(o && r && o.W === r.W && o.L === r.L && o.T === r.T);
-  const T = store.teamName[wk.team], O = store.teamName[wk.opponent];
   return (
     <div class="card">
       <Scoreboard wk={wk} res={res} title={`${wk.week}. hafta · ${real ? "gerçek sonuç" : "bu rakibe karşı olsaydı"}`} />
@@ -119,8 +119,8 @@ function Actual({ wk }: { wk: WeekData }) {
         <TableWrap>
           <thead><tr><th>Takım</th>{res.categories.map((c) => <th key={c.key}>{catByKey(c.key)!.label}</th>)}</tr></thead>
           <tbody>
-            <tr><td><span class="pl-name">{T}</span></td>{res.categories.map((c) => <td key={c.key} class={c.result === "W" ? "win" : ""}>{fmt(c.key, c.a, "total")}</td>)}</tr>
-            <tr><td><span class="pl-name">{O}</span></td>{res.categories.map((c) => <td key={c.key} class={c.result === "L" ? "win" : ""}>{fmt(c.key, c.b, "total")}</td>)}</tr>
+            <tr><td><TeamName team={wk.team} /></td>{res.categories.map((c) => <td key={c.key} class={c.result === "W" ? "win" : ""}>{fmt(c.key, c.a, "total")}</td>)}</tr>
+            <tr><td><TeamName team={wk.opponent} /></td>{res.categories.map((c) => <td key={c.key} class={c.result === "L" ? "win" : ""}>{fmt(c.key, c.b, "total")}</td>)}</tr>
           </tbody>
         </TableWrap>
       )}
@@ -153,7 +153,7 @@ function Versus({ wk, rows, onPick, onShare, sharing }: { wk: WeekData; rows: Ve
         <tbody>
           {rows.map((r) => (
             <tr key={r.team} class={`rowlink ${r.team === wk.opponent ? "selected" : ""}`} onClick={() => onPick(r.team)}>
-              <td><span class="pl-name">{store.teamName[r.team]}</span>{r.team === wk.real_opponent && <span class="badge">gerçek rakip</span>}</td>
+              <td><TeamName team={r.team} />{r.team === wk.real_opponent && <span class="badge">gerçek rakip</span>}</td>
               <td>{pill(r.actual)}</td>{hasHypo && <td>{r.hypothetical ? pill(r.hypothetical) : null}</td>}
             </tr>
           ))}
@@ -212,7 +212,7 @@ function Builder({ wk, edits, setEdits }: { wk: WeekData; edits: Edit[]; setEdit
       .sort((a, b) => (wk.usage[b[0]]?.active_games || 0) - (wk.usage[a[0]]?.active_games || 0));
     return (
       <>
-        <div class="grid-title">{store.teamName[team]}</div>
+        <div class="grid-title"><TeamName team={team} plain /></div>
         <TableWrap class="grid-table">
           <thead><tr><th>Oyuncu</th>{wk.dates.map((d) => <th key={d}>{dayLabel(d)}</th>)}</tr></thead>
           <tbody>

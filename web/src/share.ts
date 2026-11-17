@@ -1,5 +1,6 @@
 // Draws the "what if I had played everyone, every week" poster on a canvas.
 // Pure drawing code: takes the /api/allplay response, returns a <canvas> (2x resolution).
+import { store } from "./store";
 import type { AllPlay, Res } from "./types";
 
 type Ctx = CanvasRenderingContext2D;
@@ -29,7 +30,37 @@ function rr(ctx: Ctx, x: number, y: number, w: number, h: number, r: number, fil
   if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
 }
 
-export function drawAllPlayPoster(data: AllPlay, teamName: string): HTMLCanvasElement {
+export type Logos = Record<string, HTMLImageElement>;
+
+/** Load team pictures (same-origin, so the canvas stays exportable). Missing ones are skipped. */
+export async function loadLogos(teams: string[]): Promise<Logos> {
+  const out: Logos = {};
+  await Promise.all(teams.map((t) => new Promise<void>((done) => {
+    const url = store.teamLogo[t];
+    if (!url) return done();
+    const img = new Image();
+    img.onload = () => { out[t] = img; done(); };
+    img.onerror = () => done();
+    img.src = url;
+  })));
+  return out;
+}
+
+/** Picture cropped to a circle ("cover"), with a ring. */
+function circleLogo(ctx: Ctx, img: HTMLImageElement, cx: number, cy: number, r: number, ring: string, ringW: number) {
+  const s = Math.min(img.naturalWidth, img.naturalHeight);
+  ctx.save();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
+  ctx.fillStyle = "#ffffff"; ctx.fill();
+  ctx.clip();
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, cx - r, cy - r, 2 * r, 2 * r);
+  ctx.restore();
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.strokeStyle = ring; ctx.lineWidth = ringW; ctx.stroke();
+}
+
+export function drawAllPlayPoster(data: AllPlay, teamName: string, logos: Logos = {}): HTMLCanvasElement {
   const weeks = data.weeks, teams = data.teams;
   const nW = weeks.length, nT = teams.length;
   const isPts = data.scoring === "points";
@@ -82,7 +113,11 @@ export function drawAllPlayPoster(data: AllPlay, teamName: string): HTMLCanvasEl
   ctx.fillText(fit(ctx, data.league, W - 2 * M - 180, 17, 600), M + 158, 51);
   ctx.globalAlpha = 1;
   ctx.fillStyle = C.white;
-  ctx.fillText(fit(ctx, teamName, W - 2 * M, 76, 900, 30), M, 138);
+  const head = logos[data.team];
+  const nameX = head ? M + 104 + 24 : M;
+  if (head) circleLogo(ctx, head, M + 52, 136, 52, "rgba(255,255,255,.9)", 4);
+  ctx.fillStyle = C.white; ctx.textAlign = "left";
+  ctx.fillText(fit(ctx, teamName, W - M - nameX, 76, 900, 30), nameX, 138);
   ctx.globalAlpha = 0.92; ctx.font = `600 25px ${FONT}`;
   ctx.fillText("Her hafta ligdeki herkesle oynasaydım, kaç kaç biterdi?", M, 212);
   ctx.globalAlpha = 1;
@@ -137,7 +172,10 @@ export function drawAllPlayPoster(data: AllPlay, teamName: string): HTMLCanvasEl
     const y = gridY + colHeadH + r * ROW_H;
     if (r % 2 === 0) rr(ctx, gx - 12, y, gridW + 24, ROW_H, 12, C.panel);
     ctx.textAlign = "left"; ctx.fillStyle = C.text;
-    ctx.fillText(fit(ctx, t.name, NAME_W - 20, 21, 700), gx + 4, y + ROW_H / 2);
+    const lg = logos[t.key];
+    if (lg) circleLogo(ctx, lg, gx + 22, y + ROW_H / 2, 19, C.line, 2);
+    ctx.textAlign = "left"; ctx.fillStyle = C.text;
+    ctx.fillText(fit(ctx, t.name, NAME_W - (lg ? 68 : 20), 21, 700), gx + (lg ? 52 : 4), y + ROW_H / 2);
     const vs: Record<Res, number> = { W: 0, L: 0, T: 0 };
     weeks.forEach((w, i) => {
       const row = w.rows.find((x) => x.team === t.key);

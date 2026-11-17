@@ -317,6 +317,15 @@ def moves():
     return _report(analysis.moves_report)
 
 
+@app.get("/api/logo/{team}")
+def logo(team: str):
+    path = P().logo_file(team) if hasattr(P(), "logo_file") else None
+    if not path:
+        raise HTTPException(404, "Logo yok.")
+    # the URL carries a content hash (?v=...), so the file can be cached for a long time
+    return FileResponse(path, headers={"Cache-Control": "public, max-age=604800"})
+
+
 _cache: dict = {}
 
 
