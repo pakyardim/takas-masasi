@@ -1,8 +1,9 @@
-// Runs inside a basketball.fantasysports.yahoo.com tab (injected by popup.js).
+// Runs inside a basketball.fantasysports.yahoo.com tab (injected by background.js).
 // It only reads (GET) pages you can already see while signed in, parses them,
-// and hands plain JSON back to the popup. It never clicks or submits anything.
+// and hands plain JSON back to the extension. It never clicks or submits anything.
 (() => {
-  if (window.__takas) return;
+  // No "already injected" guard: re-injecting after an extension update must
+  // replace the old functions in this tab.
 
   const DELAY_MS = 450; // be gentle with Yahoo
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -218,30 +219,32 @@
     return { league_id: lid, ...s, ...t, current_week: cur, rosters, players, averages, synced_at: new Date().toISOString() };
   }
 
-  async function week(lid, w, myTeam, teamIds, skipDates = []) {
+  /** Week metadata: pairings, dates and Yahoo's official weekly totals. */
+  async function weekMeta(lid, w, myTeam) {
     progress(`${w}. hafta: eşleşmeler okunuyor…`);
     const info = await weekInfo(lid, w, myTeam);
     const official = {};
     for (const [a, b] of info.pairs) Object.assign(official, (await officialTotals(lid, w, a, b)) || {});
     // Yahoo game dates are US Eastern
     const today = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
-    const days = {}, players = {};
-    const todo = info.dates.filter((d) => d < today && !skipDates.includes(d));
-    for (const [n, d] of todo.entries()) {
-      days[d] = {};
-      for (const [i, tid] of teamIds.entries()) {
-        progress(`${w}. hafta · ${d} (${n + 1}/${todo.length}) · takım ${i + 1}/${teamIds.length}`);
-        const doc = await get(`/nba/${lid}/${tid}?date=${d}`);
-        days[d][tid] = parseRosterTable(doc).map((r) => {
-          players[r.player.id] = { ...players[r.player.id], ...r.player };
-          // 0 minutes = did not play
-          const line = r.line && r.line.MIN === 0 ? null : r.line;
-          return { player: r.player.id, slot: r.slot, line };
-        });
-      }
-    }
-    return { week: w, pairs: info.pairs, dates: info.dates, official, days, players };
+    return { week: w, pairs: info.pairs, dates: info.dates, official, today };
   }
 
-  window.__takas = { base, week, parseRosterTable, get };
+  /** Every team's lineup + box scores for one date (one page per team). */
+  async function day(lid, d, teamIds, label = "") {
+    const teams = {}, players = {};
+    for (const [i, tid] of teamIds.entries()) {
+      progress(`${label}${d} · takım ${i + 1}/${teamIds.length}`);
+      const doc = await get(`/nba/${lid}/${tid}?date=${d}`);
+      teams[tid] = parseRosterTable(doc).map((r) => {
+        players[r.player.id] = { ...players[r.player.id], ...r.player };
+        // 0 minutes = did not play
+        const line = r.line && r.line.MIN === 0 ? null : r.line;
+        return { player: r.player.id, slot: r.slot, line };
+      });
+    }
+    return { date: d, teams, players };
+  }
+
+  window.__takas = { base, weekMeta, day, parseRosterTable, get };
 })();
