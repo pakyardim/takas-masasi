@@ -83,6 +83,30 @@ Kimler görebilir:
 
 Not: Bu yöntemle oluşturulan proje "Direct Upload" türündedir ve sonradan Git bağlantısına çevrilemez. Git ile otomatik derleme istersen ayrı bir proje açıp derleme komutu olarak `cd web && npm ci && npm run build:site`, çıktı klasörü olarak `web/dist` verirsin; o durumda `data/` klasörünün repoda olması gerekir.
 
+## Sık yapılacaklar (özet)
+
+**Yeni veri çekmek (sync) ve yayınlamak:**
+1. Chrome'da eklentinin sürümü 0.8.0 olsun (`chrome://extensions`, ↻ ile yeniden yükle).
+2. Proje klasöründe senkron uygulamasını başlat: `.venv/bin/uvicorn backend.app:app` (açık kalmalı).
+3. Yahoo lig sayfasını aç, eklentiye tıkla → **Senkronize et**. İlk seferde 6–8 dk, sonra kısa sürer. "Tamam" mesajını bekle.
+4. İstersen http://127.0.0.1:8000 adresinden kontrol et.
+5. `scripts/publish.sh` ile yayınla. Canlı adres: https://okkesi-koruma-ve-yasatma-ligi.pages.dev
+
+**Kod değiştirdikten sonra:** GitHub'a push etmek siteyi güncellemez. Değişikliğin yayında görünmesi için `scripts/publish.sh` çalıştırılır (veri senkronlanmamış olsa bile aynı komut yeterli).
+
+**Açık kararlar:**
+- Yahoo Product Sans fontu kullanılmıyor (Yahoo'nun tescilli fontu; herkese açık sitede dağıtılması izin gerektirir). Yerine Inter ya da Figtree gibi açık lisanslı bir font konulabilir. Henüz yapılmadı.
+- Otomatik yayın (GitHub'a push'ta siteyi kendiliğinden güncelleme) için lig verisinin GitHub dışında bir yerde (ör. Cloudflare R2) tutulması gerekir. Henüz kurulmadı; şimdilik elle yayınlanıyor.
+
+**Mobil:** 375 px genişlikte kontrol edildi; yatay kayma yok. Geniş tablolar kendi kutusu içinde kayar.
+
+## Neden AI yorumu, tavsiye veya tahmin yok?
+
+- **Amaç istatistik karşılaştırmasıydı.** Uygulama "şunu yap" demez; sayıları ve farkları gösterir. Karar kullanıcıya aittir.
+- **Tahmin ve öneri, hile riskini artırır.** Bir eşleşmenin kazanma olasılığını ya da hangi oyuncunun ekleneceğini hesaplamak, yalnızca bir rakibin kadrosuna ve diğer takımların zayıf noktalarına göre hamle yapmayı kolaylaştırır. Bu yüzden Tahmin sekmesi kaldırıldı.
+- **AI yorumu sayıları değiştirebilir.** Dil modeli istatistik hesaplamakta ve karşılaştırmakta hata yapabilir; bu uygulamada sayılar koddan çıkar ve gerçek veriyle Yahoo'nun resmi skorlarına karşı kontrol edilir.
+- **Yorum, veri kadar kısıtlı olmalı.** Ya Olsaydı?, takas ve sıralamalar kendi başına bir yorum içermez; kullanıcı kendi değerlendirmesini yapar.
+
 ## Geliştirme
 
 ```bash
