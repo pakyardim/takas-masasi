@@ -140,3 +140,18 @@ def test_power_rankings(tmp_path, monkeypatch):
     assert 0 <= top["power"] <= 100 and top["prev_rank"] is None
     assert sum(t["allplay"][0] for t in r["teams"]) == sum(t["allplay"][1] for t in r["teams"])
     assert all(t["record"] == t["allplay"] for t in r["teams"])   # two teams: all-play is the real schedule
+
+
+def test_alternative_standings(tmp_path, monkeypatch):
+    from backend import forecast
+    p = _with_schedule(tmp_path, monkeypatch)
+    r = forecast.standings(p)
+    assert r["available"] and r["n"] == 2 and r["weeks_done"] == [1]
+    by = {t["team"]: t for t in r["teams"]}
+    # two teams, nine categories: roto points per category are 2 and 1 (or 1.5 each when tied)
+    assert by["1"]["roto"]["points"] + by["2"]["roto"]["points"] == 9 * 3
+    assert all(c["points"] in (1, 1.5, 2) for c in by["1"]["roto"]["cats"].values())
+    assert by["1"]["one_win"]["record"][0] + by["1"]["one_win"]["record"][1] + by["1"]["one_win"]["record"][2] == 1
+    assert sum(by["1"]["h2h"]["record"]) == 9
+    assert by["1"]["h2h"]["record"][0] == by["2"]["h2h"]["record"][1]
+    assert {by["1"]["points"]["rank"], by["2"]["points"]["rank"]} == {1, 2}

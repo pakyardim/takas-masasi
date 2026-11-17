@@ -17,8 +17,9 @@ Yahoo Fantasy NBA ligin için iki araç sunan bir web uygulaması. AI yorumu yok
    Oynanmış günler gerçek istatistiklerle sayılır; kalan her maç için oyuncunun son 15 maçından rastgele gerçek bir kutu skoru çekilir ve hafta 3000 kez simüle edilir.
    Her gün takımın maçı olan en iyi oyuncuları oynatılır (IL ve "O" durumundakiler hariç, pozisyon kontrolü yok).
 4. **Güç Sıralaması:** %45 "herkese karşı" kategori oranı (her hafta ligdeki herkesle oynasaydın), %25 son 2 haftanın formu, %30 bugünkü kadro gücü. Ayrıca fikstür şansı ve haftalık değişim.
-5. **Draft:** Her seçimin bugüne kadarki değeri, takımların draft sıralaması, en iyi ve en kötü seçimler.
-6. **Transferler:** Serbest oyuncu eklemelerinin ve takasların, oyuncunun yeni takımında aktif oynadığı maçlarda ürettiği değere göre sıralaması.
+5. **Puan Durumu:** Aynı sezonun dört formatta sıralaması: H2H Kategori (ligin gerçek formatı), H2H Tek Galibiyet, Rotisserie (sezon toplamlarıyla her kategoride tüm lig sıralanır, birinci N puan alır) ve Puan ligi (Yahoo'nun varsayılan puan değerleriyle).
+6. **Draft:** Her seçimin bugüne kadarki değeri, takımların draft sıralaması, en iyi ve en kötü seçimler.
+7. **Transferler:** Serbest oyuncu eklemelerinin ve takasların, oyuncunun yeni takımında aktif oynadığı maçlarda ürettiği değere göre sıralaması.
 
 Draft ve Transferler tek bir ölçü kullanır: **değer** = oyuncunun maç başı z-skoru eksi "yedek seviyesi" (en iyi 20 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır.
 

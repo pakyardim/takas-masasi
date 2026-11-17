@@ -204,3 +204,9 @@ button.ghost:hover { background: var(--sel); }
 .bal-side select { width: 100%; min-width: 0; }
 .role { font-size: 12px; font-weight: 700; color: var(--muted); }
 .role.neg { color: var(--bad); } .role.pos { color: var(--good); }
+
+/* ---------- standings ---------- */
+th.sortable { cursor: pointer; } th.sortable:hover { color: var(--brand); } th.sorted { color: var(--brand); }
+.delta { font-size: 12px; font-weight: 700; margin-left: 4px; }
+td.heat { font-weight: 700; }
+td.heat small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; line-height: 13px; }

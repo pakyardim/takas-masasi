@@ -313,3 +313,104 @@ def power(provider) -> dict:
                         "beat": per_week[w]["beat"][r["team"]]} for w in weeks]
     return {"available": True, "weeks": weeks, "teams": out,
             "weights": {"allplay": W_ALLPLAY, "form": W_FORM, "roster": W_ROSTER}}
+
+
+# ---------------------------------------------------------------- alternative standings
+
+# Yahoo's default head-to-head points values (public league default)
+DEFAULT_POINTS = {"PTS": 1.0, "REB": 1.2, "AST": 1.5, "ST": 3.0, "BLK": 3.0, "TO": -1.0}
+
+
+def _rank(values: dict, reverse: bool = True) -> dict:
+    """team -> rank (1 = best). Equal values share the better rank."""
+    order = sorted(values, key=values.get, reverse=reverse)
+    out, prev, prev_rank = {}, None, 0
+    for i, t in enumerate(order, 1):
+        if prev is not None and abs(values[t] - prev) < 1e-12:
+            out[t] = prev_rank
+        else:
+            out[t], prev_rank = i, i
+        prev = values[t]
+    return out
+
+
+def standings(provider) -> dict:
+    """The same season under other scoring formats.
+
+    h2h      Head-to-Head Each Category (the league's real format): every category is a win or loss.
+    one_win  Head-to-Head One Win: one result per week, for the side that wins more categories.
+    roto     Rotisserie: season totals; in each category the best team gets N points, the worst 1
+             (ties share the points); the points are summed.
+    points   Points league with Yahoo's default values: total fantasy points, and the weekly record.
+    Records use completed weeks; season totals (roto, points) run through the last synced day."""
+    ctx = Context(provider)
+    lg, teams = ctx.league, ctx.teams
+    if lg["scoring"] != "categories":
+        return {"available": False}
+    done = set(_completed_weeks(ctx))
+    weeks = sorted(int(w) for w, v in ctx.store["weeks"].items()
+                   if v.get("dates") and any(d in ctx.store["days"] for d in v["dates"]))
+    if not weeks:
+        return {"available": False}
+    pts_lg = {"scoring": "points", "modifiers": DEFAULT_POINTS, "categories": []}
+
+    season = {t: {} for t in teams}
+    h2h = {t: [0, 0, 0] for t in teams}
+    one = {t: [0, 0, 0] for t in teams}
+    ptsrec = {t: [0, 0, 0] for t in teams}
+    idx = {"W": 0, "L": 1, "T": 2}
+    flip = {"W": "L", "L": "W", "T": "T"}
+    for w in weeks:
+        wk = provider.week(w, teams)
+        totals = {t: engine.team_week_totals(wk, t, [], {})[0] for t in teams}
+        for t in teams:
+            season[t] = engine.add_lines([season[t], totals[t]])
+        if w not in done:
+            continue
+        for a, b in ctx.store["weeks"][str(w)]["pairs"]:
+            res = engine.head_to_head(totals[a], totals[b], lg)
+            sc = res["score"]
+            for i, k in enumerate(("W", "L", "T")):
+                h2h[a][i] += sc[k]
+                h2h[b][i] += sc[flip[k]]
+            one[a][idx[res["result"]]] += 1
+            one[b][idx[flip[res["result"]]]] += 1
+            pr = engine.head_to_head(totals[a], totals[b], pts_lg)["result"]
+            ptsrec[a][idx[pr]] += 1
+            ptsrec[b][idx[flip[pr]]] += 1
+
+    # rotisserie
+    n = len(teams)
+    cat_vals = {t: engine.category_values(season[t], lg) for t in teams}
+    roto_pts = {t: 0.0 for t in teams}
+    roto_cats = {t: {} for t in teams}
+    for c in lg["categories"]:
+        k = c["key"]
+        vals = {t: (cat_vals[t][k] if cat_vals[t][k] is not None else (-1e18 if c["higher"] else 1e18)) for t in teams}
+        order = sorted(teams, key=vals.get, reverse=c["higher"])          # best first
+        i = 0
+        while i < n:
+            j = i
+            while j + 1 < n and abs(vals[order[j + 1]] - vals[order[i]]) < 1e-12:
+                j += 1
+            share = sum(n - pos for pos in range(i, j + 1)) / (j - i + 1)   # tied teams share the points
+            for t in order[i:j + 1]:
+                roto_cats[t][k] = {"value": cat_vals[t][k], "points": share, "rank": i + 1}
+                roto_pts[t] += share
+            i = j + 1
+
+    fpts = {t: engine.fantasy_points(season[t], pts_lg) for t in teams}
+    r_h2h = _rank({t: _pct(*h2h[t]) for t in teams})
+    r_one = _rank({t: _pct(*one[t]) for t in teams})
+    r_roto = _rank(roto_pts)
+    r_fpts = _rank(fpts)
+    r_ptsrec = _rank({t: _pct(*ptsrec[t]) for t in teams})
+    rows = [{"team": t, "name": ctx.names[t],
+             "h2h": {"record": h2h[t], "pct": _pct(*h2h[t]), "rank": r_h2h[t]},
+             "one_win": {"record": one[t], "pct": _pct(*one[t]), "rank": r_one[t]},
+             "roto": {"points": roto_pts[t], "rank": r_roto[t], "cats": roto_cats[t]},
+             "points": {"total": fpts[t], "rank": r_fpts[t], "record": ptsrec[t], "record_rank": r_ptsrec[t]}}
+            for t in teams]
+    rows.sort(key=lambda r: (r["h2h"]["rank"], r["roto"]["rank"]))
+    return {"available": True, "teams": rows, "n": n, "weeks_done": sorted(done), "weeks_total": weeks,
+            "last_day": max(ctx.store["days"]), "point_values": DEFAULT_POINTS}

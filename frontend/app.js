@@ -49,6 +49,7 @@ document.querySelectorAll(".tab").forEach((b) =>
     document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("hidden", p.id !== "tab-" + b.dataset.tab));
     if (b.dataset.tab === "forecast") loadForecast();
     if (b.dataset.tab === "power") loadPower();
+    if (b.dataset.tab === "standings") loadStandings();
     if (b.dataset.tab === "draft") loadDraft();
     if (b.dataset.tab === "moves") loadMoves();
   })
@@ -684,6 +685,62 @@ async function loadPower() {
     <b>Kadro gücü:</b> bugün oynayabilecek en iyi 10 oyuncunun sezon z-skoru toplamı (IL ve “O” hariç).<br>
     <b>Şans:</b> gerçek kategori kazanma oranı eksi herkese karşı oran (yüzde puan). Artı: fikstür sana yaradı; eksi: güçlü haftalarında güçlü rakibe denk geldin.<br>
     <b>Yeneceği rakip:</b> tüm haftalarda, herkese karşı oynansa kazanılacak eşleşme sayısı.</p></div>`;
+}
+
+// ================================================================ ALTERNATIVE STANDINGS
+async function loadStandings() {
+  if (S.loaded.standings) return;
+  const el = $("#standings-body");
+  el.innerHTML = `<div class="card empty">Yükleniyor…</div>`;
+  let r;
+  try { r = await api("/api/standings"); } catch (e) { el.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  if (!r.available) { el.innerHTML = `<div class="card empty">Bu görünüm yalnızca senkronize edilmiş kategori liglerinde çalışır.</div>`; return; }
+  S.loaded.standings = true;
+  const rec = (x) => `${x[0]}-${x[1]}${x[2] ? "-" + x[2] : ""}`;
+  const num = (x, d = 0) => x.toLocaleString("tr-TR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const SORTS = { h2h: (t) => t.h2h.rank, one_win: (t) => t.one_win.rank, roto: (t) => t.roto.rank, points: (t) => t.points.rank };
+  let sortKey = "h2h";
+
+  const delta = (rank, base) => {
+    const d = base - rank;                 // positive: better than in the real format
+    return d > 0 ? `<span class="delta pos">▲${d}</span>` : d < 0 ? `<span class="delta neg">▼${-d}</span>` : "";
+  };
+  const draw = () => {
+    const teams = [...r.teams].sort((a, b) => SORTS[sortKey](a) - SORTS[sortKey](b) || a.h2h.rank - b.h2h.rank);
+    const th = (key, label) => `<th class="sortable ${sortKey === key ? "sorted" : ""}" data-sort="${key}">${label}${sortKey === key ? " ▾" : ""}</th>`;
+    const rows = teams.map((t) => `<tr class="${t.team === S.league.my_team ? "me" : ""}">
+      <td class="l"><span class="pl-name">${esc(t.name)}</span></td>
+      <td><span class="rank-pill">${t.h2h.rank}</span> ${rec(t.h2h.record)}</td>
+      <td><span class="rank-pill">${t.one_win.rank}</span> ${rec(t.one_win.record)}${delta(t.one_win.rank, t.h2h.rank)}</td>
+      <td><span class="rank-pill">${t.roto.rank}</span> ${num(t.roto.points, 1)} p${delta(t.roto.rank, t.h2h.rank)}</td>
+      <td><span class="rank-pill">${t.points.rank}</span> ${num(t.points.total)}${delta(t.points.rank, t.h2h.rank)} <span class="muted small">(${rec(t.points.record)})</span></td></tr>`).join("");
+    $("#st-main").innerHTML = `<table><thead><tr><th class="l">Takım</th>${th("h2h", "H2H Kategori (gerçek)")}${th("one_win", "H2H Tek Galibiyet")}${th("roto", "Rotisserie")}${th("points", "Puan ligi")}</tr></thead><tbody>${rows}</tbody></table>`;
+    document.querySelectorAll("#st-main th.sortable").forEach((h) => h.addEventListener("click", () => { sortKey = h.dataset.sort; draw(); }));
+  };
+
+  // rotisserie detail: category totals and points, shaded by points
+  const cats = S.league.categories;
+  const shade = (pts) => `background: rgba(0, 99, 235, ${(0.04 + 0.26 * (pts - 1) / Math.max(1, r.n - 1)).toFixed(3)})`;
+  const rotoRows = [...r.teams].sort((a, b) => a.roto.rank - b.roto.rank).map((t) => `<tr class="${t.team === S.league.my_team ? "me" : ""}">
+    <td><span class="rank-pill">${t.roto.rank}</span></td><td class="l"><span class="pl-name">${esc(t.name)}</span></td>
+    ${cats.map((c) => { const x = t.roto.cats[c.key]; return `<td class="heat" style="${shade(x.points)}">${num(x.points, x.points % 1 ? 1 : 0)}<small>${fmt(c.key, x.value, "total")}</small></td>`; }).join("")}
+    <td><b>${num(t.roto.points, 1)}</b></td></tr>`).join("");
+  const pv = Object.entries(r.point_values).map(([k, v]) => `${catByKey(k)?.label || k} ${v > 0 ? "+" : ""}${v}`).join(", ");
+
+  el.innerHTML = `
+    <div class="card"><h3>Dört formatta sıralama</h3>
+      <div class="table-wrap" id="st-main"></div>
+      <p class="muted small note">Başlığa tıklayarak o formata göre sırala. ▲▼: gerçek formata (H2H Kategori) göre kaç sıra yukarıda ya da aşağıda. Maç rekorları tamamlanmış ${r.weeks_done.length} haftadan; sezon toplamları (rotisserie, puan) ${dayLong(r.last_day)} gününe kadar.</p></div>
+    <div class="card"><h3>Rotisserie ayrıntısı</h3>
+      <div class="table-wrap"><table><thead><tr><th>#</th><th class="l">Takım</th>${cats.map((c) => `<th>${esc(c.label)}</th>`).join("")}<th>Toplam</th></tr></thead><tbody>${rotoRows}</tbody></table></div>
+      <p class="muted small note">Büyük sayı: o kategoriden alınan puan (${r.n} = ligin en iyisi, 1 = en kötüsü; eşitlikte puan paylaşılır). Küçük sayı: sezon toplamı. Koyu mavi = daha çok puan.</p></div>
+    <div class="card"><h3>Formatlar</h3><p class="muted small" style="margin:0">
+      <b>H2H Kategori (ligin gerçek formatı):</b> her hafta rakibinle her kategori ayrı bir maç sayılır; haftada 9 galibiyet/mağlubiyet dağıtılır.<br>
+      <b>H2H Tek Galibiyet:</b> hafta tek maç sayılır; daha çok kategori kazanan haftayı alır.<br>
+      <b>Rotisserie:</b> haftalık eşleşme yok. Sezon boyu biriken istatistiklerle her kategoride tüm lig sıralanır; ${r.n} takımlı ligde birinci ${r.n}, sonuncu 1 puan alır ve 9 kategorinin puanları toplanır. Yani bütün sezon boyunca tüm ligle kapışırsın.<br>
+      <b>Puan ligi:</b> kategori yok; her istatistik puana çevrilir (Yahoo varsayılanı: ${pv}). Sıralama toplam puana göre; parantez içi haftalık H2H puan rekoru.<br>
+      Not: istatistikler ligin gerçekte oynandığı dizilişlerden gelir. Başka bir formatta menajerler farklı kadro kurar ve farklı oynatırdı; Yahoo'nun rotisserie'deki pozisyon başına maç sınırı da uygulanmadı.</p></div>`;
+  draw();
 }
 
 init().catch((e) => {

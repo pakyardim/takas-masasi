@@ -340,6 +340,11 @@ def get_power():
     return _cached("power", forecast.power)
 
 
+@app.get("/api/standings")
+def get_standings():
+    return _cached("standings", forecast.standings)
+
+
 app.mount("/static", StaticFiles(directory=ROOT / "frontend"), name="static")
 
 
