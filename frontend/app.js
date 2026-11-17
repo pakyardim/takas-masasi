@@ -4,7 +4,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const S = {
   league: null, rosters: {}, players: {}, teamName: {},
   selA: new Set(), selB: new Set(),
-  wk: null, swaps: [], searchPick: null,
+  wk: null, edits: [], searchPick: null, loaded: {},
 };
 
 async function api(path, body) {
@@ -45,6 +45,8 @@ document.querySelectorAll(".tab").forEach((b) =>
   b.addEventListener("click", () => {
     document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === b));
     document.querySelectorAll(".tab-panel").forEach((p) => p.classList.toggle("hidden", p.id !== "tab-" + b.dataset.tab));
+    if (b.dataset.tab === "draft") loadDraft();
+    if (b.dataset.tab === "moves") loadMoves();
   })
 );
 
@@ -70,8 +72,9 @@ async function init() {
   $("#team-a").onchange = () => { S.selA.clear(); renderRosters(); runTrade(); };
   $("#team-b").onchange = () => { S.selB.clear(); renderRosters(); runTrade(); };
   $("#period").onchange = runTrade;
-  $("#wi-week").onchange = loadWeek;
-  $("#wi-team").onchange = loadWeek;
+  $("#wi-week").onchange = () => loadWeek(null);
+  $("#wi-team").onchange = () => loadWeek(null);
+  $("#wi-opp").onchange = () => loadWeek($("#wi-opp").value);
 
   renderRosters();
   runTrade();
@@ -186,21 +189,32 @@ function renderTrade(r) {
 }
 
 // ================================================================ WHAT IF
-async function loadWeek() {
-  S.swaps = []; S.searchPick = null;
+const dayLabel = (d) => new Date(d + "T12:00:00").toLocaleDateString("tr-TR", { weekday: "short", day: "numeric" });
+const dayLong = (d) => new Date(d + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+const scoreText = (x) => x.score ? `${x.score.W}-${x.score.L}${x.score.T ? "-" + x.score.T : ""}` : `${x.a_points.toFixed(1)}–${x.b_points.toFixed(1)}`;
+
+async function loadWeek(opponent) {
+  S.edits = []; S.searchPick = null;
   $("#wi-actual").innerHTML = `<div class="card empty">Hafta verisi yükleniyor…</div>`;
+  $("#wi-versus").innerHTML = ""; $("#wi-result").innerHTML = "";
   $("#wi-builder").hidden = true;
   try {
-    S.wk = await api(`/api/week/${$("#wi-week").value}?team=${encodeURIComponent($("#wi-team").value)}`);
+    const q = opponent ? `&opponent=${encodeURIComponent(opponent)}` : "";
+    S.wk = await api(`/api/week/${$("#wi-week").value}?team=${encodeURIComponent($("#wi-team").value)}${q}`);
   } catch (e) {
     $("#wi-actual").innerHTML = `<div class="error">${esc(e.message)}</div>`;
     return;
   }
   Object.assign(S.players, S.wk.players);
+  const w = S.wk;
+  $("#wi-opp").innerHTML = S.league.teams.filter((t) => t.key !== w.team)
+    .map((t) => `<option value="${t.key}">${esc(t.name)}${t.key === w.real_opponent ? " (gerçek rakip)" : ""}</option>`).join("");
+  $("#wi-opp").value = w.opponent;
   renderActual();
+  renderVersus(w.versus);
   renderBuilder();
   $("#wi-builder").hidden = false;
-  renderSwaps();
+  renderEdits();
 }
 
 function scoreboard(res, title) {
@@ -225,23 +239,65 @@ function matchupTable(res, title) {
 
 function renderActual() {
   const w = S.wk;
-  const roster = (team) => Object.entries(w.usage).filter(([, u]) => u.team === team)
-    .sort((a, b) => b[1].active_games - a[1].active_games)
-    .map(([k, u]) => `<tr><td>${playerLabel(k)}</td><td>${u.active_games}</td><td class="${u.bench_games ? "neg" : "faded"}">${u.bench_games}</td></tr>`).join("");
-  const rosterCard = (team) => `<div class="card"><h3>${esc(S.teamName[team])}</h3>
-    <div class="table-wrap"><table><thead><tr><th>Oyuncu</th><th>Aktifte oynadı</th><th>Yedekte oynadı</th></tr></thead><tbody>${roster(team)}</tbody></table></div></div>`;
-  let note = `Skor, haftalık kadro ve günlük kutu skorlarından yeniden hesaplandı.`;
-  if (w.official && w.official.score) {
+  const real = w.opponent === w.real_opponent;
+  let note = real ? `Skor, haftalık kadro ve günlük kutu skorlarından yeniden hesaplandı.`
+    : `Bu eşleşme gerçekte oynanmadı: iki takımın o haftaki gerçek istatistikleri karşılaştırılıyor. Gerçek rakip: <b>${esc(S.teamName[w.real_opponent] || "?")}</b>.`;
+  if (real && w.official && w.official.score) {
     const o = w.official.score, r = w.result.score;
     const same = o.W === r.W && o.L === r.L && o.T === r.T;
     note += same
       ? ` <b class="pos">✓ Yahoo'nun resmi skoruyla aynı (${o.W}-${o.L}${o.T ? "-" + o.T : ""}).</b>`
-      : ` <b class="neg">Yahoo'nun resmi skoru: ${o.W}-${o.L}${o.T ? "-" + o.T : ""}. Fark, eksik senkronize edilmiş günlerden ya da istatistik düzeltmelerinden olabilir; tekrar senkronize etmeyi dene.</b>`;
+      : ` <b class="neg">Yahoo'nun resmi skoru: ${o.W}-${o.L}${o.T ? "-" + o.T : ""}. Fark, eksik senkronize edilmiş günlerden ya da istatistik düzeltmelerinden olabilir.</b>`;
   }
-  $("#wi-actual").innerHTML = `
-    <div class="card">${matchupTable(w.result, `${w.week}. hafta · gerçek sonuç`)}
-      <p class="muted small note">${note}</p></div>
-    <div class="two-col">${rosterCard(w.team)}${rosterCard(w.opponent)}</div>`;
+  const title = `${w.week}. hafta · ${real ? "gerçek sonuç" : "bu rakibe karşı olsaydı"}`;
+  $("#wi-actual").innerHTML = `<div class="card">${matchupTable(w.result, title)}<p class="muted small note">${note}</p></div>`;
+}
+
+// ---- "what if I had played someone else?" : this team's week vs every other team's week
+function renderVersus(rows) {
+  const w = S.wk;
+  const hasHypo = rows.some((r) => r.hypothetical);
+  const wins = (k) => rows.filter((r) => r[k] && r[k].result === "W").length;
+  const pill = (x) => `<b class="${x.result === "W" ? "pos" : x.result === "L" ? "neg" : ""}">${scoreText(x)}</b> <span class="muted small">${RES[x.result]}</span>`;
+  const body = rows.map((r) => `<tr class="rowlink ${r.team === w.opponent ? "selected" : ""}" data-team="${r.team}">
+      <td><span class="pl-name">${esc(S.teamName[r.team])}</span>${r.team === w.real_opponent ? ' <span class="badge">gerçek rakip</span>' : ""}</td>
+      <td>${pill(r.actual)}</td>${hasHypo ? `<td>${pill(r.hypothetical)}</td>` : ""}</tr>`).join("");
+  $("#wi-versus").innerHTML = `<div class="card"><h3>Bu hafta başkasıyla oynasaydın</h3>
+    <p class="muted small" style="margin:-4px 0 8px">${esc(S.teamName[w.team])} bu haftaki istatistikleriyle ligdeki ${rows.length} takımdan <b>${wins("actual")}</b> tanesini yenerdi${hasHypo ? `; senaryodaki dizilişle <b>${wins("hypothetical")}</b> tanesini` : ""}. Satıra tıklayınca o rakibe karşı ayrıntıyı görürsün.</p>
+    <div class="table-wrap"><table><thead><tr><th>Rakip</th><th>Gerçek dizilişle</th>${hasHypo ? "<th>Senaryoyla</th>" : ""}</tr></thead><tbody>${body}</tbody></table></div></div>`;
+  document.querySelectorAll("#wi-versus tr.rowlink").forEach((tr) => tr.addEventListener("click", () => loadWeek(tr.dataset.team)));
+}
+
+// ---- daily lineup grid: click a cell to bench / start that player on that day
+const dayEdit = (team, player, date) => S.edits.find((e) => e.team === team && e.player === player && e.dates?.[0] === date && e.type !== "swap");
+
+function renderGrid() {
+  const w = S.wk;
+  const table = (team) => {
+    const rows = Object.entries(w.grid[team] || {})
+      .sort((a, b) => (w.usage[b[0]]?.active_games || 0) - (w.usage[a[0]]?.active_games || 0));
+    const body = rows.map(([k, days]) => `<tr><td>${playerLabel(k)}</td>${w.dates.map((d) => {
+      const c = days[d];
+      if (!c) return `<td><span class="cell nogame" title="Kadroda değil">·</span></td>`;
+      if (!c.played) return `<td><span class="cell nogame">–</span></td>`;
+      const ed = dayEdit(team, k, d);
+      const on = ed ? ed.type === "start" : c.active;
+      return `<td><span class="cell click ${on ? "on" : "off"} ${ed ? "edited" : ""}" data-team="${team}" data-k="${k}" data-d="${d}" data-active="${c.active ? 1 : 0}"
+        title="${on ? "Oynuyor" : "Yedekte"} (${esc(c.slot)}) · tıkla: ${on ? "oynatma" : "oynat"}">${c.pts ?? 0}</span></td>`;
+    }).join("")}</tr>`).join("");
+    return `<div class="grid-title">${esc(S.teamName[team])}</div>
+      <div class="table-wrap"><table class="grid-table"><thead><tr><th>Oyuncu</th>${w.dates.map((d) => `<th>${dayLabel(d)}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>`;
+  };
+  $("#wi-grid").innerHTML = table(w.team) + table(w.opponent) +
+    `<div class="legend"><span><span class="cell on" style="display:inline-block;padding:0 8px;border-radius:9999px;background:var(--a);color:#fff">12</span> oynadı (aktif)</span>
+     <span><span style="display:inline-block;padding:0 8px;border-radius:9999px;background:#e0e4e9">12</span> yedekte kaldı</span><span>Sarı çerçeve: senaryoda değiştirdiğin hücre</span></div>`;
+  document.querySelectorAll("#wi-grid .cell.click").forEach((el) => el.addEventListener("click", () => {
+    const { team, k, d } = el.dataset;
+    const ed = dayEdit(team, k, d);
+    if (ed) S.edits.splice(S.edits.indexOf(ed), 1);
+    else S.edits.push({ team, type: el.dataset.active === "1" ? "bench" : "start", player: k, dates: [d] });
+    renderEdits();
+  }));
 }
 
 function renderBuilder() {
@@ -249,7 +305,6 @@ function renderBuilder() {
   const byTeam = (team) => Object.keys(w.usage).filter((k) => w.usage[k].team === team);
   const og = (label, keys) => keys.length ? `<optgroup label="${esc(label)}">${keys.map((k) => `<option value="${k}">${esc(pname(k))}</option>`).join("")}</optgroup>` : "";
   $("#wi-out").innerHTML = og(S.teamName[w.team], byTeam(w.team)) + og(S.teamName[w.opponent], byTeam(w.opponent));
-
   const others = S.league.teams.filter((t) => t.key !== w.team && t.key !== w.opponent)
     .map((t) => og(t.name, S.rosters[t.key] || [])).join("");
   $("#wi-in").innerHTML = `<option value="">— seç —</option>` + og(S.teamName[w.team] + " (bu hafta)", byTeam(w.team)) +
@@ -283,39 +338,46 @@ $("#wi-add").addEventListener("click", () => {
   const w = S.wk;
   const team = w.usage[out].team;
   const other = team === w.team ? w.opponent : w.team;
-  S.swaps = S.swaps.filter((s) => !(s.team === team && s.out === out));
-  S.swaps.push({ team, out, into });
+  const dropSwap = (t, o) => { S.edits = S.edits.filter((s) => !(s.type === "swap" && s.team === t && s.out === o)); };
+  dropSwap(team, out);
+  S.edits.push({ team, type: "swap", out, into });
   if ($("#wi-mutual").checked && w.usage[into]?.team === other) {
-    S.swaps = S.swaps.filter((s) => !(s.team === other && s.out === into));
-    S.swaps.push({ team: other, out: into, into: out });
+    dropSwap(other, into);
+    S.edits.push({ team: other, type: "swap", out: into, into: out });
   }
   S.searchPick = null; $("#wi-search").value = ""; $("#wi-in").value = "";
-  renderSwaps();
+  renderEdits();
 });
 
-function renderSwaps() {
-  $("#wi-swaps").innerHTML = S.swaps.map((s, i) =>
-    `<span class="chip"><span class="muted small">${esc(S.teamName[s.team])}:</span> ${esc(pname(s.out))} → <b>${esc(pname(s.into))}</b><button data-i="${i}" title="Kaldır">×</button></span>`).join("");
+function renderEdits() {
+  renderGrid();
+  const text = (s) => s.type === "swap" ? `${esc(pname(s.out))} → <b>${esc(pname(s.into))}</b>`
+    : `<b>${esc(pname(s.player))}</b> · ${dayLong(s.dates[0])} ${s.type === "bench" ? "oynatma" : "oynat"}`;
+  $("#wi-swaps").innerHTML = S.edits.map((s, i) =>
+    `<span class="chip"><span class="muted small">${esc(S.teamName[s.team])}:</span> ${text(s)}<button data-i="${i}" title="Kaldır">×</button></span>`).join("")
+    + (S.edits.length > 1 ? `<span class="chip" style="border-color:var(--line)"><a href="#" id="wi-clear">Hepsini temizle</a></span>` : "");
   document.querySelectorAll("#wi-swaps button").forEach((b) => b.addEventListener("click", () => {
-    S.swaps.splice(+b.dataset.i, 1);
-    renderSwaps();
+    S.edits.splice(+b.dataset.i, 1);
+    renderEdits();
   }));
+  $("#wi-clear")?.addEventListener("click", (e) => { e.preventDefault(); S.edits = []; renderEdits(); });
   runWhatIf();
 }
 
 let wiSeq = 0;
 async function runWhatIf() {
   const out = $("#wi-result");
-  if (!S.swaps.length) {
-    out.innerHTML = `<p class="muted">Bir değişiklik ekle: "Bu hafta X yerine Y oynasaydı ne olurdu?"</p>`;
+  if (!S.edits.length) {
+    out.innerHTML = "";
+    if (S.wk) renderVersus(S.wk.versus);
     return;
   }
   const seq = ++wiSeq;
   out.style.opacity = 0.5;
   try {
-    const r = await api("/api/whatif", { week: S.wk.week, team: S.wk.team, opponent: S.wk.opponent, swaps: S.swaps });
+    const r = await api("/api/whatif", { week: S.wk.week, team: S.wk.team, opponent: S.wk.opponent, edits: S.edits });
     Object.assign(S.players, r.info);
-    if (seq === wiSeq) renderWhatIf(r);
+    if (seq === wiSeq) { renderWhatIf(r); renderVersus(r.versus); }
   } catch (e) {
     out.innerHTML = `<div class="error">${esc(e.message)}</div>`;
   } finally {
@@ -325,10 +387,11 @@ async function runWhatIf() {
 
 function renderWhatIf(r) {
   const a = r.actual, h = r.hypothetical, isPts = r.scoring === "points";
-  const score = (x) => isPts ? `${x.a_points.toFixed(1)}–${x.b_points.toFixed(1)}` : `${x.score.W}-${x.score.L}${x.score.T ? "-" + x.score.T : ""}`;
   const verdict = r.flipped
-    ? `<div class="verdict flip">Sonuç değişirdi: ${score(a)} ${RES[a.result]} → <b>${score(h)} ${RES[h.result]}</b></div>`
-    : `<div class="verdict same">Sonuç değişmezdi: ${score(a)} → ${score(h)} (${RES[h.result]})</div>`;
+    ? `<div class="verdict flip">Sonuç değişirdi: ${scoreText(a)} ${RES[a.result]} → <b>${scoreText(h)} ${RES[h.result]}</b></div>`
+    : `<div class="verdict same">Sonuç değişmezdi: ${scoreText(a)} → ${scoreText(h)} (${RES[h.result]})</div>`;
+  const warns = (r.warnings || []).map((x) =>
+    `<div class="warn">⚠ ${dayLong(x.date)}: ${esc(S.teamName[x.team])} senaryoda ${x.played} oyuncu oynatıyor, aktif kadro ${x.slots} kişilik. Bu diziliş Yahoo'da mümkün olmazdı.</div>`).join("");
 
   let table = "";
   if (!isPts) {
@@ -353,10 +416,14 @@ function renderWhatIf(r) {
             <tr><td class="muted">senaryo</td>${cells(v.hypothetical)}</tr>`;
   }).join("");
 
-  $("#wi-result").innerHTML = `${verdict}${table}
+  $("#wi-result").innerHTML = `<div class="card"><h3>Senaryo sonucu</h3>${verdict}${warns}${table}
     <h3 style="margin-top:20px">Değişen oyuncuların aktif kadrodaki katkısı</h3>
-    <div class="table-wrap"><table><thead><tr><th>Oyuncu</th><th></th><th>Maç</th>${cs.map((c) => `<th>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${pRows}</tbody></table></div>`;
+    <div class="table-wrap"><table><thead><tr><th>Oyuncu</th><th></th><th>Maç</th>${cs.map((c) => `<th>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${pRows}</tbody></table></div></div>`;
 }
+
+// ================================================================ DRAFT + TRANSFERS (filled in below)
+async function loadDraft() {}
+async function loadMoves() {}
 
 init().catch((e) => {
   document.querySelector("main").innerHTML = `<div class="error">Başlatılamadı: ${esc(e.message)}</div>`;

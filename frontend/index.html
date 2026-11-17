@@ -15,6 +15,8 @@
       <span class="nav-label"><span class="ball"></span> Fantasy Basketbol</span>
       <button class="tab active" data-tab="trade">Takas Analizi</button>
       <button class="tab" data-tab="whatif">Ya Olsaydı?</button>
+      <button class="tab" data-tab="draft">Draft</button>
+      <button class="tab" data-tab="moves">Transferler</button>
     </nav>
     <div id="league-name">Yükleniyor…</div>
   </header>
@@ -60,33 +62,53 @@
     <!-- ============ WHAT IF ============ -->
     <section id="tab-whatif" class="tab-panel hidden">
       <h2 class="page-title">Ya Olsaydı?</h2>
-      <p class="muted" style="margin:0 0 14px">Geçmiş bir haftayı farklı oyuncularla yeniden oynat.</p>
+      <p class="muted" style="margin:0 0 14px">Geçmiş bir haftayı yeniden oynat: başka bir rakibe karşı, farklı bir dizilişle ya da farklı oyuncularla.</p>
       <div class="toolbar">
         <label>Hafta <select id="wi-week"></select></label>
         <label>Takım <select id="wi-team" class="team-select"></select></label>
+        <label>Rakip <select id="wi-opp" class="team-select"></select></label>
       </div>
 
       <div id="wi-actual"></div>
+      <div id="wi-versus"></div>
 
       <div class="card" id="wi-builder" hidden>
-        <h3>Değişiklik ekle</h3>
-        <p class="muted small">Seçtiğin oyuncunun o hafta <b>aktif kadroda olduğu günlerde</b> yerine gelen oyuncunun o günkü istatistiği sayılır.
+        <h3>Senaryo kur</h3>
+        <p class="muted small" style="margin:-2px 0 10px"><b>Günlük diziliş:</b> bir hücreye tıklayarak o oyuncuyu o gün oynat ya da oynatma.
+          Sayılar o günkü sayı (PTS); “–” o gün maçı yok demek.</p>
+        <div id="wi-grid"></div>
+
+        <h3 style="margin-top:18px">Oyuncu değiştir</h3>
+        <p class="muted small" style="margin:-2px 0 0">Çıkan oyuncunun <b>aktif kadroda olduğu günlerde</b> yerine gelenin o günkü istatistiği sayılır.
           Yerine gelen aynı takımın yedeğiyse ikisinin yeri değişir.</p>
         <div class="swap-form">
           <label>Çıkan oyuncu <select id="wi-out"></select></label>
-          <label>Yerine giren
-            <select id="wi-in"></select>
-          </label>
+          <label>Yerine giren <select id="wi-in"></select></label>
           <label>…veya oyuncu ara
-            <input id="wi-search" placeholder="İsim yaz (serbest oyuncu, başka takım…)" autocomplete="off">
+            <input id="wi-search" placeholder="İsim yaz (başka takım, serbest oyuncu…)" autocomplete="off">
             <div id="wi-search-results" class="search-results"></div>
           </label>
           <button id="wi-add" class="primary">Ekle</button>
         </div>
         <label class="check"><input type="checkbox" id="wi-mutual" checked> Yerine giren rakibin oyuncusuysa, rakibe de ters değişimi uygula (takas gibi)</label>
         <div id="wi-swaps" class="chips"></div>
-        <div id="wi-result"></div>
       </div>
+
+      <div id="wi-result"></div>
+    </section>
+
+    <!-- ============ DRAFT ============ -->
+    <section id="tab-draft" class="tab-panel hidden">
+      <h2 class="page-title">Draft</h2>
+      <p class="muted" style="margin:0 0 14px">Kim iyi draft yaptı? Her seçimin bugüne kadarki değeri.</p>
+      <div id="draft-body"></div>
+    </section>
+
+    <!-- ============ TRANSFERS ============ -->
+    <section id="tab-moves" class="tab-panel hidden">
+      <h2 class="page-title">Transferler</h2>
+      <p class="muted" style="margin:0 0 14px">Serbest oyuncu eklemeleri ve takaslar: kim en iyi hamleyi yaptı?</p>
+      <div id="moves-body"></div>
     </section>
   </main>
 

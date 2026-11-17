@@ -140,3 +140,20 @@ td.faded { color: var(--faded); }
 .error { background: #fdecef; color: var(--bad); padding: 12px 14px; border-radius: 8px; font-weight: 600; }
 .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
 .note { margin: 8px 2px 0; }
+
+/* ---------- daily lineup grid ---------- */
+.grid-table td, .grid-table th { padding: 6px 8px; text-align: center; }
+.grid-table td:first-child, .grid-table th:first-child { text-align: left; }
+.grid-table .cell { display: inline-block; min-width: 38px; padding: 3px 6px; border-radius: 9999px; font-weight: 600; font-size: 13px; border: 1px solid transparent; }
+.grid-table .cell.on { background: var(--a); color: #fff; }
+.grid-table .cell.off { background: #e0e4e9; color: var(--muted); }
+.grid-table .cell.nogame { color: var(--faded); font-weight: 400; }
+.grid-table .cell.click { cursor: pointer; }
+.grid-table .cell.click:hover { outline: 2px solid var(--brand); outline-offset: 1px; }
+.grid-table .cell.edited { box-shadow: 0 0 0 2px var(--flip-line); }
+.grid-title { font-weight: 800; margin: 12px 0 6px; }
+tr.rowlink { cursor: pointer; } tr.rowlink:hover td { background: var(--panel); }
+tr.selected td { background: var(--sel); }
+.warn { background: var(--flip); border: 1px solid var(--flip-line); border-radius: 8px; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
+.rank-pill { display: inline-block; min-width: 22px; text-align: center; border-radius: 9999px; background: var(--panel); border: 1px solid var(--line); font-weight: 700; font-size: 12px; padding: 0 6px; }
+details > summary { cursor: pointer; font-weight: 700; color: var(--link); margin: 6px 0; }

@@ -111,59 +111,99 @@ def trade(req: TradeReq):
     return result
 
 
-@app.get("/api/week/{week}")
-def week(week: int, team: str):
-    """Actual lineup/result for a team's matchup that week."""
+def _active_slots() -> int:
+    return P().active_slots() if hasattr(P(), "active_slots") else 10
+
+
+def _week_all(week: int):
+    """Week data for every team in the league (needed for 'versus everyone')."""
     lg = P().league()
-    opp = next((m[1] if m[0] == team else m[0] for m in P().matchups(week) if team in m), None)
-    if not opp:
-        raise HTTPException(404, "Bu hafta eşleşme bulunamadı.")
     try:
-        wk = P().week(week, [team, opp])
+        return lg, P().week(week, [t["key"] for t in lg["teams"]])
     except KeyError as e:
         raise HTTPException(404, str(e))
-    keys = sorted({e["player"] for d in wk["days"] for t in (team, opp) for e in d["lineups"][t]})
+
+
+def _real_opponent(week: int, team: str):
+    return next((m[1] if m[0] == team else m[0] for m in P().matchups(week) if team in m), None)
+
+
+@app.get("/api/week/{week}")
+def week(week: int, team: str, opponent: str | None = None):
+    """A team's week: result vs the chosen (default: real) opponent, daily lineup grid,
+    and how the same week would have gone against every other team."""
+    lg, wk = _week_all(week)
+    real_opp = _real_opponent(week, team)
+    opp = opponent or real_opp
+    if not opp or opp == team:
+        raise HTTPException(404, "Bu hafta eşleşme bulunamadı.")
     res = engine.what_if(lg, wk, team, opp, [])
-    # per-player summary of the week (active vs bench totals) for the UI
-    summary = {}
+
+    keys, usage, grid = set(), {}, {}
     for t in (team, opp):
+        rows = {}
         for d in wk["days"]:
-            for e in d["lineups"][t]:
-                s = summary.setdefault(e["player"], {"team": t, "active_games": 0, "bench_games": 0})
+            for e in d["lineups"].get(t, []):
+                keys.add(e["player"])
                 line = d["stats"].get(e["player"])
+                active = e["slot"] not in engine.INACTIVE_SLOTS
+                u = usage.setdefault(e["player"], {"team": t, "active_games": 0, "bench_games": 0})
                 if line:
-                    s["active_games" if e["slot"] not in engine.INACTIVE_SLOTS else "bench_games"] += 1
+                    u["active_games" if active else "bench_games"] += 1
+                rows.setdefault(e["player"], {})[d["date"]] = {
+                    "slot": e["slot"], "active": active, "played": bool(line),
+                    "pts": line.get("PTS") if line else None}
+        grid[t] = rows
+
     official = None
-    if hasattr(P(), "official"):
+    if opp == real_opp and hasattr(P(), "official"):
         off = P().official(week)
         if team in off and opp in off:
             official = engine.head_to_head(off[team], off[opp], lg)
-    return {"week": week, "start": wk["start"], "end": wk["end"], "team": team, "opponent": opp,
-            "result": res["actual"], "official": official, "players": P().player_info(keys), "usage": summary}
+    others = [t["key"] for t in lg["teams"] if t["key"] != team]
+    return {"week": week, "start": wk["start"], "end": wk["end"], "dates": [d["date"] for d in wk["days"]],
+            "team": team, "opponent": opp, "real_opponent": real_opp,
+            "result": res["actual"], "official": official, "players": P().player_info(sorted(keys)),
+            "usage": usage, "grid": grid, "versus": engine.versus_all(lg, wk, team, others),
+            "active_slots": _active_slots()}
 
 
-class Swap(BaseModel):
+class Edit(BaseModel):
     team: str
-    out: str
-    into: str
+    type: str = "swap"            # swap | bench | start
+    out: str | None = None
+    into: str | None = None
+    player: str | None = None
+    dates: list[str] | None = None
 
 
 class WhatIfReq(BaseModel):
     week: int
     team: str
     opponent: str
-    swaps: list[Swap]
+    edits: list[Edit] = []
 
 
 @app.post("/api/whatif")
 def whatif(req: WhatIfReq):
-    lg = P().league()
-    wk = P().week(req.week, [req.team, req.opponent])
+    lg, wk = _week_all(req.week)
     known = {p for d in wk["days"] for p in d["stats"]}
-    extra = {s.into: P().player_week_stats(s.into, req.week) for s in req.swaps if s.into not in known}
-    swaps = [{"team": s.team, "out": s.out, "in": s.into} for s in req.swaps]
-    res = engine.what_if(lg, wk, req.team, req.opponent, swaps, extra)
+    edits = []
+    for e in req.edits:
+        if e.type == "swap":
+            if not e.out or not e.into:
+                raise HTTPException(400, "Değişiklikte çıkan ve giren oyuncu olmalı.")
+            edits.append({"team": e.team, "type": "swap", "out": e.out, "in": e.into, "dates": e.dates})
+        elif e.type in ("bench", "start") and e.player:
+            edits.append({"team": e.team, "type": e.type, "player": e.player, "dates": e.dates})
+        else:
+            raise HTTPException(400, f"Geçersiz değişiklik: {e.type}")
+    extra = {e["in"]: P().player_week_stats(e["in"], req.week)
+             for e in edits if e["type"] == "swap" and e["in"] not in known}
+    res = engine.what_if(lg, wk, req.team, req.opponent, edits, extra, _active_slots())
     res["info"] = P().player_info(list(res["players"]))
+    others = [t["key"] for t in lg["teams"] if t["key"] != req.team]
+    res["versus"] = engine.versus_all(lg, wk, req.team, others, edits, extra)
     return res
 
 

@@ -68,3 +68,31 @@ def test_points_league():
     lg = {"scoring": "points", "categories": [], "modifiers": {"PTS": 1, "TO": -1}}
     r = engine.head_to_head({"PTS": 50, "TO": 5}, {"PTS": 48, "TO": 1}, lg)
     assert r["result"] == "L" and r["a_points"] == 45
+
+
+def test_bench_on_one_day_only():
+    wk = _week()
+    wk["days"].append({"date": "2026-11-03",
+                       "lineups": {"A": [{"player": "p1", "slot": "PG"}], "B": [{"player": "p3", "slot": "C"}]},
+                       "stats": {"p1": {"PTS": 50, "TO": 9, "FGM": 20, "FGA": 30}, "p3": None}})
+    res = engine.what_if(LEAGUE, wk, "A", "B", [{"team": "A", "type": "bench", "player": "p1", "dates": ["2026-11-03"]}])
+    pts = lambda r: next(c for c in r["categories"] if c["key"] == "PTS")["a"]
+    assert pts(res["actual"]) == 60 and pts(res["hypothetical"]) == 10
+    assert res["players"]["p1"]["actual"]["GP"] == 2 and res["players"]["p1"]["hypothetical"]["GP"] == 1
+
+
+def test_start_bench_player_and_overfull_warning():
+    res = engine.what_if(LEAGUE, _week(), "A", "B",
+                         [{"team": "A", "type": "start", "player": "p2", "dates": ["2026-11-02"]}], active_slots=1)
+    assert next(c for c in res["hypothetical"]["categories"] if c["key"] == "PTS")["a"] == 40
+    assert res["warnings"] == [{"team": "A", "date": "2026-11-02", "played": 2, "slots": 1}]
+
+
+def test_versus_all():
+    wk = _week()
+    wk["days"][0]["lineups"]["C"] = [{"player": "p4", "slot": "C"}]
+    wk["days"][0]["stats"]["p4"] = {"PTS": 5, "TO": 5, "FGM": 1, "FGA": 10}
+    rows = engine.versus_all(LEAGUE, wk, "A", ["B", "C"])
+    assert [r["actual"]["result"] for r in rows] == ["L", "W"]
+    rows = engine.versus_all(LEAGUE, wk, "A", ["B"], [{"team": "A", "out": "p1", "in": "p2"}])
+    assert rows[0]["hypothetical"]["result"] == "W"

@@ -99,6 +99,11 @@ class ImportedProvider:
                 "teams": [{"key": t["id"], "name": t["name"], "manager": ""} for t in self.base["teams"]],
                 "weeks": weeks, "demo": False, "synced_at": self.base.get("synced_at")}
 
+    def active_slots(self) -> int:
+        pos = self.base.get("roster_positions") or []
+        n = sum(1 for x in pos if x.upper() not in ("BN", "IL", "IL+", "IR", "NA"))
+        return n or 10
+
     def rosters(self) -> dict:
         return {t: list(ps) for t, ps in self.base["rosters"].items()}
 

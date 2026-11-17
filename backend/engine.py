@@ -234,21 +234,37 @@ def evaluate_trade(league: dict, rosters: dict[str, list[str]], avgs: dict[str, 
 
 # ---------------------------------------------------------------- what-if replay
 
-def apply_swaps(lineup: list[dict], swaps: list[dict]) -> list[dict]:
+def apply_edits(lineup: list[dict], edits: list[dict], day: str | None = None) -> list[dict]:
     """lineup: [{"player": key, "slot": "PG"}, ...] for one team on one day.
-    swap: {"out": key, "in": key} -> 'in' takes 'out's slot that day.
-    If 'in' is already on this lineup, their slots are exchanged (bench decisions)."""
+
+    Edit types (an edit with "dates" only applies on those dates):
+      swap  {"out": p, "in": q}  q takes p's slot. If q is already on this lineup
+                                 their slots are exchanged (bench decisions).
+      bench {"player": p}        p is moved to the bench.
+      start {"player": p}        p is moved into an active slot.
+    """
     lineup = [dict(e) for e in lineup]
-    for s in swaps:
-        out_e = next((e for e in lineup if e["player"] == s["out"]), None)
-        if not out_e:
+    for s in edits:
+        if s.get("dates") and day not in s["dates"]:
             continue
-        in_e = next((e for e in lineup if e["player"] == s["in"]), None)
-        if in_e:
-            out_e["slot"], in_e["slot"] = in_e["slot"], out_e["slot"]
+        kind = s.get("type", "swap")
+        if kind == "swap":
+            out_e = next((e for e in lineup if e["player"] == s["out"]), None)
+            if not out_e:
+                continue
+            in_e = next((e for e in lineup if e["player"] == s["in"]), None)
+            if in_e:
+                out_e["slot"], in_e["slot"] = in_e["slot"], out_e["slot"]
+            else:
+                out_e["player"] = s["in"]
         else:
-            out_e["player"] = s["in"]
+            e = next((e for e in lineup if e["player"] == s["player"]), None)
+            if e:
+                e["slot"] = "BN" if kind == "bench" else "UTIL"
     return lineup
+
+
+apply_swaps = apply_edits   # old name
 
 
 def _stat_for(player, day, extra_stats):
@@ -257,45 +273,63 @@ def _stat_for(player, day, extra_stats):
     return extra_stats.get(player, {}).get(day["date"])
 
 
-def team_week_totals(week: dict, team: str, swaps: list[dict], extra_stats: dict,
-                     track: set[str] = frozenset()) -> tuple[dict, dict]:
-    """Sum the stats of a team's active players over the week, after swaps.
-    Returns (totals, per_player_totals for players in `track`)."""
+def team_week_totals(week: dict, team: str, edits: list[dict], extra_stats: dict,
+                     track: set[str] = frozenset(), overfull: list | None = None,
+                     active_slots: int | None = None) -> tuple[dict, dict]:
+    """Sum the stats of a team's active players over the week, after edits.
+    Returns (totals, per_player_totals for players in `track`).
+    If `overfull` is given, dates where more players played in active slots than
+    `active_slots` allows are appended to it."""
     lines, tracked = [], {p: [] for p in track}
     for day in week["days"]:
-        lineup = apply_swaps(day["lineups"].get(team, []), swaps)
+        lineup = apply_edits(day["lineups"].get(team, []), edits, day["date"])
+        played = 0
         for e in lineup:
             if e["slot"] in INACTIVE_SLOTS:
                 continue
             line = _stat_for(e["player"], day, extra_stats)
             if line:
+                played += 1
                 lines.append(line)
                 if e["player"] in tracked:
                     tracked[e["player"]].append(line)
+        if overfull is not None and active_slots and played > active_slots:
+            overfull.append({"team": team, "date": day["date"], "played": played, "slots": active_slots})
     # GP = games counted in an active slot (daily lines from Yahoo carry no GP of their own)
     return add_lines(lines), {p: {**add_lines(ls), "GP": len(ls)} if ls else {} for p, ls in tracked.items()}
 
 
-def what_if(league: dict, week: dict, team_a: str, team_b: str,
-            swaps: list[dict], extra_stats: dict | None = None) -> dict:
-    """Replay a week's matchup. swaps: [{"team": key, "out": p, "in": p}, ...]"""
-    extra_stats = extra_stats or {}
-    track = {s["out"] for s in swaps} | {s["in"] for s in swaps}
+def _edit_players(edits):
+    out = set()
+    for s in edits:
+        out |= {s[k] for k in ("out", "in", "player") if s.get(k)}
+    return out
 
-    def run(sw):
-        ta, pa = team_week_totals(week, team_a, [s for s in sw if s["team"] == team_a], extra_stats, track)
-        tb, pb = team_week_totals(week, team_b, [s for s in sw if s["team"] == team_b], extra_stats, track)
+
+def what_if(league: dict, week: dict, team_a: str, team_b: str,
+            edits: list[dict], extra_stats: dict | None = None, active_slots: int | None = None) -> dict:
+    """Replay a week's matchup between any two teams.
+    edits: [{"team": key, "type": "swap"|"bench"|"start", ...}] (see apply_edits)."""
+    extra_stats = extra_stats or {}
+    track = _edit_players(edits)
+    warnings: list = []
+
+    def run(ed, warn=None):
+        ta, pa = team_week_totals(week, team_a, [s for s in ed if s["team"] == team_a], extra_stats, track,
+                                  warn, active_slots)
+        tb, pb = team_week_totals(week, team_b, [s for s in ed if s["team"] == team_b], extra_stats, track,
+                                  warn, active_slots)
         return ta, tb, {"a": pa, "b": pb}
 
     a0, b0, contrib0 = run([])
-    a1, b1, contrib = run(swaps)
+    a1, b1, contrib = run(edits, warnings)
     actual, hypo = head_to_head(a0, b0, league), head_to_head(a1, b1, league)
 
     if league["scoring"] != "points":
         for c0, c1 in zip(actual["categories"], hypo["categories"]):
             c1["changed"] = c0["result"] != c1["result"]
 
-    # Contribution of each swapped player in active slots (actual vs hypothetical)
+    # Contribution of each edited player in active slots (actual vs hypothetical)
     players = {}
     for p in track:
         before = add_lines([contrib0["a"].get(p), contrib0["b"].get(p)])
@@ -308,4 +342,29 @@ def what_if(league: dict, week: dict, team_a: str, team_b: str,
         "hypothetical": hypo,
         "flipped": actual["result"] != hypo["result"],
         "players": players,
+        "warnings": warnings,
     }
+
+
+def versus_all(league: dict, week: dict, team: str, others: list[str],
+               edits: list[dict] | None = None, extra_stats: dict | None = None) -> list[dict]:
+    """The team's week against every other team's week ("what if I had played X instead?").
+    Only the team's own edits are applied; opponents keep their real week."""
+    extra_stats = extra_stats or {}
+    mine = [s for s in (edits or []) if s["team"] == team]
+    t0, _ = team_week_totals(week, team, [], extra_stats)
+    t1, _ = team_week_totals(week, team, mine, extra_stats) if mine else (t0, None)
+    out = []
+    for o in others:
+        to, _ = team_week_totals(week, o, [], extra_stats)
+        row = {"team": o, "actual": _brief(head_to_head(t0, to, league))}
+        if mine:
+            row["hypothetical"] = _brief(head_to_head(t1, to, league))
+        out.append(row)
+    return out
+
+
+def _brief(res: dict) -> dict:
+    if "score" in res:
+        return {"score": res["score"], "result": res["result"]}
+    return {"a_points": res["a_points"], "b_points": res["b_points"], "result": res["result"]}
