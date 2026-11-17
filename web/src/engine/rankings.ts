@@ -232,3 +232,48 @@ export function standings(data: LeagueData, today?: string): Standings {
   return { available: true, teams: rows, n, weeks_done: [...done].sort((a, b) => a - b), weeks_total: weeks,
            last_day: days[days.length - 1], point_values: DEFAULT_POINTS } as Standings;
 }
+
+// ---------------------------------------------------------------- matchup luck
+
+export interface LuckRow { team: string; name: string; result: "W" | "L" | "T"; beaten: number; of: number; luck: number }
+
+/** Matchup luck per completed week: the real result (win 1, tie 0.5, loss 0) minus the share of
+ *  the league the team would have beaten that week (all-play). +1 is the most lucky a week can be. */
+export function luck(data: LeagueData, today?: string): { available: boolean; weeks: number[]; byWeek: Record<number, LuckRow[]>; season: { team: string; name: string; wins: number; losses: number; ties: number; luck: number }[] } {
+  const ctx = new Context(data, today);
+  const weeks = ctx.completedWeeks();
+  const teams = ctx.teams;
+  if (!weeks.length) return { available: false, weeks: [], byWeek: {}, season: [] };
+  const season: Record<string, { wins: number; losses: number; ties: number; luck: number }> = {};
+  for (const t of teams) season[t] = { wins: 0, losses: 0, ties: 0, luck: 0 };
+  const byWeek: Record<number, LuckRow[]> = {};
+  const of = teams.length - 1;
+
+  for (const w of weeks) {
+    const wk = data.week(w, teams);
+    const totals: Record<string, StatLine> = {};
+    for (const t of teams) totals[t] = teamWeekTotals(wk, t, [], {})[0];
+    const beat: Record<string, number> = Object.fromEntries(teams.map((t) => [t, 0]));
+    teams.forEach((a, i) => {
+      for (const b of teams.slice(i + 1)) {
+        const r = headToHead(totals[a], totals[b], ctx.league).result;
+        if (r === "W") beat[a] += 1;
+        if (r === "L") beat[b] += 1;
+      }
+    });
+    const rows: LuckRow[] = [];
+    for (const [a, b] of data.store.weeks[String(w)].pairs) {
+      const res = headToHead(totals[a], totals[b], ctx.league).result as "W" | "L" | "T";
+      for (const [t, r] of [[a, res], [b, FLIP[res]]] as const) {
+        const actual = r === "W" ? 1 : r === "T" ? 0.5 : 0;
+        const l = actual - beat[t] / of;
+        rows.push({ team: t, name: ctx.names[t], result: r, beaten: beat[t], of, luck: l });
+        season[t].luck += l;
+        if (r === "W") season[t].wins += 1; else if (r === "L") season[t].losses += 1; else season[t].ties += 1;
+      }
+    }
+    byWeek[w] = rows.sort((x, y) => y.luck - x.luck);
+  }
+  const seasonRows = teams.map((t) => ({ team: t, name: ctx.names[t], ...season[t] })).sort((x, y) => y.luck - x.luck);
+  return { available: true, weeks, byWeek, season: seasonRows };
+}

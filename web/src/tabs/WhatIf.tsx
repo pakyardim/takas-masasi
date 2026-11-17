@@ -3,6 +3,7 @@ import { api, catByKey, dayLabel, dayLong, fmt, pname, registerPlayers, RES, sco
 import { drawAllPlayPoster, loadLogos } from "../share";
 import { PosterButton } from "../PosterButton";
 import { scenarioPoster } from "../posters";
+import { Luck } from "./Luck";
 import type { AllPlay, Brief, Edit, Matchup, Player, StatLine, VersusRow, WeekData, WhatIfResult } from "../types";
 import { Empty, ErrorBox, PageHead, PlayerLabel, TableWrap, TeamLogo, TeamName, TeamOptions } from "../ui";
 
@@ -69,6 +70,7 @@ export function WhatIf() {
       {err ? <ErrorBox msg={err} /> : !wk ? <Empty>Hafta verisi yükleniyor…</Empty> : <>
         <Actual wk={wk} />
         <Versus wk={wk} rows={res?.versus ?? wk.versus} onPick={setOppReq} makePoster={allPlayPoster} />
+        <Luck week={wk.week} />
         <Builder key={`${wk.week}|${wk.team}|${wk.opponent}`} wk={wk} edits={edits} setEdits={setEdits} />
         <div style={{ opacity: busy ? 0.5 : 1 }}>
           {resErr ? <ErrorBox msg={resErr} /> : res && edits.length ? <Result wk={wk} r={res} edits={edits} /> : null}

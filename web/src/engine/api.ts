@@ -9,7 +9,7 @@ import {
   type EngineEdit, type ExtraStats, type Week,
 } from "./core";
 import type { LeagueData } from "./data";
-import { power, standings, todayET } from "./rankings";
+import { luck, power, standings, todayET } from "./rankings";
 
 export interface TradeRequest extends Partial<TradeFix> { team_a: string; give_a: string[]; team_b: string; give_b: string[]; period?: string }
 export interface WhatIfRequest { week: number; team: string; opponent: string; edits: Edit[] }
@@ -199,6 +199,7 @@ export class LocalApi {
   moves(): MovesReport { return this.memo("moves", () => movesReport(this.data)); }
   power(): Power { return this.memo("power", () => power(this.data)); }
   standings(): Standings { return this.memo("standings", () => standings(this.data)); }
+  luck() { return this.memo("luck", () => luck(this.data)); }
 
   /** Answer the same paths the old HTTP API had, so the UI code stays the same. */
   call(path: string, body?: unknown): unknown {
@@ -215,6 +216,7 @@ export class LocalApi {
     if (p === "/api/moves") return this.moves();
     if (p === "/api/power") return this.power();
     if (p === "/api/standings") return this.standings();
+    if (p === "/api/luck") return this.luck();
     throw new Error(`Bilinmeyen istek: ${p}`);
   }
 }

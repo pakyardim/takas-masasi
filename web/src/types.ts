@@ -106,3 +106,10 @@ export interface MovesReport {
   teams: { team: string; name: string; adds: number; value: number; best: Pickup | null }[];
   trades: { date: string; sides: { team: string; name: string; value: number; players: (Stint & { player: Player })[] }[] }[];
 }
+
+// ---- matchup luck
+export interface LuckRow { team: string; name: string; result: Res; beaten: number; of: number; luck: number }
+export interface LuckReport {
+  available: boolean; weeks: number[]; byWeek: Record<number, LuckRow[]>;
+  season: { team: string; name: string; wins: number; losses: number; ties: number; luck: number }[];
+}

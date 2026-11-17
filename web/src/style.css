@@ -215,3 +215,8 @@ a.ghost.btn:hover { background: var(--sel); }
 .round:first-of-type { margin-top: 8px; }
 .round-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 0 8px; }
 .round-head h3 { margin: 0; font-size: 17px; }
+
+/* ---------- luck ---------- */
+.luck-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+.luck-grid > div { min-width: 0; }
+@media (max-width: 760px) { .luck-grid { grid-template-columns: 1fr; } }
