@@ -1,0 +1,8 @@
+.venv/
+.env
+.yahoo_tokens.json
+.cache/
+__pycache__/
+data/
+.pytest_cache/
+*.tmp
