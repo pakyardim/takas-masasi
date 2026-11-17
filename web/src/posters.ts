@@ -196,6 +196,8 @@ export async function injuriesPoster(r: InjuryReport) {
   const byMissed = [...r.players].sort((a, b) => b.missed - a.missed || b.il - a.il).slice(0, 12);
   const worst = byMissed[0];
   const totalMissed = r.teams.reduce((a, t) => a + t.missed, 0);
+  // lost value: a positive number is a loss, so it is red (the reverse of the usual good/bad colouring)
+  const lostCell = (v: number): PCell => ({ text: signed(v, 1), bold: true, color: v > 0.05 ? TONE.bad : v < -0.05 ? TONE.good : undefined });
   const status = (s: string): Cell => (s ? { text: s, color: TONE.bad, bold: true } : { text: "sağlıklı", color: TONE.muted });
   const numCol = { label: "#", w: 0.6, align: "c" as const };
   return drawPoster({
@@ -210,7 +212,7 @@ export async function injuriesPoster(r: InjuryReport) {
       {
         heading: "Takımlar",
         columns: [numCol, { label: "Takım", w: 3.4, align: "l" }, { label: "IL gün", w: 1 }, { label: "Kaçırılan maç", w: 1.3 }, { label: "Kaybedilen değer", w: 1.6 }],
-        rows: r.teams.map((t, i) => [{ pill: true, text: String(i + 1) }, team(t.team), String(t.il), String(t.missed), val(t.lost)]),
+        rows: r.teams.map((t, i) => [{ pill: true, text: String(i + 1) }, team(t.team), String(t.il), String(t.missed), lostCell(t.lost)]),
       },
       {
         heading: "En çok maç kaçıranlar",
@@ -218,7 +220,7 @@ export async function injuriesPoster(r: InjuryReport) {
           { label: "Kaçırılan maç", w: 1.3 }, { label: "Kaybedilen değer", w: 1.6 }, { label: "Şu an", w: 1.4, align: "l" }],
         rows: byMissed.map((p, i) => [{ pill: true, text: String(i + 1) }, player(p.key, p.name),
           p.team ? team(p.team, p.team_name ?? undefined) : "–", String(p.il || "–"), { text: String(p.missed), bold: true },
-          val(p.lost), status(p.status)]),
+          lostCell(p.lost), status(p.status)]),
       },
     ],
     footer: "Kaçırılan maç: aktif kadroda olup NBA takımı oynarken kutu skoru olmayan günler · değer: yedek seviyesi üstü, az maçı olanlarda geçen sezon ortalaması",
