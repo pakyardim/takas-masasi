@@ -157,3 +157,4 @@ tr.selected td { background: var(--sel); }
 .warn { background: var(--flip); border: 1px solid var(--flip-line); border-radius: 8px; padding: 8px 12px; margin: 8px 0; font-size: 13px; }
 .rank-pill { display: inline-block; min-width: 22px; text-align: center; border-radius: 9999px; background: var(--panel); border: 1px solid var(--line); font-weight: 700; font-size: 12px; padding: 0 6px; }
 details > summary { cursor: pointer; font-weight: 700; color: var(--link); margin: 6px 0; }
+th.l, td.l { text-align: left; }

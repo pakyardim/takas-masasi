@@ -6,6 +6,8 @@
 //   ROSTER_MAX_AGE_H hours, or the user ticked "refresh rosters".
 // - A week's pairings + official totals (7 pages): skipped once the week is "final"
 //   (it ended more than 2 days ago and everything about it is stored).
+// - Draft results (1 page): once. Transactions: newest pages until one has nothing new.
+// - League-wide player list with season averages (12 pages): once a day.
 // - A day's lineups + box scores (1 page per team): read once. Only the last 2 days
 //   are re-read, because Yahoo applies stat corrections to them.
 //
@@ -23,6 +25,8 @@
 
 const PAGE_DELAY_MS = 1200;          // + up to 600 ms jitter between Yahoo pages
 const ROSTER_MAX_AGE_H = 6;
+const POOL_MAX_AGE_H = 24;           // league-wide player list (12 pages): once a day is plenty
+const POOL_PAGES = 12;               // top 300 players by current rank
 const RATE_LIMIT_WAITS_MIN = [3, 6, 12, 20];
 const WATCHDOG = "takas-watchdog";
 
@@ -35,7 +39,7 @@ let running = false;
 chrome.runtime.onMessage.addListener((m, _sender, reply) => {
   if (m.type === "start-sync") {
     if (running) { reply({ ok: false, error: "Senkron zaten çalışıyor." }); return; }
-    chrome.storage.local.set({ job: { tabId: m.tabId, lid: m.lid, server: m.server, force: !!m.force, info: null, rl: 0 } })
+    chrome.storage.local.set({ job: { tabId: m.tabId, lid: m.lid, server: m.server, force: !!m.force, info: null, extrasDone: false, rl: 0 } })
       .then(() => run());
     reply({ ok: true });
   }
@@ -104,7 +108,7 @@ async function run(resumed = false) {
   const job = await getJob();
   const { tabId, lid, server } = job;
   const say = (msg) => setState({ running: true, msg: (resumed ? "(kaldığı yerden) " : "") + msg });
-  const stats = { pages: 0, skippedWeeks: 0, skippedDays: 0, rosters: false };
+  const stats = { pages: 0, skippedWeeks: 0, skippedDays: 0, rosters: false, draft: 0, tx: 0, pool: 0 };
 
   try {
     await patchJob({ pauseUntil: null });
@@ -144,8 +148,46 @@ async function run(resumed = false) {
       } else {
         await post(server, { kind: "meta", data: basics });
       }
-      info = { teams: li.teams.map((t) => t.id), my_team: li.my_team, current_week: li.current_week };
+      info = { teams: li.teams.map((t) => t.id), my_team: li.my_team, current_week: li.current_week, season_view };
       await patchJob({ info });
+    }
+
+    // 1b) draft (once), transaction log (only new pages), league-wide player pool (with rosters)
+    if (!job.extrasDone) {
+      if (!have.has_draft) {
+        say("Draft sonuçları okunuyor…");
+        const picks = await inTab(tabId, "draft", lid);
+        if (picks.length) await post(server, { kind: "draft", data: { picks } });
+        stats.draft = picks.length;
+      }
+      const known = new Set(have.tx_keys || []);
+      const keyOf = (r) => `${r.ts}|${r.team}|${r.moves.map((m) => m.player.id).sort().join(",")}`;
+      for (let page = 0; page < 60; page++) {
+        say(`Transferler okunuyor… (sayfa ${page + 1})`);
+        const res = await inTab(tabId, "transactions", lid, page * 25);
+        const fresh = res.rows.filter((r) => !known.has(keyOf(r)));
+        if (fresh.length) await post(server, { kind: "transactions", data: { rows: fresh } });
+        stats.tx += fresh.length;
+        if (!res.more) {                       // reached the very first transaction of the season
+          await post(server, { kind: "transactions", data: { rows: [], complete: true } });
+          break;
+        }
+        // once the whole log has been stored, stop at the first page with nothing new
+        if (have.tx_complete && !fresh.length) break;
+      }
+      const poolAgeH = have.pool_at ? (Date.now() - Date.parse(have.pool_at)) / 36e5 : Infinity;
+      if (job.force || poolAgeH > POOL_MAX_AGE_H) {
+        const players = {}, averages = {};
+        for (let page = 0; page < POOL_PAGES; page++) {
+          say(`Oyuncu havuzu okunuyor… (${page + 1}/${POOL_PAGES})`);
+          const rows = await inTab(tabId, "playerPool", lid, info.season_view, page * 25);
+          for (const r of rows) { players[r.player.id] = r.player; averages[r.player.id] = r.line || { GP: 0 }; }
+          if (rows.length < 25) break;
+        }
+        await post(server, { kind: "pool", data: { players, averages, synced_at: new Date().toISOString() } });
+        stats.pool = Object.keys(players).length;
+      }
+      await patchJob({ extrasDone: true });
     }
 
     // 2) weeks, day by day
@@ -187,7 +229,8 @@ async function run(resumed = false) {
     await chrome.storage.local.remove("job");
     await chrome.alarms.clear(WATCHDOG);
     await setState({ running: false, cls: "ok", msg:
-      `Tamam. Okunan: ${stats.pages / info.teams.length} gün${stats.rosters ? ", kadrolar ve ortalamalar" : ""}.\n` +
+      `Tamam. Okunan: ${stats.pages / info.teams.length} gün${stats.rosters ? ", kadrolar ve ortalamalar" : ""}` +
+      `${stats.draft ? `, draft (${stats.draft} seçim)` : ""}${stats.tx ? `, ${stats.tx} yeni transfer` : ""}${stats.pool ? `, ${stats.pool} oyunculuk havuz` : ""}.\n` +
       `Atlanan (zaten kayıtlı): ${stats.skippedWeeks} bitmiş hafta, ${stats.skippedDays} gün` +
       `${stats.rosters ? "" : `, kadrolar (son ${ROSTER_MAX_AGE_H} saatte okunmuş)`}.\nUygulamayı yenile.` });
   } catch (e) {

@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import engine, imported
+from . import analysis, engine, imported
 
 load_dotenv()
 ROOT = Path(__file__).resolve().parent.parent
@@ -205,6 +205,22 @@ def whatif(req: WhatIfReq):
     others = [t["key"] for t in lg["teams"] if t["key"] != req.team]
     res["versus"] = engine.versus_all(lg, wk, req.team, others, edits, extra)
     return res
+
+
+def _report(fn):
+    if not isinstance(P(), imported.ImportedProvider):
+        return {"available": False, "reason": "demo"}
+    return fn(P())
+
+
+@app.get("/api/draft")
+def draft():
+    return _report(analysis.draft_report)
+
+
+@app.get("/api/moves")
+def moves():
+    return _report(analysis.moves_report)
 
 
 app.mount("/static", StaticFiles(directory=ROOT / "frontend"), name="static")

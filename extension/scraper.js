@@ -234,5 +234,70 @@
     }));
   }
 
-  window.__takas = { leagueInfo, teamAverages, weekMeta, matchupTotals, teamDay, parseRosterTable, get };
+  /** Draft results: [{round, pick, overall, player, team_name}] */
+  async function draft(lid) {
+    const doc = await get(`/nba/${lid}/draftresults`);
+    const picks = [];
+    for (const table of doc.querySelectorAll("table")) {
+      const m = clean(table.rows[0]?.innerText).match(/^Round (\d+)/);
+      if (!m) continue;
+      for (const row of [...table.rows].slice(1)) {
+        const a = row.querySelector('a[href*="/players/"]');
+        const id = a && (a.getAttribute("href").match(/\/players\/(\d+)/) || [])[1];
+        if (!id) continue;
+        const tp = clean(row.cells[1]?.querySelector("span")?.innerText).replace(/^\(|\)$/g, "");
+        const [nba_team, pos] = tp.split(" - ");
+        picks.push({
+          round: +m[1], pick: parseInt(clean(row.cells[0].innerText), 10),
+          player: { id, name: clean(a.innerText), nba_team: clean(nba_team), positions: (pos || "").split(",").map(clean).filter(Boolean) },
+          team_name: clean(row.cells[2]?.getAttribute("title") || row.cells[2]?.innerText),
+        });
+      }
+    }
+    const perRound = Math.max(0, ...picks.map((p) => p.pick));
+    picks.forEach((p) => { p.overall = (p.round - 1) * perRound + p.pick; });
+    return picks;
+  }
+
+  /** One page (25 rows) of the transaction log, newest first.
+   *  -> {rows: [{ts, team, moves: [{player, action: add|drop|trade, source}]}], more} */
+  async function transactions(lid, offset) {
+    const doc = await get(`/nba/${lid}/transactions?transactionsfilter=all&count=${offset}`);
+    const table = doc.querySelector("table.Tst-transaction-table") ||
+      [...doc.querySelectorAll("table")].find((t) => t.querySelector('a[href*="/players/"]'));
+    const rows = [];
+    for (const tr of table ? table.rows : []) {
+      const text = clean(tr.innerText);
+      const ts = (text.match(/[A-Z][a-z]{2} \d{1,2}, \d{1,2}:\d{2} [ap]m/) || [])[0];
+      const teamHref = [...tr.querySelectorAll("a")].map((a) => a.getAttribute("href") || "")
+        .find((h) => new RegExp(`/nba/${lid}/\\d+$`).test(h));
+      if (!ts || !teamHref) continue;
+      const isTrade = /Traded to/.test(text);
+      const moves = [];
+      for (const a of tr.querySelectorAll('a[href*="/players/"]')) {
+        const id = (a.getAttribute("href").match(/\/players\/(\d+)$/) || [])[1];
+        if (!id) continue;                                   // skips the ".../news" note links
+        const box = a.closest("div, p") || a.parentElement;
+        const src = clean(box.querySelector("h6")?.innerText);
+        const tp = clean(box.querySelector("span")?.innerText);
+        const [nba_team, pos] = tp.split(" - ");
+        moves.push({
+          player: { id, name: clean(a.innerText), nba_team: clean(nba_team), positions: (pos || "").split(",").map(clean).filter(Boolean) },
+          action: isTrade ? "trade" : /^To /.test(src) ? "drop" : "add",
+          source: src,
+        });
+      }
+      if (moves.length) rows.push({ ts, team: teamHref.split("/").pop(), moves });
+    }
+    return { rows, more: !!table && table.rows.length >= 25 };
+  }
+
+  /** One page (25 players) of the league-wide player list, best current rank first,
+   *  with season per-game averages. Used to value free agents and dropped draft picks. */
+  async function playerPool(lid, view, offset) {
+    const doc = await get(`/nba/${lid}/players?status=ALL&pos=P&cut_type=33&stat1=S_${view}&myteam=0&sort=AR&sdir=1&count=${offset}`);
+    return parseRosterTable(doc).map((r) => ({ player: r.player, line: r.line }));
+  }
+
+  window.__takas = { leagueInfo, teamAverages, weekMeta, matchupTotals, teamDay, draft, transactions, playerPool, parseRosterTable, get };
 })();

@@ -421,9 +421,95 @@ function renderWhatIf(r) {
     <div class="table-wrap"><table><thead><tr><th>Oyuncu</th><th></th><th>Maç</th>${cs.map((c) => `<th>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${pRows}</tbody></table></div></div>`;
 }
 
-// ================================================================ DRAFT + TRANSFERS (filled in below)
-async function loadDraft() {}
-async function loadMoves() {}
+// ================================================================ DRAFT + TRANSFERS
+const val = (x, d = 1) => `<b class="${cls(x)}">${signed(x, d)}</b>`;
+const needSync = (what) => `<div class="card empty">${what} verisi henüz yok. Eklentiyi (sürüm 0.5.0+) yeniden yükleyip <b>Senkronize et</b>'e bas; draft, transferler ve oyuncu havuzu da okunur.</div>`;
+const VALUE_NOTE = `<b>Değer</b> = oyuncunun maç başı z-skoru eksi “yedek seviyesi” (en iyi 5 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır. 0 = serbest oyuncu havuzundan zaten bulunabilecek katkı.`;
+const pickNo = (r) => `${r.round}.${String(r.pick).padStart(2, "0")} <span class="muted small">(#${r.overall})</span>`;
+
+async function loadDraft(force) {
+  if (S.loaded.draft && !force) return;
+  const el = $("#draft-body");
+  el.innerHTML = `<div class="card empty">Yükleniyor…</div>`;
+  let r;
+  try { r = await api("/api/draft"); } catch (e) { el.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  if (!r.available) { el.innerHTML = needSync("Draft"); return; }
+  S.loaded.draft = true;
+  r.picks.forEach((p) => (S.players[p.player.key] = { ...S.players[p.player.key], ...p.player }));
+  const brief = (p) => p ? `${esc(p.player.name)} <span class="muted small">#${p.overall} · ${signed(p.surplus, 1)}</span>` : "–";
+  const teamRows = r.teams.map((t, i) => `<tr class="rowlink" data-team="${esc(t.team || t.name)}">
+      <td><span class="rank-pill">${i + 1}</span> <span class="pl-name">${esc(t.name)}</span></td>
+      <td>${val(t.total)}</td><td>${val(t.surplus)}</td><td>${t.kept}/${t.picks}</td>
+      <td style="text-align:left">${brief(t.best)}</td><td style="text-align:left">${brief(t.worst)}</td></tr>`).join("");
+  const sel = `<select id="draft-team"><option value="">Tüm takımlar (seçim sırasıyla)</option>${r.teams.map((t) => `<option value="${esc(t.team || t.name)}">${esc(t.name)}</option>`).join("")}</select>`;
+  el.innerHTML = `
+    ${r.has_pool ? "" : `<div class="warn">Serbest oyuncuların istatistikleri henüz okunmadı; bırakılmış draft seçimleri 0 değerle sayılıyor. Yeniden senkronize et.</div>`}
+    <div class="card"><h3>En iyi draft</h3>
+      <div class="table-wrap"><table><thead><tr><th>Takım</th><th>Toplam değer</th><th>Beklenene göre</th><th>Hâlâ kadroda</th><th style="text-align:left">En iyi seçim</th><th style="text-align:left">En kötü seçim</th></tr></thead><tbody>${teamRows}</tbody></table></div>
+      <p class="muted small note">${VALUE_NOTE} <b>Beklenene göre</b>: her seçimin değeri eksi o sıradan beklenen değer (bugün o sırada olan oyuncunun değeri). Satıra tıklayınca takımın seçimleri listelenir.</p></div>
+    <div class="card"><div class="card-head"><h3 style="margin:0">Seçimler</h3>${sel}</div><div id="draft-picks"></div></div>`;
+  const renderPicks = () => {
+    const team = $("#draft-team").value;
+    const rows = r.picks.filter((p) => !team || (p.team || p.team_name) === team).map((p) => `<tr>
+      <td>${pickNo(p)}</td><td class="l">${playerLabel(p.player.key)}</td>
+      ${team ? "" : `<td style="text-align:left">${esc(p.team_name)}</td>`}
+      <td>${p.gp || 0}</td><td>${p.z == null ? "–" : signed(p.z)}</td><td>${p.known ? val(p.value) : '<span class="faded">veri yok</span>'}</td>
+      <td>${p.rank ? p.rank + "." : "–"}</td><td>${val(p.surplus)}</td>
+      <td class="${p.kept ? "" : "faded"}">${p.kept ? "kadroda" : p.player.owner ? esc(S.teamName[p.player.owner] || "başka takım") : "serbest"}</td></tr>`).join("");
+    $("#draft-picks").innerHTML = `<div class="table-wrap"><table><thead><tr><th>Seçim</th><th class="l">Oyuncu</th>${team ? "" : '<th style="text-align:left">Seçen</th>'}<th>Maç</th><th>z / maç</th><th>Değer</th><th>Değer sırası</th><th>Beklenene göre</th><th>Şimdi</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  };
+  $("#draft-team").onchange = renderPicks;
+  document.querySelectorAll("#draft-body tr.rowlink").forEach((tr) => tr.addEventListener("click", () => {
+    $("#draft-team").value = tr.dataset.team; renderPicks(); $("#draft-picks").scrollIntoView({ behavior: "smooth", block: "start" });
+  }));
+  renderPicks();
+}
+
+async function loadMoves(force) {
+  if (S.loaded.moves && !force) return;
+  const el = $("#moves-body");
+  el.innerHTML = `<div class="card empty">Yükleniyor…</div>`;
+  let r;
+  try { r = await api("/api/moves"); } catch (e) { el.innerHTML = `<div class="error">${esc(e.message)}</div>`; return; }
+  if (!r.available) { el.innerHTML = needSync("Transfer"); return; }
+  S.loaded.moves = true;
+  const reg = (p) => (S.players[p.key] = { ...S.players[p.key], ...p });
+  r.pickups.forEach((x) => reg(x.player));
+  r.trades.forEach((t) => t.sides.forEach((s) => s.players.forEach((x) => reg(x.player))));
+  const dshort = (d) => new Date(d + "T12:00:00").toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+
+  const teamRows = r.teams.map((t, i) => `<tr><td><span class="rank-pill">${i + 1}</span> <span class="pl-name">${esc(t.name)}</span></td>
+    <td>${t.adds}</td><td>${val(t.value)}</td>
+    <td style="text-align:left">${t.best ? `${esc(t.best.player.name)} <span class="muted small">${dshort(t.best.date)} · ${signed(t.best.value, 1)}</span>` : "–"}</td></tr>`).join("");
+  const pickRow = (x, i) => `<tr><td><span class="rank-pill">${i + 1}</span></td><td class="l">${playerLabel(x.player.key)}</td>
+    <td style="text-align:left">${esc(x.team_name)}</td><td>${dshort(x.date)}</td>
+    <td>${x.active_games}${x.games > x.active_games ? ` <span class="muted small">(+${x.games - x.active_games} yedekte)</span>` : ""}</td>
+    <td>${val(x.value)}</td><td>${x.per_game == null ? "–" : signed(x.per_game)}</td>
+    <td class="${x.ongoing ? "" : "faded"}">${x.ongoing ? "kadroda" : x.last ? dshort(x.last) + "'e kadar" : "hiç oynamadı"}</td></tr>`;
+  const head = `<thead><tr><th>#</th><th class="l">Oyuncu</th><th style="text-align:left">Ekleyen</th><th>Tarih</th><th>Aktif maç</th><th>Değer</th><th>Değer / maç</th><th>Durum</th></tr></thead>`;
+  const best = r.pickups.slice(0, 15).map(pickRow).join("");
+  const rest = r.pickups.slice(15).map((x, i) => pickRow(x, i + 15)).join("");
+
+  const trades = r.trades.map((t) => {
+    const side = (s) => `<td style="text-align:left;white-space:normal"><b>${esc(s.name)}</b> aldı:<br>${s.players.map((x) =>
+      `${esc(x.player.name)} <span class="muted small">${x.active_games} maç · ${signed(x.value, 1)}</span>`).join("<br>")}</td><td>${val(s.value)}</td>`;
+    const [a, b] = t.sides;
+    const diff = a && b ? a.value - b.value : 0;
+    return `<tr><td>${dshort(t.date)}</td>${a ? side(a) : "<td></td><td></td>"}${b ? side(b) : "<td></td><td></td>"}
+      <td style="text-align:left">${a && b && Math.abs(diff) > 0.05 ? `<span class="pl-name">${esc(a.name)}</span> ${signed(diff, 1)}` : "başa baş"}</td></tr>`;
+  }).join("");
+
+  el.innerHTML = `
+    <div class="card"><h3>Takımların serbest oyuncu hamleleri</h3>
+      <div class="table-wrap"><table><thead><tr><th>Takım</th><th>Ekleme</th><th>Toplam değer</th><th style="text-align:left">En iyi ekleme</th></tr></thead><tbody>${teamRows}</tbody></table></div>
+      <p class="muted small note">${r.count} işlem (${dshort(r.first)} – ${dshort(r.last)}). ${VALUE_NOTE} Yalnızca oyuncunun o takımda <b>aktif kadroda oynadığı</b> maçlar sayılır.</p></div>
+    <div class="card"><h3>En iyi eklemeler</h3>
+      <div class="table-wrap"><table>${head}<tbody>${best}</tbody></table></div>
+      ${rest ? `<details><summary>Kalan ${r.pickups.length - 15} eklemeyi göster</summary><div class="table-wrap"><table>${head}<tbody>${rest}</tbody></table></div></details>` : ""}</div>
+    <div class="card"><h3>Takaslar</h3>
+      ${trades ? `<div class="table-wrap"><table><thead><tr><th>Tarih</th><th style="text-align:left">Taraf 1</th><th>Değer</th><th style="text-align:left">Taraf 2</th><th>Değer</th><th style="text-align:left">Şimdiye kadar önde</th></tr></thead><tbody>${trades}</tbody></table></div>
+      <p class="muted small note">Takastan sonra her oyuncunun yeni takımında aktif kadroda ürettiği değer.</p>` : `<p class="muted">Bu sezon henüz takas yok.</p>`}</div>`;
+}
 
 init().catch((e) => {
   document.querySelector("main").innerHTML = `<div class="error">Başlatılamadı: ${esc(e.message)}</div>`;

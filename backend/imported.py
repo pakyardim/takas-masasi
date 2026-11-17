@@ -12,10 +12,12 @@ Storage: data/league.json
 from __future__ import annotations
 
 import json
+import os
+from datetime import date, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA_FILE = ROOT / "data" / "league.json"
+DATA_FILE = Path(os.environ.get("TAKAS_DATA_FILE") or ROOT / "data" / "league.json")
 
 RATIOS = {"FG%": ["FGM", "FGA"], "FT%": ["FTM", "FTA"], "3PT%": ["3PTM", "3PTA"]}
 LOWER_IS_BETTER = {"TO", "PF"}
@@ -49,6 +51,30 @@ def merge_import(kind: str, data: dict) -> dict:
         if not store.get("base") or store["base"].get("league_id") != data.get("league_id"):
             raise ValueError("no base data for this league yet")
         store["base"].update({k: v for k, v in data.items() if k not in ("rosters", "players", "averages")})
+    elif kind == "draft":
+        names = {t["name"]: t["id"] for t in (store.get("base") or {}).get("teams", [])}
+        store["draft"] = [{"round": x["round"], "pick": x["pick"], "overall": x["overall"],
+                           "player": x["player"]["id"], "team": names.get(x["team_name"]),
+                           "team_name": x["team_name"]} for x in data["picks"]]
+        for x in data["picks"]:
+            store["players"][x["player"]["id"]] = {**x["player"], **store["players"].get(x["player"]["id"], {})}
+    elif kind == "transactions":
+        txs = store.setdefault("transactions", {})
+        if data.get("complete"):
+            store["tx_complete"] = True
+        for row in data["rows"]:
+            key = tx_key(row)
+            txs[key] = {"key": key, "ts": row["ts"], "date": _tx_date(row["ts"]), "team": row["team"],
+                        "moves": [{"player": m["player"]["id"], "action": m["action"], "source": m.get("source", "")}
+                                  for m in row["moves"]]}
+            for m in row["moves"]:
+                store["players"][m["player"]["id"]] = {**m["player"], **store["players"].get(m["player"]["id"], {})}
+    elif kind == "pool":
+        # league-wide season averages (free agents included); replaces the previous pool
+        store["pool"] = data["averages"]
+        store["pool_at"] = data.get("synced_at")
+        for pid, pl in data["players"].items():
+            store["players"][pid] = {**store["players"].get(pid, {}), **pl}
     elif kind == "week":
         w = str(data["week"])
         # final = Yahoo's official totals were read after the week (and its stat corrections) was over
@@ -64,17 +90,39 @@ def merge_import(kind: str, data: dict) -> dict:
     return store
 
 
+def tx_key(row: dict) -> str:
+    return f'{row["ts"]}|{row["team"]}|' + ",".join(sorted(
+        (m["player"]["id"] if isinstance(m["player"], dict) else m["player"]) for m in row["moves"]))
+
+
+_MONTHS = {m: i + 1 for i, m in enumerate("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split())}
+
+
+def _tx_date(ts: str, today: date | None = None) -> str:
+    """'Nov 17, 3:47 am' -> ISO date. Yahoo prints no year: take the most recent
+    such date that is not in the future."""
+    today = today or date.today()
+    mon, day = ts.split(",")[0].split()
+    d = date(today.year, _MONTHS[mon], int(day))
+    if d > today + timedelta(days=1):
+        d = d.replace(year=today.year - 1)
+    return d.isoformat()
+
+
 def status(league_id: str | None = None) -> dict:
     store = load()
     base = store.get("base")
     if not base or (league_id and base.get("league_id") != league_id):
-        return {"league_id": None, "dates": [], "weeks": [], "final_weeks": [], "synced_at": None}
+        return {"league_id": None, "dates": [], "weeks": [], "final_weeks": [], "synced_at": None,
+                "has_draft": False, "tx_keys": [], "tx_complete": False, "pool_at": None}
     # weeks that never need to be read again: official totals are final and every day is stored
     final = sorted(int(w) for w, v in store["weeks"].items()
                    if v.get("final") and v["dates"] and all(d in store["days"] for d in v["dates"]))
     return {"league_id": base["league_id"], "dates": sorted(store["days"]),
             "weeks": sorted(int(w) for w in store["weeks"]), "final_weeks": final,
-            "synced_at": base.get("synced_at")}
+            "synced_at": base.get("synced_at"), "has_draft": bool(store.get("draft")),
+            "tx_keys": sorted(store.get("transactions", {})), "tx_complete": bool(store.get("tx_complete")),
+            "pool_at": store.get("pool_at")}
 
 
 class ImportedProvider:
@@ -120,7 +168,8 @@ class ImportedProvider:
 
     def averages(self, keys, period: str = "season") -> dict:
         src = self.base["averages"].get(period, {})
-        return {k: dict(src.get(k) or {"GP": 0}) for k in keys}
+        pool = self.store.get("pool", {}) if period == "season" else {}   # free agents: season only
+        return {k: dict(src.get(k) or pool.get(k) or {"GP": 0}) for k in keys}
 
     def matchups(self, week: int) -> list[list[str]]:
         return self.store["weeks"].get(str(week), {}).get("pairs", [])

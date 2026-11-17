@@ -7,11 +7,15 @@ Yahoo Fantasy NBA ligin için iki araç sunan bir web uygulaması. AI yorumu yok
    - oyuncu başına z-skor (yüzdeler atış hacmiyle ağırlıklı, TO ters çevrilmiş)
    - her iki takımın kategori bazında lig sıralamasının takastan önceki ve sonraki hali
    - 2'ye 1 gibi takaslarda kadro yeri uyarısı
-2. **Ya Olsaydı?:** Geçmiş bir haftayı yeniden oynatır. "X yerine Y oynasaydı kazanır mıydım?"
-   - Çıkan oyuncunun **aktif kadroda olduğu günlerde**, yerine gelen oyuncunun **o günkü** istatistiği sayılır.
-   - Yerine gelen aynı takımın yedeğiyse ikisinin yeri değişir (bench kararlarını test etmek için).
-   - Rakibin oyuncusunu seçersen, istersen ters değişim rakibe de uygulanır (o hafta takas yapılmış gibi).
-   - Serbest oyuncu ya da başka bir takımın oyuncusu da seçilebilir.
+2. **Ya Olsaydı?:** Geçmiş bir haftayı yeniden oynatır.
+   - **Başka rakip:** o haftaki istatistiklerinle ligdeki her takıma karşı skorun; rakibi seçip ayrıntıya bakabilirsin.
+   - **Günlük diziliş:** ızgarada bir hücreye tıklayarak bir oyuncuyu tek bir gün için oynat ya da oynatma ("son gün onu oynatmasaydım").
+   - **Oyuncu değiştir:** çıkan oyuncunun aktif olduğu günlerde yerine gelenin o günkü istatistiği sayılır; rakibin oyuncusuysa ters değişim de uygulanabilir.
+   - Senaryo aktif kadro sayısını aşarsa uyarır (pozisyon uygunluğu kontrol edilmez).
+3. **Draft:** Her seçimin bugüne kadarki değeri, takımların draft sıralaması, en iyi ve en kötü seçimler.
+4. **Transferler:** Serbest oyuncu eklemelerinin ve takasların, oyuncunun yeni takımında aktif oynadığı maçlarda ürettiği değere göre sıralaması.
+
+Draft ve Transferler tek bir ölçü kullanır: **değer** = oyuncunun maç başı z-skoru eksi "yedek seviyesi" (en iyi 5 serbest oyuncunun ortalaması), oynadığı maçlarla çarpılır.
 
 ## Çalıştırma
 
@@ -43,10 +47,10 @@ Sonraki senkronlar yalnızca eksik olanı okur:
 Yahoo çok sık istek görürse geçici hız sınırı koyar (HTTP 999). Eklenti bu durumda birkaç dakika bekleyip kaldığı yerden kendiliğinden devam eder. Veri `data/league.json` dosyasında durur; `.venv/bin/python -m backend.validate` komutu kayıtlı haftaları Yahoo'nun resmi skorlarıyla karşılaştırır.
 
 Notlar:
-- Okunanlar: lig ayarları, takımlar, güncel kadrolar, sezon / son 30 / 14 / 7 gün ortalamaları, her günün aktif/yedek dizilişi ve kutu skorları, haftalık eşleşmeler ve Yahoo'nun resmi haftalık toplamları. Ya Olsaydı? sekmesi kendi hesapladığı skoru resmi skorla karşılaştırır.
+- Okunanlar: lig ayarları, takımlar, draft sonuçları, transfer geçmişi, ligdeki ilk 300 oyuncunun sezon ortalamaları (günde bir), güncel kadrolar, sezon / son 30 / 14 / 7 gün ortalamaları, her günün aktif/yedek dizilişi ve kutu skorları, haftalık eşleşmeler ve Yahoo'nun resmi haftalık toplamları. Ya Olsaydı? sekmesi kendi hesapladığı skoru resmi skorla karşılaştırır.
 - Bu yöntem Yahoo'nun sayfa yapısına bağlı. Yahoo tasarımı değiştirirse eklentinin güncellenmesi gerekir.
 - Otomatik sayfa okumak Yahoo'nun kullanım koşullarında gri bir alanda. Eklenti yalnızca kendi ligini, yavaş ve elle başlatıldığında okur.
-- Ya Olsaydı? için serbest oyuncuların günlük istatistikleri yok; yalnızca o gün herhangi bir takımın kadrosunda olan oyuncular kullanılabilir.
+- Serbest oyuncuların yalnızca sezon ortalamaları var, günlük istatistikleri yok. Ya Olsaydı? sekmesinde yalnızca o gün herhangi bir takımın kadrosunda olan oyuncular kullanılabilir.
 - Şimdilik yalnızca kategori ligleri (H2H Categories) destekleniyor.
 
 ## Alternatif: Yahoo API (geliştirici uygulaması gerekir)
