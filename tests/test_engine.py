@@ -96,3 +96,25 @@ def test_versus_all():
     assert [r["actual"]["result"] for r in rows] == ["L", "W"]
     rows = engine.versus_all(LEAGUE, wk, "A", ["B"], [{"team": "A", "out": "p1", "in": "p2"}])
     assert rows[0]["hypothetical"]["result"] == "W"
+
+
+def test_uneven_trade_with_drop_and_add():
+    rosters = {"A": ["p1", "p2"], "B": ["p3", "p4"]}
+    avgs = {"p1": {"PTS": 30, "TO": 3, "FGM": 10, "FGA": 20, "GP": 5},
+            "p2": {"PTS": 5, "TO": 1, "FGM": 2, "FGA": 5, "GP": 5},
+            "p3": {"PTS": 14, "TO": 2, "FGM": 5, "FGA": 10, "GP": 5},
+            "p4": {"PTS": 12, "TO": 2, "FGM": 5, "FGA": 10, "GP": 5},
+            "fa": {"PTS": 8, "TO": 1, "FGM": 3, "FGA": 8, "GP": 5}}
+    # A gives its star for two players and must drop p2; B fills the open spot with a free agent
+    r = engine.evaluate_trade(LEAGUE, rosters, avgs, "A", ["p1"], "B", ["p3", "p4"],
+                              pool={k: avgs[k] for k in ("p1", "p2", "p3", "p4")},
+                              drops_a=["p2"], adds_b=["fa"])
+    pts = next(c for c in r["categories"] if c["key"] == "PTS")
+    assert pts["a_net"] == (14 + 12) - (30 + 5)          # received - (given + dropped)
+    assert pts["b_net"] == (30 + 8) - (14 + 12)          # (received + added) - given
+    assert pts["better_for_a"] == "L" and pts["better_for_b"] == "W"
+    a_after = next(x for x in r["team_impact"]["A"] if x["key"] == "PTS")["after"]
+    assert a_after == 26 and r["moves"]["drops_a"] == ["p2"]
+    z = lambda p: r["players"][p]["z"]["TOTAL"]
+    assert abs(r["a_net_value"] - (z("p3") + z("p4") - z("p1") - z("p2"))) < 1e-9
+    assert abs(r["b_net_value"] - (z("p1") + z("fa") - z("p3") - z("p4"))) < 1e-9

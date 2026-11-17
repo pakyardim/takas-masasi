@@ -179,6 +179,21 @@ class ImportedProvider:
         n = sum(1 for x in pos if x.upper() not in ("BN", "IL", "IL+", "IR", "NA"))
         return n or 10
 
+    def roster_capacity(self) -> int:
+        """Regular roster spots (everything except IL slots)."""
+        pos = self.base.get("roster_positions") or []
+        n = sum(1 for x in pos if x.upper() not in ("IL", "IL+", "IR", "NA"))
+        return n or 13
+
+    def il_players(self) -> dict:
+        """team -> players currently parked in an IL slot (they don't use a regular spot)."""
+        now = self.store.get("lineup_now") or {}
+        return {t: [e["player"] for e in rows if e["slot"] in ("IL", "IL+", "IR", "NA")] for t, rows in now.items()}
+
+    def free_agents(self) -> list[str]:
+        owned = {p for ps in self.base["rosters"].values() for p in ps}
+        return [k for k in self.store.get("pool", {}) if k not in owned]
+
     def rosters(self) -> dict:
         return {t: list(ps) for t, ps in self.base["rosters"].items()}
 

@@ -173,6 +173,12 @@ class DemoProvider:
                          {"owner": self.owner.get(k)}
         return out
 
+    def roster_capacity(self) -> int:
+        return 13
+
+    def free_agents(self) -> list[str]:
+        return [k for k in self.players if k not in self.owner]
+
     def rosters(self) -> dict:
         return {t: list(ps) for t, ps in self.roster.items()}
 

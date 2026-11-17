@@ -5,7 +5,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 
 const S = {
   league: null, rosters: {}, players: {}, teamName: {},
-  selA: new Set(), selB: new Set(),
+  selA: new Set(), selB: new Set(), tradeFix: null,
   wk: null, edits: [], searchPick: null, loaded: {},
 };
 
@@ -73,8 +73,8 @@ async function init() {
     .map((w) => `<option value="${w.week}">${w.week}. hafta (${w.start.slice(5)} – ${w.end.slice(5)})${w.week === cur ? " · devam ediyor" : ""}</option>`).join("");
   $("#wi-week").value = cur > S.league.weeks[0].week ? cur - 1 : cur;
 
-  $("#team-a").onchange = () => { S.selA.clear(); renderRosters(); runTrade(); };
-  $("#team-b").onchange = () => { S.selB.clear(); renderRosters(); runTrade(); };
+  $("#team-a").onchange = () => { S.selA.clear(); S.tradeFix = null; renderRosters(); runTrade(); };
+  $("#team-b").onchange = () => { S.selB.clear(); S.tradeFix = null; renderRosters(); runTrade(); };
   $("#period").onchange = runTrade;
   $("#wi-week").onchange = () => loadWeek(null);
   $("#wi-team").onchange = () => loadWeek(null);
@@ -101,6 +101,7 @@ function renderRosters() {
     row.addEventListener("click", () => {
       const sel = row.dataset.side === "a" ? S.selA : S.selB;
       sel.has(row.dataset.k) ? sel.delete(row.dataset.k) : sel.add(row.dataset.k);
+      S.tradeFix = null;          // packages changed: let the app suggest drops/adds again
       renderRosters();
       runTrade();
     })
@@ -120,6 +121,7 @@ async function runTrade() {
     const r = await api("/api/trade", {
       team_a: $("#team-a").value, give_a: [...S.selA],
       team_b: $("#team-b").value, give_b: [...S.selB], period: $("#period").value,
+      ...(S.tradeFix || {}),
     });
     if (seq === tradeSeq) renderTrade(r);
   } catch (e) {
@@ -134,32 +136,59 @@ function renderTrade(r) {
   const isPts = r.scoring === "points";
   const metric = isPts ? "FPTS/maç" : "toplam z-skor";
   const d = isPts ? 1 : 2;
+  Object.entries(r.info || {}).forEach(([k, p]) => (S.players[k] = { ...S.players[k], ...p }));
+  const bal = r.balance, mv = r.moves;
+  const netFmt = (c, v) => v === null || v === undefined ? "–" : (catByKey(c.key)?.ratio ? signed(v, 3) : signed(v, 1));
+  const netCls = (res) => res === "W" ? "pos" : res === "L" ? "neg" : "";
 
-  let spots = "";
-  if (r.roster_spots.a_net !== 0) {
-    const [who, n] = r.roster_spots.a_net > 0 ? [A, r.roster_spots.a_net] : [B, -r.roster_spots.a_net];
-    spots = `<p class="muted small">⚠ ${esc(who)} bu takasla ${n} kadro yeri boşaltıyor. Boşalan yere alınacak oyuncunun değeri hesaba katılmadı (diğer takım ise ${n} oyuncu bırakmak zorunda kalır).</p>`;
-  }
+  // ---- roster balance: forced drops and free-agent pickups
+  const vtxt = (v) => v === null || v === undefined ? "veri yok" : signed(v, d);
+  const sideBalance = (side, name, gives, gets) => {
+    const b = bal[side];
+    if (!b.need_drop && !b.room) return "";
+    let html = `<div class="bal-side"><div><span class="side-tag ${side} mini">${side.toUpperCase()}</span><b>${esc(name)}</b> ${gives} oyuncu veriyor, ${gets} oyuncu alıyor.</div>`;
+    if (b.need_drop) {
+      html += `<div class="muted small" style="margin:4px 0 6px">Kadro ${bal.capacity} kişilik (IL hariç): yer açmak için <b>${b.need_drop} oyuncu bırakmalı</b>. Öneri: dönemdeki en düşük değerli oyuncular. Değiştirebilirsin.</div>`;
+      html += b.drops.map((k, i) => `<label>Bırakılacak ${i + 1}<select class="bal-pick" data-side="${side}" data-kind="drops" data-i="${i}">${b.drop_options.map((o) =>
+        `<option value="${o.key}" ${o.key === k ? "selected" : ""}>${esc(pname(o.key))} (${vtxt(o.value)})</option>`).join("")}</select></label>`).join("");
+    }
+    if (b.room) {
+      html += `<div class="muted small" style="margin:4px 0 6px"><b>${b.room} kadro yeri açılıyor</b>: serbest oyunculardan doldurulabilir. Öneri: en değerli serbest oyuncular (sezon ortalamasıyla).</div>`;
+      if (!bal.has_free_agents) html += `<div class="muted small">Serbest oyuncu verisi yok; yerler boş sayıldı. Eklentiyle senkronize edince dolar.</div>`;
+      else {
+        html += Array.from({ length: b.room }, (_, i) => `<label>Eklenecek ${i + 1}<select class="bal-pick" data-side="${side}" data-kind="adds" data-i="${i}">
+          <option value="">— boş bırak —</option>${b.add_options.map((o) =>
+          `<option value="${o.key}" ${o.key === b.adds[i] ? "selected" : ""}>${esc(pname(o.key))} (${vtxt(o.value)})</option>`).join("")}</select></label>`).join("");
+      }
+    }
+    return html + `</div>`;
+  };
+  const balHtml = sideBalance("a", A, S.selA.size, S.selB.size) + sideBalance("b", B, S.selB.size, S.selA.size);
+  const balanceCard = balHtml ? `<div class="card"><h3>Kadro dengesi</h3>
+      <p class="muted small" style="margin:-4px 0 10px">Oyuncu sayısı eşit olmayan takasta bir taraf oyuncu bırakmak zorunda kalır, diğer tarafta yer açılır. Aşağıdaki seçimler net değere, kategori farklarına ve lig sıralarına dahildir.</p>
+      <div class="bal-grid">${balHtml}</div></div>` : "";
 
+  // ---- categories
+  const better = (x, y, higher) => x == null || y == null || x === y ? 0 : ((x > y) === higher ? 1 : -1);
   const catRows = r.categories.map((c) => {
-    const winner = c.better_for_a === "W" ? `<td><span class="side-tag a mini">A</span>${esc(A)}</td>` : c.better_for_a === "L" ? `<td><span class="side-tag b mini">B</span>${esc(B)}</td>` : `<td class="faded">=</td>`;
-    const net = c.a_net === null ? "–" : (catByKey(c.key)?.ratio ? signed(c.a_net, 3) : signed(c.a_net, 1));
-    const netCls = c.better_for_a === "W" ? "pos" : c.better_for_a === "L" ? "neg" : "";
+    const pk = better(c.a_gives, c.b_gives, c.higher);     // which package is better in this category
     return `<tr><td><b>${esc(c.label)}</b>${c.higher ? "" : ' <span class="muted small">(az iyi)</span>'}</td>
-      <td class="${c.better_for_a === "L" ? "win" : ""}">${fmt(c.key, c.a_gives)}</td><td class="${c.better_for_a === "W" ? "win" : ""}">${fmt(c.key, c.b_gives)}</td>
-      <td class="${netCls}">${net}</td>${winner}</tr>`;
+      <td class="${pk > 0 ? "win" : ""}">${fmt(c.key, c.a_gives)}</td><td class="${pk < 0 ? "win" : ""}">${fmt(c.key, c.b_gives)}</td>
+      <td class="${netCls(c.better_for_a)}">${netFmt(c, c.a_net)}</td><td class="${netCls(c.better_for_b)}">${netFmt(c, c.b_net)}</td></tr>`;
   }).join("");
-  const aWins = r.categories.filter((c) => c.better_for_a === "W").length;
-  const bWins = r.categories.filter((c) => c.better_for_a === "L").length;
+  const tally = (key) => `${r.categories.filter((c) => c[key] === "W").length} kategori iyileşir, ${r.categories.filter((c) => c[key] === "L").length} kötüleşir`;
 
+  // ---- players involved
   const cs = cats();
-  const playerRows = (keys, tag) => keys.map((k) => {
+  const playerRows = (keys, tag, role) => keys.filter((k) => r.players[k]).map((k) => {
     const p = r.players[k], avg = p.avg;
     const vals = isPts ? `<td>${p.fpts.toFixed(1)}</td>`
       : cs.map((c) => `<td title="z: ${p.z[c.key].toFixed(2)}" class="${p.z[c.key] > 1 ? "pos" : p.z[c.key] < -1 ? "neg" : ""}">${fmt(c.key, c.ratio ? (avg[c.ratio[1]] ? avg[c.ratio[0]] / avg[c.ratio[1]] : null) : avg[c.key])}</td>`).join("")
         + `<td><b class="${cls(p.z.TOTAL)}">${signed(p.z.TOTAL)}</b></td>`;
-    return `<tr><td><div style="display:flex;align-items:center;gap:6px"><span class="side-tag ${tag} mini">${tag.toUpperCase()}</span><div>${playerLabel(k)}</div></div></td><td>${avg.GP ?? "–"}</td>${vals}</tr>`;
+    return `<tr><td><div style="display:flex;align-items:center;gap:6px"><span class="side-tag ${tag} mini">${tag.toUpperCase()}</span><div>${playerLabel(k)}</div></div></td>
+      <td class="l"><span class="role ${role.cls}">${role.text}</span></td><td>${avg.GP ?? "–"}</td>${vals}</tr>`;
   }).join("");
+  const R = { give: { cls: "", text: "verir" }, drop: { cls: "neg", text: "bırakır" }, add: { cls: "pos", text: "ekler" } };
   const aKeys = Object.keys(r.players).filter((k) => S.selA.has(k));
   const bKeys = Object.keys(r.players).filter((k) => S.selB.has(k));
 
@@ -171,25 +200,38 @@ function renderTrade(r) {
   }).join("");
   const impactCard = (team, tag) => `<div class="card"><div class="card-head"><span class="side-tag ${tag}">${tag.toUpperCase()}</span><h3 style="margin:0">${esc(S.teamName[team])}: takas sonrası</h3></div>
     <div class="table-wrap"><table><thead><tr><th>Kategori</th><th>Önce</th><th>Sonra</th><th>Lig sırası (${r.league_size} takım)</th></tr></thead><tbody>${impact(team)}</tbody></table></div>
-    <p class="muted small">Değerler: kadrodaki tüm oyuncuların maç başı ortalamalarının toplamı (oynama süresi/maç sayısı farkı hesaba katılmaz).</p></div>`;
+    <p class="muted small">Değerler: kadrodaki tüm oyuncuların maç başı ortalamalarının toplamı; bırakılan ve eklenen oyuncular dahil (oynama süresi/maç sayısı farkı hesaba katılmaz).</p></div>`;
 
+  const extra = balHtml ? " (bırakılan/eklenen dahil)" : "";
   $("#trade-result").innerHTML = `
     <div class="summary">
       <div class="stat-card"><div class="k">${esc(A)} veriyor (${metric})</div><div class="v">${r.a_gives_value.toFixed(d)}</div></div>
       <div class="stat-card"><div class="k">${esc(B)} veriyor (${metric})</div><div class="v">${r.b_gives_value.toFixed(d)}</div></div>
-      <div class="stat-card"><div class="k">${esc(A)} için net</div><div class="v ${cls(r.a_net_value)}">${signed(r.a_net_value, d)}</div></div>
-      ${isPts ? "" : `<div class="stat-card"><div class="k">Kategori üstünlüğü</div><div class="v"><span style="color:var(--a)">${aWins}</span> <span class="muted" style="font-size:14px;font-weight:700">vs</span> <span style="color:var(--b)">${bWins}</span></div><div class="muted small">${esc(A)} lehine – ${esc(B)} lehine</div></div>`}
+      <div class="stat-card"><div class="k">${esc(A)} için net${extra}</div><div class="v ${cls(r.a_net_value)}">${signed(r.a_net_value, d)}</div>${isPts ? "" : `<div class="muted small">${tally("better_for_a")}</div>`}</div>
+      <div class="stat-card"><div class="k">${esc(B)} için net${extra}</div><div class="v ${cls(r.b_net_value)}">${signed(r.b_net_value, d)}</div>${isPts ? "" : `<div class="muted small">${tally("better_for_b")}</div>`}</div>
     </div>
-    ${spots}
-    <div class="card"><h3>Paket karşılaştırması (maç başı)</h3><p class="muted small" style="margin:-4px 0 8px">Mavi hücre: o kategoride daha iyi olan paket.</p>
-      <div class="table-wrap"><table><thead><tr><th>Kategori</th><th>${esc(A)} veriyor</th><th>${esc(B)} veriyor</th><th>${esc(A)} için net</th><th>Kazanan taraf</th></tr></thead><tbody>${catRows}</tbody></table></div>
+    ${balanceCard}
+    <div class="card"><h3>Kategori karşılaştırması (maç başı)</h3><p class="muted small" style="margin:-4px 0 8px">İlk iki sütun yalnızca takas paketleri (mavi: o kategoride daha iyi paket). Net sütunları her takımın kendi toplamındaki değişim${balHtml ? ", bırakılan ve eklenen oyuncular dahil" : ""}.</p>
+      <div class="table-wrap"><table><thead><tr><th>Kategori</th><th>${esc(A)} veriyor</th><th>${esc(B)} veriyor</th><th>${esc(A)} için net</th><th>${esc(B)} için net</th></tr></thead><tbody>${catRows}</tbody></table></div>
     </div>
     <div class="card"><h3>Oyuncular</h3>
-      <div class="table-wrap"><table><thead><tr><th>Oyuncu</th><th>GP</th>${isPts ? "<th>FPTS/G</th>" : cs.map((c) => `<th>${esc(c.label)}</th>`).join("") + "<th>z toplam</th>"}</tr></thead>
-      <tbody>${playerRows(aKeys, "a")}${playerRows(bKeys, "b")}</tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Oyuncu</th><th class="l">Rol</th><th>GP</th>${isPts ? "<th>FPTS/G</th>" : cs.map((c) => `<th>${esc(c.label)}</th>`).join("") + "<th>z toplam</th>"}</tr></thead>
+      <tbody>${playerRows(aKeys, "a", R.give)}${playerRows(bKeys, "b", R.give)}${playerRows(mv.drops_a, "a", R.drop)}${playerRows(mv.drops_b, "b", R.drop)}${playerRows(mv.adds_a, "a", R.add)}${playerRows(mv.adds_b, "b", R.add)}</tbody></table></div>
       ${isPts ? "" : `<p class="muted small">Renkler: z-skoru &gt; +1 yeşil, &lt; −1 kırmızı. Hücrenin üstüne gelince z-skorunu görürsün. Yüzdeler atış hacmiyle ağırlıklı.</p>`}
     </div>
     <div class="two-col">${impactCard(r.teams.a, "a")}${impactCard(r.teams.b, "b")}</div>`;
+
+  // manual drop / add choices
+  document.querySelectorAll("#trade-result .bal-pick").forEach((sel) => sel.addEventListener("change", () => {
+    const fix = { drops_a: [...bal.a.drops], drops_b: [...bal.b.drops], adds_a: [...bal.a.adds], adds_b: [...bal.b.adds] };
+    document.querySelectorAll("#trade-result .bal-pick").forEach((x) => {
+      const key = `${x.dataset.kind}_${x.dataset.side}`;
+      fix[key][+x.dataset.i] = x.value;
+    });
+    for (const k of Object.keys(fix)) fix[k] = [...new Set(fix[k].filter(Boolean))];
+    S.tradeFix = fix;
+    runTrade();
+  }));
 }
 
 // ================================================================ WHAT IF

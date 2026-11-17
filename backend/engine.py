@@ -157,39 +157,32 @@ def _ranks(strengths: dict, league: dict) -> dict:
 
 def evaluate_trade(league: dict, rosters: dict[str, list[str]], avgs: dict[str, dict],
                    team_a: str, give_a: list[str], team_b: str, give_b: list[str],
-                   pool: dict[str, dict] | None = None) -> dict:
+                   pool: dict[str, dict] | None = None,
+                   drops_a: list[str] = (), drops_b: list[str] = (),
+                   adds_a: list[str] = (), adds_b: list[str] = ()) -> dict:
     """Compare two trade packages purely statistically.
 
-    avgs: per-game averages (for the chosen period) of at least every rostered player.
+    avgs: per-game averages (for the chosen period) of every rostered player and every add.
     pool: averages used to build z-scores (defaults to avgs).
+    drops_*: players a team must release to make room (uneven trades).
+    adds_*:  free agents a team picks up for the roster spots the trade opens.
+    A team's net = (received + added) - (given + dropped).
     """
     pool = pool or avgs
     is_points = league["scoring"] == "points"
+    drops_a, drops_b, adds_a, adds_b = list(drops_a), list(drops_b), list(adds_a), list(adds_b)
 
     def package(players):
         totals = add_lines(avgs.get(p) for p in players)
         if is_points:
-            vals = {"FPTS": fantasy_points(totals, league)}
-        else:
-            vals = category_values(totals, league)
-        return totals, vals
+            return {"FPTS": fantasy_points(totals, league)}
+        return category_values(totals, league)
 
-    a_tot, a_vals = package(give_a)
-    b_tot, b_vals = package(give_b)
-
-    rows = []
-    cats = [{"key": "FPTS", "label": "FPTS", "higher": True}] if is_points else league["categories"]
-    for cat in cats:
-        k = cat["key"]
-        av, bv = a_vals[k], b_vals[k]
-        diff = None if av is None or bv is None else bv - av   # what team A gains per game
-        rows.append({"key": k, "label": cat.get("label", k), "higher": cat["higher"],
-                     "a_gives": av, "b_gives": bv, "a_net": diff,
-                     "better_for_a": compare_cat(bv, av, cat["higher"])})
+    a_vals, b_vals = package(give_a), package(give_b)
 
     players = {}
     zmodel = None if is_points else build_z_model(pool, league)
-    for p in give_a + give_b:
+    for p in give_a + give_b + drops_a + drops_b + adds_a + adds_b:
         avg = avgs.get(p, {})
         entry = {"avg": avg}
         if is_points:
@@ -203,10 +196,11 @@ def evaluate_trade(league: dict, rosters: dict[str, list[str]], avgs: dict[str, 
             return sum(players[p]["fpts"] for p in pl)
         return sum(players[p]["z"]["TOTAL"] for p in pl)
 
-    # roster impact
+    # rosters after the trade, the forced drops and the pickups
     after = copy.deepcopy(rosters)
-    after[team_a] = [p for p in after[team_a] if p not in give_a] + list(give_b)
-    after[team_b] = [p for p in after[team_b] if p not in give_b] + list(give_a)
+    gone_a, gone_b = set(give_a) | set(drops_a), set(give_b) | set(drops_b)
+    after[team_a] = [p for p in after[team_a] + list(give_b) if p not in gone_a] + adds_a
+    after[team_b] = [p for p in after[team_b] + list(give_a) if p not in gone_b] + adds_b
     s_before, s_after = _team_strengths(rosters, avgs, league), _team_strengths(after, avgs, league)
     r_before, r_after = _ranks(s_before, league), _ranks(s_after, league)
 
@@ -216,6 +210,21 @@ def evaluate_trade(league: dict, rosters: dict[str, list[str]], avgs: dict[str, 
                  "rank_before": r_before[team][c["key"]], "rank_after": r_after[team][c["key"]]}
                 for c in cats]
 
+    def net(team, k):
+        b, a = s_before[team][k], s_after[team][k]
+        return None if a is None or b is None else a - b
+
+    rows = []
+    cats = [{"key": "FPTS", "label": "FPTS", "higher": True}] if is_points else league["categories"]
+    for cat in cats:
+        k = cat["key"]
+        # net = change of the team's own per-game total (for % categories: of the team's percentage)
+        na, nb = net(team_a, k), net(team_b, k)
+        rows.append({"key": k, "label": cat.get("label", k), "higher": cat["higher"],
+                     "a_gives": a_vals[k], "b_gives": b_vals[k], "a_net": na, "b_net": nb,
+                     "better_for_a": compare_cat(s_after[team_a][k], s_before[team_a][k], cat["higher"]),
+                     "better_for_b": compare_cat(s_after[team_b][k], s_before[team_b][k], cat["higher"])})
+
     a_val, b_val = total_value(give_a), total_value(give_b)
     return {
         "scoring": league["scoring"],
@@ -224,8 +233,10 @@ def evaluate_trade(league: dict, rosters: dict[str, list[str]], avgs: dict[str, 
         "players": players,
         "a_gives_value": a_val,
         "b_gives_value": b_val,
-        "a_net_value": b_val - a_val,
+        "a_net_value": b_val + total_value(adds_a) - a_val - total_value(drops_a),
+        "b_net_value": a_val + total_value(adds_b) - b_val - total_value(drops_b),
         "roster_spots": {"a_net": len(give_a) - len(give_b), "b_net": len(give_b) - len(give_a)},
+        "moves": {"drops_a": drops_a, "drops_b": drops_b, "adds_a": adds_a, "adds_b": adds_b},
         "team_impact": {team_a: impact(team_a), team_b: impact(team_b)},
         "teams": {"a": team_a, "b": team_b},
         "league_size": len(rosters),

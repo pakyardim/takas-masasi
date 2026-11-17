@@ -6,7 +6,7 @@ Yahoo Fantasy NBA ligin için iki araç sunan bir web uygulaması. AI yorumu yok
    - maç başı ortalamalar (sezon / son 30 / 14 / 7 gün)
    - oyuncu başına z-skor (yüzdeler atış hacmiyle ağırlıklı, TO ters çevrilmiş)
    - her iki takımın kategori bazında lig sıralamasının takastan önceki ve sonraki hali
-   - 2'ye 1 gibi takaslarda kadro yeri uyarısı
+   - **kadro dengesi:** oyuncu sayısı eşit olmayan takasta (ör. 3'e 1) fazla oyuncu alan takımın bırakması gereken oyuncular ve diğer takımda açılan yerlere eklenebilecek serbest oyuncular önerilir; seçimleri değiştirebilirsin ve hepsi net değere, kategori farklarına ve lig sıralarına dahil edilir
 2. **Ya Olsaydı?:** Geçmiş bir haftayı yeniden oynatır.
    - **Başka rakip:** o haftaki istatistiklerinle ligdeki her takıma karşı skorun; rakibi seçip ayrıntıya bakabilirsin.
      "Tüm haftaların görselini oluştur" düğmesi, seçili takımın her hafta her rakibe karşı skorunu tek bir PNG'de (2160 piksel genişlik) toplar; indirip ya da kopyalayıp paylaşabilirsin.
@@ -91,6 +91,6 @@ Token `.yahoo_tokens.json` dosyasında saklanır ve otomatik yenilenir. Yahoo ya
 ## Bilinen sınırlar
 
 - Yahoo API istemcisi (`backend/yahoo.py`) API dokümantasyonuna göre yazıldı, ancak gerçek bir lig üzerinde henüz test edilmedi.
-- Takas sonrası takım gücü, kadrodaki oyuncuların maç başı ortalamalarının toplamıyla hesaplanıyor. Haftalık maç sayısı, oynama süresinin yeniden dağılımı ve boşalan kadro yerine eklenecek oyuncu hesaba katılmıyor.
+- Takas sonrası takım gücü, kadrodaki oyuncuların maç başı ortalamalarının toplamıyla hesaplanıyor. Haftalık maç sayısı ve oynama süresinin yeniden dağılımı hesaba katılmıyor. Kadro sınırı IL yuvaları hariç sayılır; gelen oyuncunun IL'e konabileceği durumlar dikkate alınmaz.
 - Ya Olsaydı? tekrarı haftalık kadroyu Yahoo'dan gün gün çeker. Puan skoru, Yahoo'nun sonradan yaptığı istatistik düzeltmeleri yüzünden resmi skordan biraz farklı çıkabilir.
 - Son 7, 14 ve 30 günlük ortalamalar günlük istatistiklerden toplanır. İlk çalıştırmada çok sayıda istek atılır, sonraki çalıştırmalarda cache'ten gelir.

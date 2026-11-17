@@ -93,6 +93,19 @@ class TradeReq(BaseModel):
     team_b: str
     give_b: list[str]
     period: str = "season"
+    # None = let the app choose (worst players to drop, best free agents to add)
+    drops_a: list[str] | None = None
+    drops_b: list[str] | None = None
+    adds_a: list[str] | None = None
+    adds_b: list[str] | None = None
+
+
+def _roster_limits():
+    """(regular roster spots, {team: players currently parked in IL slots})"""
+    p = P()
+    cap = p.roster_capacity() if hasattr(p, "roster_capacity") else 13
+    il = p.il_players() if hasattr(p, "il_players") else {}
+    return cap, il
 
 
 @app.post("/api/trade")
@@ -101,13 +114,70 @@ def trade(req: TradeReq):
         raise HTTPException(400, "En az bir oyuncu seç.")
     lg = P().league()
     rosters = P().rosters()
-    keys = {p for ps in rosters.values() for p in ps} | set(req.give_a) | set(req.give_b)
-    avgs = P().averages(sorted(keys), req.period)
+    rostered = {p for ps in rosters.values() for p in ps}
+    free = [k for k in (P().free_agents() if hasattr(P(), "free_agents") else []) if k not in rostered]
+    keys = sorted(rostered | set(req.give_a) | set(req.give_b) | set(free))
+    season = P().averages(keys, "season")
+    avgs = season if req.period == "season" else P().averages(keys, req.period)
+    # free agents only have season averages: fall back to them
+    for k in free:
+        if not avgs.get(k, {}).get("GP"):
+            avgs[k] = season.get(k, {"GP": 0})
     # z-scores always use season averages of rostered players as the reference pool
-    pool_src = avgs if req.period == "season" else P().averages(sorted(keys), "season")
-    pool = {k: v for k, v in pool_src.items() if v.get("GP")}
-    result = engine.evaluate_trade(lg, rosters, avgs, req.team_a, req.give_a, req.team_b, req.give_b, pool)
-    result["info"] = P().player_info(req.give_a + req.give_b)
+    pool = {k: season[k] for k in rostered if season.get(k, {}).get("GP")}
+    is_points = lg["scoring"] == "points"
+    zmodel = None if is_points else engine.build_z_model(pool, lg)
+
+    def value(k):
+        avg = avgs.get(k) or {}
+        if not avg.get("GP"):
+            return None
+        return engine.fantasy_points(avg, lg) if is_points else engine.player_z(avg, lg, zmodel)["TOTAL"]
+
+    cap, il = _roster_limits()
+    free_ranked = sorted((k for k in free if season.get(k, {}).get("GP", 0) >= 3 and value(k) is not None),
+                         key=value, reverse=True)
+
+    def balance(team, give, receive, drops_req, adds_req, taken):
+        """How many players the team must drop / may add, with suggestions."""
+        il_now = set(il.get(team, []))
+        regular = [p for p in rosters[team] if p not in il_now]
+        after = [p for p in regular if p not in give] + [p for p in receive if p not in regular]
+        need = max(0, len(after) - cap)
+        freed = max(0, len(give) - len(receive))
+        room = min(freed, max(0, cap - len(after)))
+        # drop candidates: everyone on the roster after the trade, worst first. Players with no
+        # games in the period (injured) go last: no data is not a reason to cut someone.
+        cands = sorted(after, key=lambda k: (value(k) is None, value(k) or 0.0))
+        drops = [k for k in (drops_req or []) if k in after][:need] if drops_req is not None else []
+        for k in cands:
+            if len(drops) >= need:
+                break
+            if k not in drops:
+                drops.append(k)
+        options = [k for k in free_ranked if k not in taken][:25]
+        if adds_req is not None:
+            adds = [k for k in adds_req if k in free and k not in taken][:room]
+        else:
+            adds = options[:room]
+        taken.update(adds)
+        return {"team": team, "need_drop": need, "room": room, "drops": drops, "adds": adds,
+                "drop_options": [{"key": k, "value": value(k)} for k in cands],
+                "add_options": [{"key": k, "value": value(k)} for k in options],
+                "il": sorted(il_now)}
+
+    taken: set = set()
+    bal_a = balance(req.team_a, req.give_a, req.give_b, req.drops_a, req.adds_a, taken)
+    bal_b = balance(req.team_b, req.give_b, req.give_a, req.drops_b, req.adds_b, taken)
+
+    result = engine.evaluate_trade(lg, rosters, avgs, req.team_a, req.give_a, req.team_b, req.give_b, pool,
+                                   drops_a=bal_a["drops"], drops_b=bal_b["drops"],
+                                   adds_a=bal_a["adds"], adds_b=bal_b["adds"])
+    result["balance"] = {"a": bal_a, "b": bal_b, "capacity": cap, "has_free_agents": bool(free_ranked)}
+    info_keys = set(req.give_a + req.give_b)
+    for b in (bal_a, bal_b):
+        info_keys |= set(b["drops"]) | set(b["adds"]) | {o["key"] for o in b["drop_options"]} | {o["key"] for o in b["add_options"]}
+    result["info"] = P().player_info(sorted(info_keys))
     return result
 
 

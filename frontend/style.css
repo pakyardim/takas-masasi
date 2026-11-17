@@ -196,3 +196,11 @@ tr.me td { background: var(--sel); }
 button.ghost { background: var(--card); color: var(--brand); border: 1px solid var(--brand); border-radius: 9999px; padding: 8px 18px; font: inherit; font-weight: 700; cursor: pointer; }
 button.ghost:hover { background: var(--sel); }
 .card-title-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+
+/* ---------- trade: roster balance ---------- */
+.bal-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.bal-side { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+.bal-side label { margin-top: 6px; }
+.bal-side select { width: 100%; min-width: 0; }
+.role { font-size: 12px; font-weight: 700; color: var(--muted); }
+.role.neg { color: var(--bad); } .role.pos { color: var(--good); }
