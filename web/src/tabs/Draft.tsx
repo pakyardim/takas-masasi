@@ -47,28 +47,65 @@ export function Draft() {
           <div class="card-head">
             <h3 style="margin:0">Seçimler</h3>
             <select value={team} onChange={(e) => setTeam(e.currentTarget.value)}>
-              <option value="">Tüm takımlar (seçim sırasıyla)</option>
+              <option value="">Tüm takımlar (tur tur)</option>
               {r.teams.map((t) => <option value={teamId(t)} key={teamId(t)}>{t.name}</option>)}
             </select>
           </div>
-          <TableWrap>
-            <thead><tr><th>Seçim</th><th class="l">Oyuncu</th>{!team && <th class="l">Seçen</th>}<th>Maç</th><th>z / maç</th><th>Değer</th><th>Değer sırası</th><th>Beklenene göre</th><th>Şimdi</th></tr></thead>
-            <tbody>
-              {r.picks.filter((p) => !team || teamId(p) === team).map((p) => (
-                <tr key={p.overall}>
-                  <td>{p.round}.{String(p.pick).padStart(2, "0")} <span class="muted small">(#{p.overall})</span></td>
-                  <td class="l"><PlayerLabel k={p.player.key} /></td>
-                  {!team && <td class="l"><TeamName team={p.team} name={p.team_name} plain /></td>}
-                  <td>{p.gp || 0}</td><td>{p.z == null ? "–" : signed(p.z)}</td>
-                  <td>{p.known ? <Val x={p.value} /> : <span class="faded">veri yok</span>}</td>
-                  <td>{p.rank ? p.rank + "." : "–"}</td><td><Val x={p.surplus} /></td>
-                  <td class={p.kept ? "" : "faded"}>{p.kept ? "kadroda" : p.player.owner ? store.teamName[p.player.owner] || "başka takım" : "serbest"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </TableWrap>
+          {team ? <TeamPicks picks={r.picks.filter((p) => teamId(p) === team)} />
+            : rounds(r.picks).map((round) => (
+              <div class="round" key={round}>
+                <div class="round-head">
+                  <h3>{round}. tur</h3>
+                  <span class="muted small">{r.picks.filter((p) => p.round === round).length} seçim</span>
+                </div>
+                <TableWrap>
+                  <thead><tr><th>Sıra</th><th class="l">Oyuncu</th><th class="l">Seçen</th><th>Maç</th><th>Değer</th><th>Değer sırası</th><th>Beklenene göre</th><th>Şimdi</th></tr></thead>
+                  <tbody>{r.picks.filter((p) => p.round === round).map((p) => <RoundRow key={p.overall} p={p} />)}</tbody>
+                </TableWrap>
+              </div>
+            ))}
         </div>
       </>}
     </section>
   );
 }
+
+const rounds = (picks: DraftPick[]) => [...new Set(picks.map((p) => p.round))].sort((a, b) => a - b);
+
+/** Every pick of one team, one row per round. */
+function TeamPicks({ picks }: { picks: DraftPick[] }) {
+  return (
+    <TableWrap>
+      <thead><tr><th class="l">Tur</th><th class="l">Oyuncu</th><th>Maç</th><th>Değer</th><th>Değer sırası</th><th>Beklenene göre</th><th>Şimdi</th></tr></thead>
+      <tbody>
+        {picks.map((p) => (
+          <tr key={p.overall}>
+            <td>{p.round}. tur</td>
+            <td class="l"><PlayerLabel k={p.player.key} /></td>
+            <td>{p.gp || 0}</td>
+            <td>{p.known ? <Val x={p.value} /> : <span class="faded">veri yok</span>}</td>
+            <td>{p.rank ? p.rank + "." : "–"}</td><td><Val x={p.surplus} /></td>
+            <td class={p.kept ? "" : "faded"}>{keptText(p)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </TableWrap>
+  );
+}
+
+/** One pick inside a round: its place in that round is the first column. */
+function RoundRow({ p }: { p: DraftPick }) {
+  return (
+    <tr>
+      <td>{p.pick}.</td>
+      <td class="l"><PlayerLabel k={p.player.key} /></td>
+      <td class="l"><TeamName team={p.team} name={p.team_name} plain /></td>
+      <td>{p.gp || 0}</td>
+      <td>{p.known ? <Val x={p.value} /> : <span class="faded">veri yok</span>}</td>
+      <td>{p.rank ? p.rank + "." : "–"}</td><td><Val x={p.surplus} /></td>
+      <td class={p.kept ? "" : "faded"}>{keptText(p)}</td>
+    </tr>
+  );
+}
+
+const keptText = (p: DraftPick) => (p.kept ? "kadroda" : p.player.owner ? store.teamName[p.player.owner] || "başka takım" : "serbest");

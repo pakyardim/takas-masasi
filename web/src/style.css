@@ -209,3 +209,9 @@ a.ghost.btn:hover { background: var(--sel); }
 #league-name { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .me-pick { flex-direction: row; align-items: center; gap: 8px; font-size: 12px; }
 .me-pick select { min-width: 0; padding: 4px 8px; font-size: 13px; font-weight: 600; }
+
+/* ---------- draft: one section per round ---------- */
+.round { margin-top: 18px; }
+.round:first-of-type { margin-top: 8px; }
+.round-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 0 8px; }
+.round-head h3 { margin: 0; font-size: 17px; }
