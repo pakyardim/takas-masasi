@@ -6,7 +6,7 @@
 //   30%  roster: summed z-score of the best healthy players today
 // "Luck" is the real category win rate minus the all-play rate.
 
-import type { Power, Standings, StandingsTeam, StatLine } from "../types";
+import type { Power, Score, Standings, StandingsTeam, StatLine } from "../types";
 import { addLines, buildZModel, categoryValues, fantasyPoints, headToHead, playerZ, teamWeekTotals, type EngineLeague } from "./core";
 import type { LeagueData } from "./data";
 
@@ -276,4 +276,36 @@ export function luck(data: LeagueData, today?: string): { available: boolean; we
   }
   const seasonRows = teams.map((t) => ({ team: t, name: ctx.names[t], ...season[t] })).sort((x, y) => y.luck - x.luck);
   return { available: true, weeks, byWeek, season: seasonRows };
+}
+
+// ---------------------------------------------------------------- league position, week by week
+
+export interface PositionRow { week: number; rank: number; record: Rec; result: "W" | "L" | "T" | null; score: Score | null; opponent: string | null }
+
+/** Place in the league's real standings (H2H categories, by win rate) after each completed week.
+ *  Same records as `standings`, so the last row matches its rank. Equal win rates share a place. */
+export function positionHistory(data: LeagueData, today?: string): { weeks: number[]; teams: Record<string, PositionRow[]> } {
+  const ctx = new Context(data, today);
+  const lg = ctx.league, teams = ctx.teams;
+  const weeks = ctx.completedWeeks();
+  const rec: Record<string, Rec> = Object.fromEntries(teams.map((t) => [t, [0, 0, 0] as Rec]));
+  const out: Record<string, PositionRow[]> = Object.fromEntries(teams.map((t) => [t, []]));
+  for (const w of weeks) {
+    const wk = data.week(w, teams);
+    const totals: Record<string, StatLine> = {};
+    for (const t of teams) totals[t] = teamWeekTotals(wk, t, [], {})[0];
+    const played: Record<string, { result: "W" | "L" | "T"; score: Score; opponent: string }> = {};
+    for (const [a, b] of data.store.weeks[String(w)].pairs) {
+      const res = headToHead(totals[a], totals[b], lg), sc = res.score!;
+      (["W", "L", "T"] as const).forEach((k, i) => { rec[a][i] += sc[k]; rec[b][i] += sc[FLIP[k]]; });
+      played[a] = { result: res.result, score: sc, opponent: b };
+      played[b] = { result: FLIP[res.result], score: { W: sc.L, L: sc.W, T: sc.T }, opponent: a };
+    }
+    const ranks = rankOf(Object.fromEntries(teams.map((t) => [t, pct(rec[t])])));
+    for (const t of teams) {
+      const p = played[t];
+      out[t].push({ week: w, rank: ranks[t], record: [...rec[t]] as Rec, result: p?.result ?? null, score: p?.score ?? null, opponent: p?.opponent ?? null });
+    }
+  }
+  return { weeks, teams: out };
 }

@@ -12,15 +12,21 @@ export interface PCell {
 }
 export type Cell = string | number | PCell | null | undefined;
 export interface PColumn { label: string; w: number; align?: "l" | "r" | "c" }
-export interface PSection { heading?: string; note?: string; columns: PColumn[]; rows: Cell[][]; rowBg?: (string | undefined)[] }
+export interface PSection {
+  heading?: string; note?: string; columns: PColumn[]; rows: Cell[][]; rowBg?: (string | undefined)[];
+  /** a place-by-week line (1st at the top) drawn instead of the table */
+  chart?: { n: number; points: { label: string; rank: number }[] };
+}
 export interface PTile { k: string; v: string; s?: string; tone?: "good" | "bad" | "plain" }
 export interface PosterSpec {
   title: string; subtitle: string; footer: string; width?: number;
+  /** team key: its picture goes into the header */
+  logo?: string | null;
   tiles?: PTile[]; bullets?: { heading: string; items: string[] }; sections: PSection[];
 }
 
 export const TONE = { good: C.win, bad: C.lossText, muted: C.muted, brand: C.brand, flip: "#fff6d6" };
-const M = 44, HEAD_H = 204, TH = 44, TILE_H = 112, PAD = 12;
+const M = 44, HEAD_H = 204, TH = 44, TILE_H = 112, PAD = 12, CHART_H = 260;
 const norm = (c: Cell): PCell => (c == null ? { text: "–", color: C.muted } : typeof c === "object" ? c : { text: String(c) });
 const rowH = (rows: Cell[][]) => (rows.some((r) => r.some((c) => typeof c === "object" && c !== null && (c.sub || c.bar != null))) ? 60 : 50);
 
@@ -32,7 +38,7 @@ export function drawPoster(spec: PosterSpec, logos: Logos = {}): HTMLCanvasEleme
   let H = HEAD_H + 28;
   if (spec.tiles?.length) H += TILE_H + 24;
   if (spec.bullets?.items.length) H += 34 + spec.bullets.items.length * 30 + 22;
-  for (const s of spec.sections) H += (s.heading ? 46 : 0) + TH + s.rows.length * rowH(s.rows) + (s.note ? 30 : 0) + 26;
+  for (const s of spec.sections) H += (s.heading ? 46 : 0) + (s.chart ? CHART_H : TH + s.rows.length * rowH(s.rows)) + (s.note ? 30 : 0) + 26;
   const footY = H;
   H += 70;
 
@@ -42,7 +48,7 @@ export function drawPoster(spec: PosterSpec, logos: Logos = {}): HTMLCanvasEleme
   ctx.scale(2, 2);
   ctx.textBaseline = "middle";
   ctx.fillStyle = C.white; ctx.fillRect(0, 0, W, H);
-  header(ctx, W, HEAD_H, store.league.name, spec.title, spec.subtitle);
+  header(ctx, W, HEAD_H, store.league.name, spec.title, spec.subtitle, spec.logo ? logos[spec.logo] : undefined);
   let y = HEAD_H + 28;
 
   // ---- tiles
@@ -80,6 +86,17 @@ export function drawPoster(spec: PosterSpec, logos: Logos = {}): HTMLCanvasEleme
       ctx.textAlign = "left"; ctx.fillStyle = C.text; ctx.font = `900 22px ${FONT}`;
       ctx.fillText(s.heading, M, y + 20);
       y += 46;
+    }
+    if (s.chart) {
+      drawRankChart(ctx, s.chart, M, y, inner, CHART_H);
+      y += CHART_H;
+      if (s.note) {
+        ctx.textAlign = "left"; ctx.fillStyle = C.muted;
+        ctx.fillText(fit(ctx, s.note, inner, 14, 500, 10), M, y + 18);
+        y += 30;
+      }
+      y += 26;
+      continue;
     }
     const total = s.columns.reduce((a, c) => a + c.w, 0);
     const xs: number[] = [], ws: number[] = [];
@@ -147,4 +164,34 @@ export function drawPoster(spec: PosterSpec, logos: Logos = {}): HTMLCanvasEleme
   ctx.textAlign = "left"; ctx.fillStyle = C.muted;
   ctx.fillText(fit(ctx, spec.footer, inner - 170, 15, 500, 10), M, footY + 19);
   return canvas;
+}
+
+/** Place after each week: 1st at the top, one gridline per place, the last place labelled. */
+function drawRankChart(ctx: Ctx, ch: NonNullable<PSection["chart"]>, x0: number, y0: number, w: number, h: number) {
+  rr(ctx, x0, y0, w, h, 14, C.panel);
+  const l = x0 + 56, r = x0 + w - 56, t = y0 + 24, b = y0 + h - 46;
+  const pts = ch.points, last = pts.length - 1;
+  const px = (i: number) => (pts.length === 1 ? (l + r) / 2 : l + (i / last) * (r - l));
+  const py = (rank: number) => (ch.n > 1 ? t + ((rank - 1) / (ch.n - 1)) * (b - t) : (t + b) / 2);
+  const step = ch.n > 12 ? 2 : 1;
+  ctx.lineWidth = 1; ctx.strokeStyle = C.line;
+  ctx.textAlign = "right"; ctx.fillStyle = C.muted; ctx.font = `600 14px ${FONT}`;
+  for (let rank = 1; rank <= ch.n; rank++) {
+    if (!(rank === 1 || rank === ch.n || (rank - 1) % step === 0)) continue;
+    ctx.beginPath(); ctx.moveTo(l, py(rank)); ctx.lineTo(r, py(rank)); ctx.stroke();
+    ctx.fillText(`${rank}.`, l - 14, py(rank));
+  }
+  const every = Math.max(1, Math.ceil(pts.length / 14));
+  ctx.textAlign = "center";
+  pts.forEach((p, i) => { if ((i % every === 0 && last - i >= every) || i === last) ctx.fillText(p.label, px(i), b + 26); });
+  ctx.strokeStyle = C.brand; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.lineCap = "round";
+  ctx.beginPath();
+  pts.forEach((p, i) => (i ? ctx.lineTo(px(i), py(p.rank)) : ctx.moveTo(px(i), py(p.rank))));
+  ctx.stroke();
+  for (const [i, p] of pts.entries()) {
+    ctx.beginPath(); ctx.arc(px(i), py(p.rank), 6, 0, Math.PI * 2);
+    ctx.fillStyle = C.brand; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = C.white; ctx.stroke();
+  }
+  ctx.textAlign = "left"; ctx.fillStyle = C.text; ctx.font = `900 20px ${FONT}`;
+  ctx.fillText(`${pts[last].rank}.`, px(last) + 14, py(pts[last].rank));
 }

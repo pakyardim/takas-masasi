@@ -1,5 +1,6 @@
 import type { ComponentType } from "preact";
 import { useEffect, useState } from "preact/hooks";
+import { ProfileHost } from "./Profile";
 import { loadLeague, setMyTeam, store } from "./store";
 import { Draft } from "./tabs/Draft";
 import { Moves } from "./tabs/Moves";
@@ -68,6 +69,7 @@ export function App() {
             <div key={t.id} class={tab === t.id ? "" : "hidden"}><t.view /></div>
           ))}
       </main>
+      {ready && <ProfileHost />}
       <footer class="muted small">Saf istatistik karşılaştırması: AI yorumu yok. z-skor referansı: tüm kadrolu oyuncuların sezon ortalaması.</footer>
     </>
   );

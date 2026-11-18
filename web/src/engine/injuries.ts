@@ -29,7 +29,7 @@ export interface InjuryReport {
   last_day: string | null;
   weeks: number[];
   teams: { team: string; name: string; il: number; missed: number; lost: number; byWeek: Record<number, InjuryCell> }[];
-  players: { key: string; name: string; nba_team: string; team: string | null; team_name: string | null; il: number; missed: number; lost: number; status: string; byWeek: Record<number, InjuryCell> }[];
+  players: { key: string; name: string; nba_team: string; positions: string[]; team: string | null; team_name: string | null; il: number; missed: number; lost: number; status: string; byWeek: Record<number, InjuryCell> }[];
 }
 
 const empty = (): InjuryCell => ({ il: 0, missed: 0, lost: 0 });

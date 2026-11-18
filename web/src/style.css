@@ -220,3 +220,38 @@ a.ghost.btn:hover { background: var(--sel); }
 .luck-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
 .luck-grid > div { min-width: 0; }
 @media (max-width: 760px) { .luck-grid { grid-template-columns: 1fr; } }
+
+/* ---------- name links + player / team popup ---------- */
+.plink { cursor: pointer; border-radius: 4px; }
+.plink:hover .pl-name, .plink.pl-name:hover, .plink:hover > span:last-child { text-decoration: underline; }
+.plink:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.profile-box { width: min(760px, 100%); }
+.profile-title { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.profile-title h3 { font-size: 20px; line-height: 24px; }
+button.ghost.icon { padding: 4px 12px; font-size: 16px; }
+.profile-body { overflow: auto; padding: 4px 16px 16px; background: var(--panel); }
+.psec h4 { margin: 14px 0 8px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.fact { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.fact .k { font-size: 12px; color: var(--muted); font-weight: 700; }
+.fact .v { font-size: 18px; line-height: 24px; font-weight: 800; margin-top: 2px; overflow-wrap: anywhere; }
+.fact .v .pl-name { font-size: 18px; }
+.fact .s { font-size: 12px; line-height: 16px; color: var(--muted); margin-top: 2px; }
+.ptable { margin-top: 8px; }
+@media (max-width: 480px) {
+  .facts { grid-template-columns: 1fr 1fr; }
+  .modal { padding: 8px; }
+  .profile-box .modal-head { padding: 10px 12px; }
+}
+
+/* ---------- popup: place-by-week chart ---------- */
+.rank-chart { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 8px 0 2px; overflow: hidden; }
+.rank-chart svg { display: block; touch-action: pan-y; }
+.rank-chart .grid { stroke: var(--line); stroke-width: 1; }
+.rank-chart .tick { fill: var(--muted); font-size: 11px; font-weight: 600; }
+.rank-chart .line { fill: none; stroke: var(--brand); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.rank-chart .dot { fill: var(--brand); stroke: var(--card); stroke-width: 2; }
+.rank-chart .end { fill: var(--text); font-size: 13px; font-weight: 800; }
+.rank-chart .cross { stroke: var(--faded); stroke-width: 1; }
+.rank-chart .hit { fill: transparent; cursor: pointer; outline: none; }
+.chart-tip { position: absolute; transform: translateX(-50%); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; box-shadow: 0 4px 14px rgba(35,42,49,.14); pointer-events: none; white-space: nowrap; font-size: 13px; }

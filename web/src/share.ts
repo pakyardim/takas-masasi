@@ -230,7 +230,8 @@ export function drawAllPlayPoster(data: AllPlay, teamName: string, logos: Logos 
 // ================================================================ trade poster
 const signedTxt = (v: number, d: number) => (v > 0 ? "+" : "") + v.toFixed(d);
 
-export function header(ctx: Ctx, W: number, H: number, league: string, title: string, subtitle: string) {
+/** Purple poster header. With a team picture, it sits left of the title (as on the all-play poster). */
+export function header(ctx: Ctx, W: number, H: number, league: string, title: string, subtitle: string, logo?: HTMLImageElement) {
   const M = 44;
   const g = ctx.createLinearGradient(0, 0, W, H);
   g.addColorStop(0, C.brand); g.addColorStop(1, C.brandDark);
@@ -244,9 +245,12 @@ export function header(ctx: Ctx, W: number, H: number, league: string, title: st
   ctx.globalAlpha = 0.8;
   ctx.fillText(fit(ctx, league, W - 2 * M - 180, 17, 600), M + 158, 51);
   ctx.globalAlpha = 1;
-  ctx.fillText(fit(ctx, title, W - 2 * M, 60, 900, 30), M, 122);
+  const x = logo ? M + 112 : M;
+  if (logo) circleLogo(ctx, logo, M + 46, 142, 46, "rgba(255,255,255,.9)", 4);
+  ctx.fillStyle = C.white; ctx.textAlign = "left";
+  ctx.fillText(fit(ctx, title, W - M - x, 60, 900, 30), x, 122);
   ctx.globalAlpha = 0.92;
-  ctx.fillText(fit(ctx, subtitle, W - 2 * M, 22, 600, 14), M, 172);
+  ctx.fillText(fit(ctx, subtitle, W - M - x, 22, 600, 14), x, 172);
   ctx.globalAlpha = 1;
 }
 

@@ -1,6 +1,6 @@
 import { api, dayLong, registerPlayers, signed, store } from "../store";
 import type { MovesReport, Pickup } from "../types";
-import { Card, Empty, ErrorBox, NeedSync, PageHead, PlayerLabel, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
+import { Card, Empty, ErrorBox, NeedSync, PageHead, PlayerLabel, PlayerName, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
 import { PosterButton } from "../PosterButton";
 import { movesPoster } from "../posters";
 import { VALUE_NOTE } from "./Draft";
@@ -40,7 +40,7 @@ export function Moves() {
                 <tr key={t.team} class={t.team === store.league.my_team ? "me" : ""}>
                   <td><RankPill n={i + 1} /> <TeamName team={t.team} /></td>
                   <td>{t.adds}</td><td><Val x={t.value} /></td>
-                  <td class="l">{t.best ? <>{t.best.player.name} <span class="muted small">{dayLong(t.best.date)} · {signed(t.best.value, 1)}</span></> : "–"}</td>
+                  <td class="l">{t.best ? <><PlayerName k={t.best.player.key} name={t.best.player.name} /> <span class="muted small">{dayLong(t.best.date)} · {signed(t.best.value, 1)}</span></> : "–"}</td>
                 </tr>
               ))}
             </tbody>
@@ -68,7 +68,7 @@ export function Moves() {
                   const diff = a && b ? a.value - b.value : 0;
                   const side = (s: (typeof t.sides)[number] | undefined) => s ? <>
                     <td class="l" style="white-space:normal"><TeamName team={s.team} name={s.name} plain /> <span class="muted small">aldı:</span>
-                      {s.players.map((x) => <div key={x.player.key}>{x.player.name} <span class="muted small">{x.active_games} maç · {signed(x.value, 1)}</span></div>)}</td>
+                      {s.players.map((x) => <div key={x.player.key}><PlayerName k={x.player.key} name={x.player.name} /> <span class="muted small">{x.active_games} maç · {signed(x.value, 1)}</span></div>)}</td>
                     <td><Val x={s.value} /></td>
                   </> : <><td /><td /></>;
                   return (

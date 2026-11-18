@@ -1,15 +1,31 @@
 // Small shared building blocks.
 import type { ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
+import { openProfile, type ProfileTarget } from "./profileBus";
 import { cls, signed, store } from "./store";
 
-/** Yahoo-style player cell: name in link blue, injury tag in red, "NYK - PG,SG" underneath. */
-export function PlayerLabel({ k }: { k: string }) {
+/** Clicking (or Enter on) the children opens the player / team popup. Stops the click there,
+ *  so a clickable row around it does not also react. */
+export function ProfileLink({ to, children, class: c = "" }: { to: ProfileTarget; children: ComponentChildren; class?: string }) {
+  const go = (e: Event) => { e.stopPropagation(); e.preventDefault(); openProfile(to); };
+  return (
+    <span class={`plink ${c}`} role="button" tabIndex={0} title="Ayrıntılar"
+      onClick={go} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") go(e); }}>{children}</span>
+  );
+}
+
+/** A player's name that opens his popup. */
+export const PlayerName = ({ k, name }: { k: string; name?: string }) =>
+  <ProfileLink to={{ kind: "player", key: k }}>{name ?? store.players[k]?.name ?? k}</ProfileLink>;
+
+/** Yahoo-style player cell: name in link blue, injury tag in red, "NYK - PG,SG" underneath.
+ *  The name opens the player popup unless `link` is false (e.g. rows that select the player). */
+export function PlayerLabel({ k, link = true }: { k: string; link?: boolean }) {
   const p = store.players[k];
   const sub = p ? [p.nba_team, (p.positions || []).join(",")].filter(Boolean).join(" - ") : "";
   return (
     <>
-      <span class="pl-name">{p?.name || k}</span>
+      {link ? <ProfileLink to={{ kind: "player", key: k }} class="pl-name">{p?.name || k}</ProfileLink> : <span class="pl-name">{p?.name || k}</span>}
       {p?.status ? <span class="inj">{p.status}</span> : null}
       {sub ? <span class="pl-sub">{sub}</span> : null}
     </>
@@ -23,11 +39,15 @@ export function TeamLogo({ team, size = 24 }: { team: string; size?: number }) {
   return <span class="tlogo ph" style={{ width: size, height: size, fontSize: Math.round(size * 0.45) }}>{(store.teamName[team] ?? "?").slice(0, 1)}</span>;
 }
 
-/** Team picture + name, as one inline unit. */
+/** Team picture + name, as one inline unit. Opens the team popup when clicked. */
 export function TeamName({ team, name, plain }: { team?: string | null; name?: string; plain?: boolean }) {
   const label = name ?? (team ? store.teamName[team] : "") ?? "";
-  if (!team) return <span class={plain ? "" : "pl-name"}>{label}</span>;
-  return <span class="tname"><TeamLogo team={team} /><span class={plain ? "" : "pl-name"}>{label}</span></span>;
+  if (!team || !(team in store.teamName)) return <span class={plain ? "" : "pl-name"}>{label}</span>;
+  return (
+    <ProfileLink to={{ kind: "team", key: team }} class="tname">
+      <TeamLogo team={team} /><span class={plain ? "" : "pl-name"}>{label}</span>
+    </ProfileLink>
+  );
 }
 
 /** Page title with an optional action (e.g. the poster button) on the right. */

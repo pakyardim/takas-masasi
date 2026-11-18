@@ -121,3 +121,38 @@ export interface InjuryReport {
   teams: { team: string; name: string; il: number; missed: number; lost: number; byWeek: Record<number, InjuryCell> }[];
   players: { key: string; name: string; nba_team: string; positions: string[]; team: string | null; team_name: string | null; il: number; missed: number; lost: number; status: string; byWeek: Record<number, InjuryCell> }[];
 }
+
+// ---- profiles (popup when a player or team name is clicked)
+export interface Ranked { rank: number; of: number }
+export interface GameRef { date: string; team: string; line: StatLine; value: number; active: boolean }
+export interface PlayerProfile {
+  key: string; name: string; nba_team: string; positions: string[]; status: string; owner: string | null;
+  gp: number; z: number | null; z_rank: Ranked | null; value: number | null; value_rank: Ranked | null; min_gp: number;
+  cats: { key: string; label: string; value: number | null; z: number; rank: number | null; of: number }[];
+  periods: { period: "last30" | "last14" | "last7"; gp: number; z: number }[];
+  prev: { season: string; gp: number; z: number } | null;
+  fantasy: { teams: string[]; days: number; games: number; active_games: number; active_value: number; bench_games: number; bench_pts: number; best: GameRef | null };
+  draft: { round: number; overall: number; team: string | null; team_name: string; surplus: number | null } | null;
+  moves: { date: string; team: string; action: "add" | "drop" | "trade"; source: string }[];
+  injury: { il: number; missed: number; lost: number } | null;
+}
+export interface WeekRef { week: number; opponent: string | null; result: Res | null; score: Score | null; beaten: number; of: number }
+export interface PlayerRef { key: string; name: string }
+export interface PositionPoint { week: number; rank: number; record: [number, number, number]; result: Res | null; score: Score | null; opponent: string | null }
+export interface TeamProfile {
+  team: string; name: string; teams: number;
+  /** place in the real standings after each completed week */
+  history: PositionPoint[];
+  power: { rank: number; power: number; allplay_pct: number; form_pct: number; beat: number; beat_of: number } | null;
+  standings: { h2h_rank: number; record: [number, number, number]; one_win_rank: number; roto_rank: number; points_rank: number;
+               cats: { key: string; label: string; rank: number; value: number | null }[] } | null;
+  luck: { luck: number; rank: number } | null;
+  weeks: WeekRef[]; streak: { result: Res; n: number } | null;
+  best_week: WeekRef | null; worst_week: WeekRef | null; biggest_win: WeekRef | null; closest_loss: WeekRef | null;
+  usage: { players: number; bench_games: number; bench_pts: number; top: (PlayerRef & { games: number; value: number })[]; bench_top: (PlayerRef & { games: number; pts: number }) | null };
+  roster_best: (PlayerRef & { z: number }) | null;
+  draft: { rank: number; total: number; surplus: number; kept: number; picks: number;
+           best: (PlayerRef & { overall: number; surplus: number }) | null; worst: (PlayerRef & { overall: number; surplus: number }) | null } | null;
+  moves: { rank: number; adds: number; value: number; trades: number; best: (PlayerRef & { date: string; value: number }) | null } | null;
+  injuries: { rank: number; il: number; missed: number; lost: number; top: (PlayerRef & { missed: number }) | null } | null;
+}

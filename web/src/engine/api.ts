@@ -1,16 +1,17 @@
 // The app's "API", computed in the browser from the league file. Each function returns
 // exactly what the UI expects (see ../types.ts).
 import type {
-  AllPlay, Balance, DraftReport, Edit, GridCell, LeagueResponse, MovesReport, Player, Power, Standings, TradeFix, TradeResult, WeekData, WhatIfResult,
+  AllPlay, Balance, DraftReport, Edit, GridCell, LeagueResponse, MovesReport, Player, PlayerProfile, Power, Standings, TeamProfile, TradeFix, TradeResult, WeekData, WhatIfResult,
 } from "../types";
-import { draftReport, movesReport } from "./analysis";
+import { draftReport, movesReport, Valuer } from "./analysis";
 import {
   buildZModel, evaluateTrade, fantasyPoints, headToHead, INACTIVE_SLOTS, playerZ, versusAll, whatIf,
   type EngineEdit, type ExtraStats, type Week,
 } from "./core";
 import type { LeagueData } from "./data";
-import { luck, power, standings, todayET } from "./rankings";
+import { luck, positionHistory, power, standings, todayET } from "./rankings";
 import { injuries } from "./injuries";
+import { playerProfile, teamProfile, type Reports } from "./profiles";
 
 export interface TradeRequest extends Partial<TradeFix> { team_a: string; give_a: string[]; team_b: string; give_b: string[]; period?: string }
 export interface WhatIfRequest { week: number; team: string; opponent: string; edits: Edit[] }
@@ -203,6 +204,21 @@ export class LocalApi {
   luck() { return this.memo("luck", () => luck(this.data)); }
   injuries() { return this.memo("injuries", () => injuries(this.data)); }
 
+  // ---------------------------------------------------------------- profiles (name popups)
+  /** A report that is not synced yet (or fails) leaves its part of a profile empty. */
+  private reports(): Reports {
+    const safe = <T>(fn: () => T): T | null => { try { return fn(); } catch { return null; } };
+    return {
+      draft: () => safe(() => this.draft()), moves: () => safe(() => this.moves()), injuries: () => safe(() => this.injuries()),
+      power: () => safe(() => this.power()), standings: () => safe(() => this.standings()), luck: () => safe(() => this.luck()),
+      allplay: (t) => safe(() => this.memo(`allplay:${t}`, () => this.allplay(t))),
+      positions: () => safe(() => this.memo("positions", () => positionHistory(this.data))),
+    };
+  }
+  private valuer(): Valuer { return this.memo("valuer", () => new Valuer(this.data)); }
+  player(key: string): PlayerProfile { return this.memo(`player:${key}`, () => playerProfile(this.data, this.valuer(), this.reports(), key)); }
+  team(team: string): TeamProfile { return this.memo(`team:${team}`, () => teamProfile(this.data, this.valuer(), this.reports(), team)); }
+
   /** Answer the same paths the old HTTP API had, so the UI code stays the same. */
   call(path: string, body?: unknown): unknown {
     const url = new URL(path, "http://local");
@@ -220,6 +236,8 @@ export class LocalApi {
     if (p === "/api/standings") return this.standings();
     if (p === "/api/luck") return this.luck();
     if (p === "/api/injuries") return this.injuries();
+    if (p === "/api/player") return this.player(q.get("key") ?? "");
+    if (p === "/api/team") return this.team(q.get("team") ?? "");
     throw new Error(`Bilinmeyen istek: ${p}`);
   }
 }

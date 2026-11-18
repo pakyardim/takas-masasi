@@ -16,7 +16,7 @@ Her yeni sayfa ve her yeni kart ya da tablo bölümü, **görsel çıkarma seçe
 3. Görsel, sayfa verisi yüklenmeden önce ya da veri yokken çalışmamalı; düğme yalnızca veri varken görünür.
 4. Bir kart ya da bölüm sayfada çok küçük bir ayrıntıysa, o bölümü kapsayan sayfanın görseline ekle. Yeni bir sayfa oluştururken görsel yoksa bunu kullanıcıya açıkça söyle.
 
-Mevcut görseller: takas (Takas Analizi), herkese karşı (Ya Olsaydı?), senaryo (Ya Olsaydı?), güç sıralaması, puan durumu, draft, transfer, sakatlıklar.
+Mevcut görseller: takas (Takas Analizi), herkese karşı (Ya Olsaydı?), senaryo (Ya Olsaydı?), güç sıralaması, puan durumu, draft, transfer, sakatlıklar, oyuncu ve takım profili (isme tıklayınca açılan pencere).
 
 ## Veri ve gizlilik
 

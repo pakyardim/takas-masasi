@@ -1,6 +1,6 @@
 import { api, num, registerPlayers, store } from "../store";
 import type { InjuryCell, InjuryReport } from "../types";
-import { Card, Empty, ErrorBox, PageHead, PlayerLabel, TableWrap, TeamName, useLoad } from "../ui";
+import { Card, Empty, ErrorBox, PageHead, PlayerLabel, PlayerName, TableWrap, TeamName, useLoad } from "../ui";
 import { PosterButton } from "../PosterButton";
 import { injuriesPoster } from "../posters";
 
@@ -39,7 +39,7 @@ function Body({ r, me }: { r: InjuryReport; me: string }) {
     <>
       <div class="summary">
         <div class="stat-card"><div class="k">En çok kayıp yaşayan takım</div><div class="v" style="font-size:20px"><TeamName team={worstTeam.team} /></div><div class="muted small">{signedNum(worstTeam.lost)} değer · {worstTeam.missed} kaçırılan maç</div></div>
-        <div class="stat-card"><div class="k">En çok maç kaçıran oyuncu</div><div class="v" style="font-size:20px">{worstPlayer?.name ?? "–"}</div><div class="muted small">{worstPlayer ? `${worstPlayer.missed} maç · ${signedNum(worstPlayer.lost)} değer` : ""}</div></div>
+        <div class="stat-card"><div class="k">En çok maç kaçıran oyuncu</div><div class="v" style="font-size:20px">{worstPlayer ? <PlayerName k={worstPlayer.key} name={worstPlayer.name} /> : "–"}</div><div class="muted small">{worstPlayer ? `${worstPlayer.missed} maç · ${signedNum(worstPlayer.lost)} değer` : ""}</div></div>
         <div class="stat-card"><div class="k">Toplam kaçırılan maç</div><div class="v">{totalMissed}</div><div class="muted small">{r.days_covered} gün, {dayShort(r.first_day!)} – {dayShort(r.last_day!)}</div></div>
       </div>
 

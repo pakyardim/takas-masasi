@@ -2,7 +2,8 @@
 import { drawPoster, TONE, type Cell, type PCell, type PSection } from "./poster";
 import { loadLogos } from "./share";
 import { catByKey, dayLong, fmt, num, pct, pname, rec, RES, scoreText, signed, store } from "./store";
-import type { DraftPick, DraftReport, Edit, InjuryReport, MovesReport, Power, Standings, StandingsTeam, WeekData, WhatIfResult } from "./types";
+import type { DraftPick, DraftReport, Edit, InjuryReport, MovesReport, PlayerProfile, Power, Standings, StandingsTeam, TeamProfile, WeekData, WhatIfResult } from "./types";
+import { playerFacts, playerSub, PROFILE_NOTE, teamFacts, teamSub, type Fact, type FactSection } from "./profileFacts";
 
 const allLogos = () => loadLogos(store.league.teams.map((t) => t.key));
 const tone = (v: number, eps = 0.0001) => (v > eps ? TONE.good : v < -eps ? TONE.bad : undefined);
@@ -225,4 +226,46 @@ export async function injuriesPoster(r: InjuryReport) {
     ],
     footer: "Kaçırılan maç: aktif kadroda olup NBA takımı oynarken kutu skoru olmayan günler · değer: yedek seviyesi üstü, az maçı olanlarda geçen sezon ortalaması",
   }, await allLogos());
+}
+
+// ---------------------------------------------------------------- profiles (name popups)
+/** The first three facts as tiles, everything else as "fact | value | detail" tables. */
+function profileSpec(title: string, subtitle: string, facts: FactSection[], logo: string | null) {
+  const TILES = 3;      // wider tiles keep their detail line readable
+  const first = facts[0];
+  const rest: FactSection[] = first && first.items.length > TILES
+    ? [{ ...first, items: first.items.slice(TILES) }, ...facts.slice(1)] : facts.slice(1);
+  const ftone = (f: Fact) => (f.tone === "good" ? TONE.good : f.tone === "bad" ? TONE.bad : undefined);
+  const sections: PSection[] = [];
+  for (const sec of rest) {
+    if (sec.chart) {
+      sections.push({ heading: sec.title, columns: [], rows: [], note: sec.chart.note,
+        chart: { n: sec.chart.n, points: sec.chart.points.map((p) => ({ label: `${p.week}. hf`, rank: p.rank })) } });
+    }
+    if (sec.items.length) sections.push({
+      heading: sec.title,
+      columns: [{ label: "Bilgi", w: 2.6, align: "l" }, { label: "Değer", w: 3, align: "l" }, { label: "Ayrıntı", w: 5, align: "l" }],
+      rows: sec.items.map((f) => [{ text: f.k, color: TONE.muted, bold: true },
+        { text: f.v, bold: true, color: ftone(f), team: f.team }, { text: f.s ?? "", color: TONE.muted }]),
+    });
+    if (sec.table) {
+      sections.push({
+        columns: sec.table.columns.map((label, i) => ({ label, w: i ? 1 : 1.4, align: i ? "r" as const : "l" as const })),
+        rows: sec.table.rows,
+      });
+    }
+  }
+  return {
+    title, subtitle, width: 1080, logo,
+    tiles: first ? first.items.slice(0, TILES).map((f) => ({ k: f.k, v: f.v, s: f.s, tone: f.tone === "good" ? "good" as const : f.tone === "bad" ? "bad" as const : "plain" as const })) : [],
+    sections, footer: PROFILE_NOTE,
+  };
+}
+
+export async function playerPoster(p: PlayerProfile) {
+  return drawPoster(profileSpec(p.name, playerSub(p) + (p.status ? ` · ${p.status}` : ""), playerFacts(p), p.owner), await allLogos());
+}
+
+export async function teamPoster(t: TeamProfile) {
+  return drawPoster(profileSpec(t.name, teamSub(t), teamFacts(t), t.team), await allLogos());
 }

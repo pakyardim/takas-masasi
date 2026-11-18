@@ -19,12 +19,12 @@ const DAY = 86400000;
 const shift = (iso: string, days: number) => new Date(Date.parse(iso + "T00:00:00Z") + days * DAY).toISOString().slice(0, 10);
 
 /** Sortable [date, minutes] for a transaction; ts looks like "Oct 31, 4:57 pm". */
-function tsKey(tx: { date: string; ts: string }): [string, number] {
+export function tsKey(tx: { date: string; ts: string }): [string, number] {
   const m = tx.ts.match(/, (\d{1,2}):(\d{2}) (am|pm)$/);
   if (!m) return [tx.date, 0];
   return [tx.date, ((+m[1] % 12) + (m[3] === "pm" ? 12 : 0)) * 60 + +m[2]];
 }
-const cmpKey = (a: [string, number], b: [string, number]) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] - b[1]);
+export const cmpKey = (a: [string, number], b: [string, number]) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : a[1] - b[1]);
 
 export class Valuer {
   readonly store: RawStore;

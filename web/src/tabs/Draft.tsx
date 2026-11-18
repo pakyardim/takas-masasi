@@ -1,7 +1,7 @@
 import { useRef, useState } from "preact/hooks";
 import { api, registerPlayers, signed, store } from "../store";
 import type { DraftPick, DraftReport } from "../types";
-import { Card, Empty, ErrorBox, NeedSync, PageHead, PlayerLabel, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
+import { Card, Empty, ErrorBox, NeedSync, PageHead, PlayerLabel, PlayerName, RankPill, TableWrap, TeamName, useLoad, Val } from "../ui";
 import { PosterButton } from "../PosterButton";
 import { draftPoster } from "../posters";
 
@@ -18,7 +18,7 @@ export function Draft() {
   });
   const [team, setTeam] = useState("");
   const picksRef = useRef<HTMLDivElement>(null);
-  const brief = (p: DraftPick | null) => p ? <>{p.player.name} <span class="muted small">#{p.overall} · {signed(p.surplus, 1)}</span></> : "–";
+  const brief = (p: DraftPick | null) => p ? <><PlayerName k={p.player.key} name={p.player.name} /> <span class="muted small">#{p.overall} · {signed(p.surplus, 1)}</span></> : "–";
 
   return (
     <section>

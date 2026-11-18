@@ -42,7 +42,7 @@ export function Trade() {
       {store.rosters[team].map((k) => (
         <div class={`prow ${sel.includes(k) ? "sel" : ""}`} key={k} onClick={() => toggle(side, k)}>
           <input type="checkbox" checked={sel.includes(k)} tabIndex={-1} readOnly />
-          <div><PlayerLabel k={k} /></div>
+          <div><PlayerLabel k={k} link={false} /></div>
         </div>
       ))}
     </div>
